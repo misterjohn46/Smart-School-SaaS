@@ -41,7 +41,8 @@ return [
 
         'database' => [
             'driver' => 'database',
-            'connection' => env('DB_CACHE_CONNECTION'),
+            // Eksplisit ke koneksi central: tabel `cache` hanya ada di database central.
+            'connection' => env('DB_CACHE_CONNECTION', env('DB_CONNECTION', 'sqlite')),
             'table' => env('DB_CACHE_TABLE', 'cache'),
             'lock_connection' => env('DB_CACHE_LOCK_CONNECTION'),
             'lock_table' => env('DB_CACHE_LOCK_TABLE'),

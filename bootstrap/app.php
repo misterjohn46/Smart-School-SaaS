@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
 use Spatie\Permission\Middleware\PermissionMiddleware;
+use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedOnDomainException;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
@@ -46,6 +47,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(fn (AuthenticationException $exception, Request $request) => $request->is('api/*') ? $apiError('Unauthenticated', 401) : null);
         $exceptions->render(fn (AuthorizationException $exception, Request $request) => $request->is('api/*') ? $apiError('Forbidden', 403) : null);
         $exceptions->render(fn (NotFoundHttpException $exception, Request $request) => $request->is('api/*') ? $apiError('Resource not found', 404) : null);
+
+        // Host yang tidak terdaftar sebagai domain tenant maupun central domain
+        // sebaiknya menghasilkan 404, bukan 500 stack trace.
+        $exceptions->render(function (TenantCouldNotBeIdentifiedOnDomainException $exception, Request $request) use ($apiError) {
+            return $request->is('api/*')
+                ? $apiError('Sekolah tidak ditemukan untuk domain ini', 404)
+                : response()->view('errors.404', [], 404);
+        });
         $exceptions->render(fn (MethodNotAllowedHttpException $exception, Request $request) => $request->is('api/*') ? $apiError('Method not allowed', 405) : null);
 
         $exceptions->shouldRenderJsonWhen(

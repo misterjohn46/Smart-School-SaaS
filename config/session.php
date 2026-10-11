@@ -73,7 +73,12 @@ return [
     |
     */
 
-    'connection' => env('SESSION_CONNECTION'),
+    /*
+     | Koneksi disebut eksplisit (bukan null / koneksi default) agar session tetap
+     | dibaca dari database central ketika DatabaseTenancyBootstrapper menukar
+     | koneksi default ke database tenant.
+     */
+    'connection' => env('SESSION_CONNECTION', env('DB_CONNECTION', 'sqlite')),
 
     /*
     |--------------------------------------------------------------------------

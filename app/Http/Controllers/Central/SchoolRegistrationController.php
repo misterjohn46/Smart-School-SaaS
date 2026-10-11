@@ -56,13 +56,17 @@ class SchoolRegistrationController extends Controller
             ], 422);
         }
 
-        try {
-            DB::beginTransaction();
+        // Catatan: pembuatan tenant memicu JobPipeline CreateDatabase + MigrateDatabase
+        // secara sinkron. Operasi berkas / CREATE DATABASE itu tidak transaksional,
+        // sehingga TIDAK boleh dibungkus DB::transaction() - rollback central hanya
+        // akan meninggalkan database tenant yatim. Kegagalan lanjutan ditangani
+        // dengan menghapus tenant (yang sekaligus men-drop database-nya).
+        $tenant = null;
 
-            // 1. Buat Tenant
-            $tenantId = (string) Str::uuid();
-            $tenant = Tenant::create([
-                'id' => $tenantId,
+        try {
+            // 1. Buat Tenant beserta domain pilihan pendaftar (lihat Tenant::booted).
+            $tenant = new Tenant([
+                'id' => (string) Str::uuid(),
                 'school_name' => $validated['school_name'],
                 'npsn' => $validated['npsn'],
                 'admin_name' => $validated['admin_name'],
@@ -71,24 +75,21 @@ class SchoolRegistrationController extends Controller
                 'plan_id' => $plan->id,
                 'trial_ends_at' => now()->addDays(14)->toDateTimeString(),
             ]);
+            $tenant->requestedDomain = $domainName;
+            $tenant->save();
 
-            // 2. Buat Domain
-            $tenant->domains()->create([
-                'domain' => $domainName,
-            ]);
-
-            // 3. Buat Data Langganan Uji Coba (Free Trial 14 Hari)
-            Subscription::create([
-                'tenant_id' => $tenant->id,
-                'plan_id' => $plan->id,
-                'status' => 'trial',
-                'billing_cycle' => 'monthly',
-                'trial_ends_at' => now()->addDays(14),
-                'starts_at' => now(),
-                'ends_at' => now()->addDays(14),
-            ]);
-
-            DB::commit();
+            // 2. Buat Data Langganan Uji Coba (Free Trial 14 Hari)
+            DB::transaction(function () use ($tenant, $plan) {
+                Subscription::create([
+                    'tenant_id' => $tenant->id,
+                    'plan_id' => $plan->id,
+                    'status' => 'trial',
+                    'billing_cycle' => 'monthly',
+                    'trial_ends_at' => now()->addDays(14),
+                    'starts_at' => now(),
+                    'ends_at' => now()->addDays(14),
+                ]);
+            });
 
             $protocol = $request->secure() ? 'https://' : 'http://';
             $port = $request->getPort();
@@ -105,14 +106,21 @@ class SchoolRegistrationController extends Controller
                     'plan' => $plan->name,
                     'trial_days' => 14,
                     'admin_name' => $validated['admin_name'],
+                    'admin_email' => $validated['admin_email'],
+                    // Password awal hanya dikembalikan sekali ke pendaftar dan tidak
+                    // pernah disimpan dalam bentuk plaintext di sisi server.
+                    'initial_password' => $tenant->generatedAdminPassword,
                 ],
             ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
+        } catch (\Throwable $e) {
+            report($e);
+
+            // Bersihkan tenant + database tenant yang sudah terbentuk agar tidak yatim.
+            $tenant?->delete();
 
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat membuat portal sekolah: ' . $e->getMessage(),
+                'message' => 'Terjadi kesalahan saat membuat portal sekolah. Silakan coba lagi atau hubungi dukungan teknis.',
             ], 500);
         }
     }

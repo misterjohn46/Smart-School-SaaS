@@ -6,6 +6,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDomains;
@@ -17,39 +20,66 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 
     protected $guarded = [];
 
+    /**
+     * Domain yang diminta pendaftar. Diisi sebelum create() agar hook `created`
+     * tidak membuat domain turunan NPSN sebagai domain kedua yang tidak dipakai.
+     */
+    public ?string $requestedDomain = null;
+
+    /**
+     * Password awal akun admin sekolah hasil provisioning.
+     * Hanya tersedia sekali pada instance yang membuat tenant, tidak pernah disimpan.
+     */
+    public ?string $generatedAdminPassword = null;
+
     protected static function booted(): void
     {
         static::created(function (Tenant $tenant) {
             // 1. Buat Akun Administrator Sekolah jika belum ada
             if (! empty($tenant->admin_email)) {
-                $user = \App\Models\User::firstOrCreate(
+                // Password awal dibuat acak dengan CSPRNG. Sebelumnya setiap sekolah
+                // baru mendapat password literal 'password' yang sama.
+                $initialPassword = Str::password(16, symbols: false);
+
+                $user = User::firstOrCreate(
                     ['email' => $tenant->admin_email],
                     [
-                        'name' => $tenant->admin_name ?: 'Admin ' . $tenant->school_name,
+                        'name' => $tenant->admin_name ?: 'Admin '.$tenant->school_name,
                         'phone_number' => $tenant->admin_phone,
-                        'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                        'password' => Hash::make($initialPassword),
                         'is_active' => true,
-                        'email_verified_at' => now(),
                     ]
                 );
 
+                if ($user->wasRecentlyCreated) {
+                    $tenant->generatedAdminPassword = $initialPassword;
+                }
+
                 if (! $user->hasRole('admin')) {
-                    $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+                    $role = Role::firstOrCreate(['name' => 'admin']);
                     $user->assignRole($role);
                 }
             }
 
             // 2. Buat Subdomain / Domain default jika belum ada
             if ($tenant->domains()->count() === 0) {
-                $slug = \Illuminate\Support\Str::slug($tenant->npsn ?: $tenant->school_name);
-                $host = request()?->getHost() ?: 'localhost';
-                $domainName = $slug . '.' . $host;
-
                 $tenant->domains()->create([
-                    'domain' => $domainName,
+                    'domain' => $tenant->requestedDomain ?: $tenant->defaultDomainName(),
                 ]);
             }
         });
+    }
+
+    /**
+     * Domain turunan NPSN / nama sekolah sebagai cadangan bila pendaftar
+     * tidak menentukan subdomain.
+     */
+    public function defaultDomainName(): string
+    {
+        $slug = Str::slug($this->npsn ?: $this->school_name);
+        $host = request()?->getHost() ?: (string) (config('tenancy.central_domains')[1] ?? 'localhost');
+
+        return $slug.'.'.$host;
     }
 
     /**

@@ -144,9 +144,51 @@ class FilamentRoleSegregationTest extends TestCase
         $this->assertNotNull($adminUser);
         $this->assertEquals('Budi Santoso', $adminUser->name);
         $this->assertTrue($adminUser->hasRole('admin'));
-        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('password', $adminUser->password));
 
-        $this->assertGreaterThan(0, $tenant->domains()->count());
+        // Password awal wajib acak, bukan literal 'password' seperti sebelumnya.
+        $this->assertFalse(\Illuminate\Support\Facades\Hash::check('password', $adminUser->password));
+        $this->assertNotNull($tenant->generatedAdminPassword);
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check($tenant->generatedAdminPassword, $adminUser->password));
+
+        // Satu tenant = satu domain. Sebelumnya hook model dan controller
+        // masing-masing membuat domain sehingga setiap sekolah punya dua domain.
+        $this->assertSame(1, $tenant->domains()->count());
+    }
+
+    public function test_school_registration_creates_exactly_one_domain(): void
+    {
+        $plan = \App\Models\Plan::firstOrCreate(
+            ['slug' => 'starter-test'],
+            [
+                'name' => 'Starter Test',
+                'price_monthly' => 100000,
+                'price_yearly' => 1000000,
+                'max_students' => 100,
+                'max_teachers' => 10,
+                'max_storage_mb' => 1024,
+                'is_active' => true,
+            ]
+        );
+
+        $response = $this->postJson('/register-school', [
+            'school_name' => 'SMK Satu Domain',
+            'npsn' => '98765432',
+            'subdomain' => 'satudomain',
+            'admin_name' => 'Ibu Rina',
+            'admin_email' => 'rina@satudomain.sch.id',
+            'admin_phone' => '081200000000',
+            'plan_slug' => $plan->slug,
+        ]);
+
+        $response->assertOk();
+
+        $tenant = \App\Models\Tenant::where('school_name', 'SMK Satu Domain')->firstOrFail();
+        $this->assertSame(1, $tenant->domains()->count());
+        $this->assertStringStartsWith('satudomain.', $tenant->domains()->first()->domain);
+
+        // Password awal dikembalikan sekali kepada pendaftar.
+        $this->assertNotEmpty($response->json('data.initial_password'));
+        $this->assertNotSame('password', $response->json('data.initial_password'));
     }
 
     public function test_school_admin_visiting_forbidden_saas_url_gets_forbidden_status(): void

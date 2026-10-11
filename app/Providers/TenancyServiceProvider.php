@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Stancl\JobPipeline\JobPipeline;
@@ -60,7 +61,29 @@ class TenancyServiceProvider extends ServiceProvider
             Events\DomainDeleted::class => [],
 
             // Database events
-            Events\DatabaseCreated::class => [],
+            Events\DatabaseCreated::class => [
+                /**
+                 * Database tenant yang dimigrasi dari direktori kosong tetap "berhasil"
+                 * dibuat namun tanpa satu pun tabel aplikasi. Tanpa peringatan ini
+                 * kegagalan provisioning tersebut sama sekali tidak terlihat.
+                 */
+                function (Events\DatabaseCreated $event): void {
+                    $paths = (array) config('tenancy.migration_parameters.--path', []);
+
+                    $migrationCount = 0;
+                    foreach ($paths as $path) {
+                        $migrationCount += count((array) glob(rtrim((string) $path, '/\\').'/*.php'));
+                    }
+
+                    if ($migrationCount === 0) {
+                        Log::warning('Database tenant dibuat tanpa migrasi apa pun.', [
+                            'tenant_id' => $event->tenant->getTenantKey(),
+                            'migration_paths' => $paths,
+                            'petunjuk' => 'Lihat database/migrations/tenant/README.md',
+                        ]);
+                    }
+                },
+            ],
             Events\DatabaseMigrated::class => [],
             Events\DatabaseSeeded::class => [],
             Events\DatabaseRolledBack::class => [],

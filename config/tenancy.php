@@ -16,10 +16,10 @@ return [
      *
      * Only relevant if you're using the domain or subdomain identification middleware.
      */
-    'central_domains' => [
-        '127.0.0.1',
-        'localhost',
-    ],
+    'central_domains' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('CENTRAL_DOMAINS', '127.0.0.1,localhost'))
+    ))),
 
     /**
      * Tenancy bootstrappers are executed when tenancy is initialized.
@@ -29,6 +29,13 @@ return [
      */
     'bootstrappers' => [
         Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class,
+
+        /**
+         * PENTING: CacheTenancyBootstrapper menerapkan cache tag per tenant.
+         * Store `database` dan `file` TIDAK mendukung tagging, sehingga CACHE_STORE
+         * wajib diarahkan ke redis / memcached / array sebelum tenancy diaktifkan.
+         * Lihat .env.example.
+         */
         Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
@@ -39,7 +46,13 @@ return [
      * Database tenancy config. Used by DatabaseTenancyBootstrapper.
      */
     'database' => [
-        'central_connection' => env('DB_CONNECTION', 'central'),
+        /**
+         * Harus menunjuk koneksi yang benar-benar ada di config/database.php.
+         * Nilai bawaan paket ('central') tidak terdefinisi di aplikasi ini sehingga
+         * akan fatal bila DB_CONNECTION tidak diset - default disamakan dengan
+         * config/database.php: 'sqlite'.
+         */
+        'central_connection' => env('DB_CONNECTION', 'sqlite'),
 
         /**
          * Connection used as a "template" for the dynamically created tenant database connection.
