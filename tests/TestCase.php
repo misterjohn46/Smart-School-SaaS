@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
+
     /**
      * Daftar berkas database tenant SQLite yang sudah ada sebelum test berjalan.
      *

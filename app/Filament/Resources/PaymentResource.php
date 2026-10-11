@@ -18,7 +18,7 @@ use UnitEnum;
 
 class PaymentResource extends Resource
 {
-    use \App\Filament\Concerns\HasSchoolAccessOnly;
+    use \App\Filament\Concerns\HasFinanceAccessOnly;
 
     protected static ?string $model = Payment::class;
 

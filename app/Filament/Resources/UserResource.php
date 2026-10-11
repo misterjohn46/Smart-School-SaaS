@@ -14,6 +14,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class UserResource extends Resource
 {
@@ -66,7 +67,15 @@ class UserResource extends Resource
                     ->dehydrated(false),
                 Select::make('roles')
                     ->label('Role Akses (Hak Pengguna)')
-                    ->relationship('roles', 'name')
+                    // Hanya Super Admin boleh memberikan peran super_admin. Tanpa filter ini
+                    // admin sekolah dapat mengangkat dirinya sendiri menjadi super_admin.
+                    ->relationship(
+                        name: 'roles',
+                        titleAttribute: 'name',
+                        modifyQueryUsing: fn (Builder $query): Builder => auth()->user()?->hasRole('super_admin')
+                            ? $query
+                            : $query->where('name', '!=', 'super_admin'),
+                    )
                     ->preload()
                     ->disabled(fn (?User $record): bool => $record?->is(auth()->user()) ?? false)
                     ->dehydrated(fn (?User $record): bool => ! ($record?->is(auth()->user()) ?? false))

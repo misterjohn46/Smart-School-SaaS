@@ -22,15 +22,17 @@ trait HasSchoolAccessOnly
             return false;
         }
 
+        // Daftar ini sengaja identik dengan User::canAccessPanel() dikurangi
+        // super_admin. Sebelumnya trait ini mengizinkan guru, pustakawan, dan
+        // kantin yang justru tidak boleh masuk panel sama sekali - selisih dua
+        // daftar itu membuat satu perubahan kecil pada canAccessPanel() langsung
+        // membuka seluruh modul operasional.
         return $user->hasAnyRole([
             'admin',
             'kepala_sekolah',
             'bendahara',
             'staff',
             'operator',
-            'guru',
-            'pustakawan',
-            'kantin',
         ]);
     }
 

@@ -23,7 +23,25 @@ class User extends Authenticatable implements FilamentUser
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, HasRoles, Notifiable, HasObfuscatedId;
 
-    protected $guarded = [];
+    /**
+     * Daftar atribut yang boleh diisi massal.
+     *
+     * Sebelumnya `$guarded = []` membuat `is_active`, `is_locked`, `lockout_until`,
+     * dan `pin_hash` dapat ditimpa lewat satu pemanggilan update($request->all()).
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'username',
+        'nisn',
+        'email',
+        'phone_number',
+        'password',
+        'email_verified_at',
+        'is_active',
+        'is_locked',
+    ];
 
     protected $hidden = [
         'password',
@@ -92,20 +110,22 @@ class User extends Authenticatable implements FilamentUser
 
     public function lockAccount(string $reason = 'Percobaan login gagal berulang kali', int $minutes = 30): void
     {
-        $this->update([
+        // forceFill dipakai karena lockout_until & lockout_reason sengaja tidak
+        // masuk $fillable: statusnya hanya boleh ditulis oleh logika keamanan ini.
+        $this->forceFill([
             'is_locked' => true,
             'lockout_until' => now()->addMinutes($minutes),
             'lockout_reason' => $reason,
-        ]);
+        ])->save();
     }
 
     public function unlockAccount(): void
     {
-        $this->update([
+        $this->forceFill([
             'is_locked' => false,
             'lockout_until' => null,
             'lockout_reason' => null,
-        ]);
+        ])->save();
     }
 
     // ─── Keamanan PIN 6-Digit Dompet Digital ───────────────────────
@@ -120,8 +140,8 @@ class User extends Authenticatable implements FilamentUser
 
     public function setPin(string $pin): void
     {
-        $this->update([
+        $this->forceFill([
             'pin_hash' => Hash::make($pin),
-        ]);
+        ])->save();
     }
 }

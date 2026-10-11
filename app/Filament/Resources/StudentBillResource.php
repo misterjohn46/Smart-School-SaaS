@@ -20,7 +20,7 @@ use UnitEnum;
 
 class StudentBillResource extends Resource
 {
-    use \App\Filament\Concerns\HasSchoolAccessOnly;
+    use \App\Filament\Concerns\HasFinanceAccessOnly;
 
     protected static ?string $model = StudentBill::class;
 

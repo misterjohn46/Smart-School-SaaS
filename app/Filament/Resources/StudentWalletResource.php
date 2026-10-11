@@ -18,7 +18,7 @@ use UnitEnum;
 
 class StudentWalletResource extends Resource
 {
-    use \App\Filament\Concerns\HasSchoolAccessOnly;
+    use \App\Filament\Concerns\HasFinanceAccessOnly;
 
     protected static ?string $model = StudentWallet::class;
 

@@ -7,6 +7,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\AuditTrailResource\Pages;
 use App\Models\AuditTrail;
 use Filament\Resources\Resource;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -15,6 +16,42 @@ use UnitEnum;
 class AuditTrailResource extends Resource
 {
     protected static ?string $model = AuditTrail::class;
+
+    /**
+     * Log keamanan memuat IP dan identitas yang dicoba saat login, sehingga hanya
+     * boleh dibuka pemegang kewenangan keamanan. Sebelumnya resource ini tidak
+     * memakai concern maupun policy apa pun, jadi terbuka untuk semua pengguna panel.
+     */
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'kepala_sekolah']) ?? false;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return static::canAccess();
+    }
+
+    // Audit trail bersifat append-only: tidak boleh dibuat, diubah, atau dihapus dari panel.
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
+    }
 
     protected static string | UnitEnum | null $navigationGroup = 'Sistem & Keamanan';
     protected static ?string $navigationLabel = 'Audit Trail & Log Keamanan';

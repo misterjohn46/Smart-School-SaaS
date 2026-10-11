@@ -20,7 +20,7 @@ use UnitEnum;
 
 class FeeCategoryResource extends Resource
 {
-    use \App\Filament\Concerns\HasSchoolAccessOnly;
+    use \App\Filament\Concerns\HasFinanceAccessOnly;
 
     protected static ?string $model = FeeCategory::class;
 

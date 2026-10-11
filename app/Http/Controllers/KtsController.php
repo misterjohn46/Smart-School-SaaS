@@ -20,17 +20,38 @@ class KtsController extends Controller
     {
         $user = $request->user();
 
+        // Hanya petugas kartu yang boleh melihat KTS siswa lain. Siswa & orang tua
+        // dibatasi pada kartu miliknya sendiri; hash ID bukan pengganti otorisasi.
+        $isCardOperator = $user->hasAnyRole(['admin', 'kepala_sekolah', 'operator']);
+
         if ($hashId) {
             $student = StudentProfile::with(['classroom.department', 'user'])->whereHashId($hashId)->first();
+
+            if (! $student) {
+                abort(404, 'Data siswa tidak ditemukan.');
+            }
+
+            $isOwnCard = $student->user_id === $user->id || $student->parent_user_id === $user->id;
+
+            if (! $isCardOperator && ! $isOwnCard) {
+                abort(403, 'Anda hanya dapat melihat Kartu Tanda Siswa milik sendiri.');
+            }
         } else {
             $student = StudentProfile::with(['classroom.department', 'user'])
-                ->where('user_id', $user->id)
+                ->where(function ($query) use ($user) {
+                    $query->where('user_id', $user->id)
+                        ->orWhere('parent_user_id', $user->id);
+                })
                 ->first();
-        }
 
-        // Fallback ke profil pertama jika user bukan siswa dan tidak menyertakan hashId
-        if (! $student) {
-            $student = StudentProfile::with(['classroom.department', 'user'])->first();
+            // Petugas kartu tanpa hash ID mendapat contoh kartu untuk pengecekan template.
+            if (! $student && $isCardOperator) {
+                $student = StudentProfile::with(['classroom.department', 'user'])->first();
+            }
+
+            if (! $student) {
+                abort(404, 'Belum ada Kartu Tanda Siswa yang terhubung dengan akun Anda.');
+            }
         }
 
         $template = KtsTemplate::where('is_active', true)->first() ?? (object) [

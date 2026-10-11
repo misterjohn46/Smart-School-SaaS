@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -208,7 +209,10 @@ class StudentController extends Controller
     public function resetPassword(Request $request, int $id): RedirectResponse
     {
         $profile = StudentProfile::with('user')->findOrFail($id);
-        $newPassword = 'siswa' . rand(1000, 9999);
+
+        // Str::random() memakai random_bytes (CSPRNG). rand() sebelumnya hanya
+        // menghasilkan 9.000 kemungkinan dan dapat diprediksi.
+        $newPassword = 'siswa-' . Str::lower(Str::random(10));
 
         $profile->user->update([
             'password' => Hash::make($newPassword),

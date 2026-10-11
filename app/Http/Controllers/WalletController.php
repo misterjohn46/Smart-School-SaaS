@@ -29,8 +29,10 @@ class WalletController extends Controller
 
         // Cari profil siswa: apakah pengguna adalah siswa atau orang tua
         $student = StudentProfile::with('user', 'classroom.department')
-            ->where('user_id', $user->id)
-            ->orWhere('parent_user_id', $user->id)
+            ->where(function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                    ->orWhere('parent_user_id', $user->id);
+            })
             ->first();
 
         $wallet = null;
@@ -149,12 +151,34 @@ class WalletController extends Controller
     public function changePin(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'wallet_id' => 'required|integer|exists:student_wallets,id',
             'current_pin' => 'required|string|size:6',
             'new_pin' => 'required|string|size:6|different:current_pin',
         ]);
 
-        $wallet = StudentWallet::findOrFail($validated['wallet_id']);
+        // Dompet diturunkan dari pengguna yang login, bukan dari input `wallet_id`.
+        // Sebelumnya siapa pun dapat mengirim wallet_id milik siswa lain.
+        $user = $request->user();
+
+        $student = StudentProfile::where(function ($query) use ($user) {
+            $query->where('user_id', $user->id)
+                ->orWhere('parent_user_id', $user->id);
+        })->first();
+
+        if (! $student) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun Anda tidak terhubung dengan rekening tabungan siswa mana pun.',
+            ], 403);
+        }
+
+        $wallet = StudentWallet::where('student_profile_id', $student->id)->first();
+
+        if (! $wallet) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Rekening tabungan siswa belum dibuat.',
+            ], 404);
+        }
 
         if (! $wallet->verifyPin($validated['current_pin'])) {
             return response()->json([
