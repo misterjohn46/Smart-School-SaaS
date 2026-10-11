@@ -164,7 +164,8 @@ class WalletService
             }
 
             $today = now()->toDateString();
-            $spentToday = ($wallet->last_spent_date === $today) ? (float) $wallet->spent_today : 0.0;
+            // last_spent_date di-cast 'date' sehingga bertipe Carbon; bandingkan sebagai string tanggal.
+            $spentToday = ($wallet->last_spent_date?->toDateString() === $today) ? (float) $wallet->spent_today : 0.0;
 
             // Pengecekan limit harian jajan
             if (($spentToday + $amount) > (float) $wallet->daily_limit) {
@@ -273,7 +274,9 @@ class WalletService
 
             // Kurangi spent_today jika tanggal sama
             $today = now()->toDateString();
-            $spentToday = ($wallet->last_spent_date === $today) ? max(0, (float) $wallet->spent_today - $amount) : (float) $wallet->spent_today;
+            $spentToday = ($wallet->last_spent_date?->toDateString() === $today)
+                ? max(0, (float) $wallet->spent_today - $amount)
+                : (float) $wallet->spent_today;
 
             $wallet->update([
                 'balance' => $balanceAfter,
