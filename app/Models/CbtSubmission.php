@@ -1,0 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use App\Traits\HasObfuscatedId;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class CbtSubmission extends Model
+{
+    use HasFactory, HasObfuscatedId;
+
+    protected $guarded = [];
+
+    protected $casts = [
+        'answers' => 'array',
+        'total_score' => 'float',
+        'is_passed' => 'boolean',
+        'started_at' => 'datetime',
+        'submitted_at' => 'datetime',
+    ];
+
+    public function exam(): BelongsTo
+    {
+        return $this->belongsTo(CbtExam::class, 'cbt_exam_id');
+    }
+
+    public function studentProfile(): BelongsTo
+    {
+        return $this->belongsTo(StudentProfile::class);
+    }
+}

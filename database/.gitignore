@@ -1,0 +1,6 @@
+*.sqlite*
+
+# Database tenant SQLite yang dibuat SQLiteDatabaseManager (prefix dari config/tenancy.php).
+# Nama file tidak berekstensi .sqlite sehingga perlu pola tersendiri.
+tenant*
+!tenant/
