@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\IotAttendanceController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -22,8 +23,10 @@ Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:api-login');
 
     // Endpoint IoT Mikrokontroler RFID (ESP32 via WiFi)
-    Route::post('/attendance/tap-rfid', [\App\Http\Controllers\Api\V1\IotAttendanceController::class, 'tapRfid']);
-    Route::get('/attendance/ping', [\App\Http\Controllers\Api\V1\IotAttendanceController::class, 'ping']);
+    Route::middleware('throttle:iot-device')->group(function () {
+        Route::post('/attendance/tap-rfid', [IotAttendanceController::class, 'tapRfid']);
+        Route::get('/attendance/ping', [IotAttendanceController::class, 'ping']);
+    });
 
     // Protected routes (perlu login)
     Route::middleware('auth:sanctum')->group(function () {

@@ -391,8 +391,9 @@ class AcademicMasterSeeder extends Seeder
 
         // 9. Perangkat IoT RFID Standalone (ESP32 via WiFi)
         \App\Models\AttendanceDevice::firstOrCreate(
-            ['device_token' => 'ESP32-GATE-MAIN-001'],
+            ['device_token_hash' => \App\Models\AttendanceDevice::hashToken('ESP32-GATE-MAIN-001')],
             [
+                'device_token' => 'ESP32-GATE-MAIN-001',
                 'device_name' => 'Gerbang Utama Siswa (ESP32 RFID)',
                 'location' => 'Lobby Gedung Utama Depan',
                 'device_type' => 'two_way',

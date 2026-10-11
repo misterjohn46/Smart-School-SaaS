@@ -10,6 +10,7 @@ use Filament\Actions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
@@ -52,9 +53,9 @@ class AttendanceDeviceResource extends Resource
                     ])
                     ->default('two_way')
                     ->required(),
-                TextInput::make('device_token')
+                TextInput::make('device_token_preview')
                     ->label('Kunci Rahasia (X-Device-Token)')
-                    ->helperText('Token ini harus diflash ke kode C++ ESP32 mikrokontroler')
+                    ->helperText('Token disimpan sebagai hash dan tidak dapat dilihat kembali. Gunakan aksi "Terbitkan Token Baru" bila token hilang.')
                     ->disabled()
                     ->dehydrated(false)
                     ->visible(fn ($record) => filled($record)),
@@ -85,12 +86,10 @@ class AttendanceDeviceResource extends Resource
                         'canteen' => 'amber',
                         default => 'gray',
                     }),
-                TextColumn::make('device_token')
+                TextColumn::make('device_token_preview')
                     ->label('Device Token')
                     ->fontFamily('mono')
-                    ->copyable()
-                    ->copyMessage('Token perangkat berhasil disalin!')
-                    ->searchable(),
+                    ->placeholder('Tersembunyi'),
                 TextColumn::make('last_ping_at')
                     ->label('Koneksi Terakhir')
                     ->since()
@@ -102,6 +101,23 @@ class AttendanceDeviceResource extends Resource
             ])
             ->filters([])
             ->actions([
+                Actions\Action::make('regenerateToken')
+                    ->label('Terbitkan Token Baru')
+                    ->icon('heroicon-o-key')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Terbitkan Token Perangkat Baru')
+                    ->modalDescription('Token lama langsung tidak berlaku. Perangkat ESP32 harus diflash ulang dengan token baru.')
+                    ->action(function (AttendanceDevice $record): void {
+                        $token = $record->regenerateToken();
+
+                        Notification::make()
+                            ->title('Token baru berhasil diterbitkan')
+                            ->body('Salin sekarang, token ini tidak akan ditampilkan lagi: '.$token)
+                            ->persistent()
+                            ->success()
+                            ->send();
+                    }),
                 Actions\EditAction::make(),
                 Actions\DeleteAction::make(),
             ])

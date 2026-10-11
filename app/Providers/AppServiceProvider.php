@@ -31,6 +31,20 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(3)->by($request->ip());
         });
 
+        // Endpoint IoT bersifat publik (perangkat ESP32 tidak bisa login).
+        // Batasi per token perangkat + IP: satu gerbang sekolah wajar <60 tap/menit,
+        // sedangkan percobaan brute force token dari satu IP langsung tertahan.
+        RateLimiter::for('iot-device', function (Request $request): Limit {
+            $token = (string) $request->header('X-Device-Token', '');
+
+            return Limit::perMinute(60)->by(sha1($token).'|'.$request->ip());
+        });
+
+        // Aksi dompet siswa memakai PIN 6 digit; tanpa throttle PIN dapat di-brute force.
+        RateLimiter::for('wallet-pin', function (Request $request): Limit {
+            return Limit::perMinute(5)->by(($request->user()?->id ?? $request->ip()).'|wallet-pin');
+        });
+
         Vite::prefetch(concurrency: 3);
     }
 }

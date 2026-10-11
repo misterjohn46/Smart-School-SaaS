@@ -16,6 +16,44 @@ use Illuminate\Support\Facades\Log;
 class AttendanceService
 {
     /**
+     * Jeda minimum antar tap kartu RFID yang sama (detik).
+     *
+     * Sesuai ARCHITECTURE.md: mencegah kartu yang sama di-tap berulang kali dalam
+     * rentang 3 menit sehingga tidak ada duplikasi / pemalsuan data presensi.
+     */
+    public const RFID_TAP_COOLDOWN_SECONDS = 180;
+
+    /**
+     * Sisa waktu cooldown (detik) sejak tap terakhir pada rekaman presensi.
+     */
+    protected function remainingTapCooldown(Attendance $attendance, Carbon $now): int
+    {
+        $lastTapTime = $attendance->time_out ?: $attendance->time_in;
+
+        if (! $lastTapTime) {
+            return 0;
+        }
+
+        $date = $attendance->date instanceof Carbon
+            ? $attendance->date->toDateString()
+            : (string) $attendance->date;
+
+        try {
+            $lastTap = Carbon::parse($date . ' ' . $lastTapTime);
+        } catch (\Exception) {
+            return 0;
+        }
+
+        $elapsed = $lastTap->diffInSeconds($now, false);
+
+        if ($elapsed < 0 || $elapsed >= self::RFID_TAP_COOLDOWN_SECONDS) {
+            return 0;
+        }
+
+        return (int) ceil(self::RFID_TAP_COOLDOWN_SECONDS - $elapsed);
+    }
+
+    /**
      * Memproses tap kartu RFID dari perangkat IoT mikrokontroler (ESP32)
      *
      * @return array{success: bool, beep: string, name: string, role: string, classroom: ?string, time: string, status: string, lcd_line1: string, lcd_line2: string, message?: string}
@@ -53,6 +91,27 @@ class AttendanceService
 
         // 2. Cek apakah sudah ada rekaman presensi hari ini
         $attendance = Attendance::where('user_id', $user->id)->whereDate('date', $today)->first();
+
+        // 2b. Anti-double-tap: tolak tap berulang kartu yang sama dalam rentang cooldown
+        //     agar kartu yang tersenggol dua kali tidak langsung tercatat sebagai pulang.
+        if ($attendance) {
+            $remainingCooldown = $this->remainingTapCooldown($attendance, $now);
+
+            if ($remainingCooldown > 0) {
+                return [
+                    'success' => false,
+                    'beep' => 'warning',
+                    'name' => $name,
+                    'role' => $role,
+                    'classroom' => $className,
+                    'time' => $currentTime . ' WIB',
+                    'status' => 'Sudah Tap',
+                    'lcd_line1' => substr($name, 0, 16),
+                    'lcd_line2' => 'Tunggu ' . $remainingCooldown . ' detik',
+                    'message' => "Kartu baru saja di-tap. Silakan tunggu {$remainingCooldown} detik lagi.",
+                ];
+            }
+        }
 
         // 3. Logika Jam Masuk vs Jam Pulang
         if (! $attendance) {
@@ -231,7 +290,30 @@ class AttendanceService
             default => "Pemberitahuan presensi untuk {$studentName}.",
         };
 
-        // Catat log pengiriman WhatsApp
-        Log::info("WhatsApp Notification sent to {$phone}: {$message}");
+        // Catat log pengiriman WhatsApp tanpa membocorkan PII ke berkas log:
+        // nomor orang tua dimasker dan isi pesan (berisi nama + kelas siswa) tidak dicatat.
+        Log::info('Notifikasi WhatsApp presensi dikirim', [
+            'student_profile_id' => $student->id,
+            'type' => $type,
+            'status' => $status,
+            'phone_masked' => $this->maskPhoneNumber((string) $phone),
+            'message_length' => mb_strlen($message),
+        ]);
+    }
+
+    /**
+     * Masker nomor telepon untuk keperluan logging (0812****789).
+     */
+    protected function maskPhoneNumber(string $phone): string
+    {
+        if ($phone === '') {
+            return '-';
+        }
+
+        if (mb_strlen($phone) <= 7) {
+            return str_repeat('*', mb_strlen($phone));
+        }
+
+        return mb_substr($phone, 0, 4).str_repeat('*', 4).mb_substr($phone, -3);
     }
 }
