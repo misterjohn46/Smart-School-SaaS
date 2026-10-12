@@ -3,44 +3,44 @@
 > **Versi Framework:** Laravel 13.x (PHP 8.3+)  
 > **Arsitektur Utama:** Multi-Tenancy (Multi-Database via `stancl/tenancy` v3)  
 > **Mesin CBT:** Decoupled Architecture (Server Ujian VPS Terpisah On-Demand)  
-> **Status:** Fase 1 Siap Dijalankan
+> **Frontend Nyata:** Inertia 2 + Vue 3 + Tailwind CSS 3 (panel admin: Filament 5)  
+> **Status:** Fase 1-3 berjalan; Fase 4 sebagian besar selesai; isolasi tenant belum aktif
+
+> ⚠️ **Perbedaan dengan rancangan awal:** dokumen ini semula merencanakan TALL stack
+> (Livewire 3 + Alpine.js). Implementasinya memakai **Inertia + Vue 3**; Livewire hanya
+> hadir sebagai dependensi Filament. Status per komponen ada di `ARCHITECTURE.md` bagian 0.
 
 ---
 
-## 👥 Tim Subagent Pengembang
-Proyek ini divalidasi dan dikerjakan oleh 4 subagent spesialis:
-1. **`saas_architect`**: Mengelola Multi-Tenancy (`stancl/tenancy`), Central DB vs Tenant DB, migrasi skema, dan relasi data antar modul.
-2. **`auth_security_specialist`**: Mengelola otentikasi 11 role Spatie, login multi-metode, Obfuscated Hash ID (Anti-IDOR), PIN 6-digit e-wallet, brute-force lockout, dan audit trail.
-3. **`frontend_ui_designer`**: Mengelola antarmuka Livewire 3/Alpine.js/Tailwind CSS, Glassmorphic Mobile-First, ISO CR-80 card builder, dan POS kasir kantin.
-4. **`cbt_engine_specialist`**: Mengelola arsitektur Node CBT terpisah, Redis high-concurrency caching, sync API soal & nilai, dan auto-grading.
-
----
-
-## 📋 Matriks 11 Role Pengguna
+## 📋 Matriks Role Pengguna
 - [x] **1. Super Admin Platform:** Pemilik SaaS (billing langganan, manajemen tenant sekolah, node CBT).
-- [ ] **2. Admin Sekolah / Tata Usaha (TU):** Pengelola data induk sekolah, konfigurasi, dan pengguna.
-- [ ] **3. Guru Pengajar:** Pengampu mata pelajaran, absensi, input nilai, dan materi LMS.
-- [ ] **4. Guru BK (Peran Terisolasi):** Penanganan kasus pelanggaran, poin kedisiplinan, SP 1-3, Berita Acara (BAP), dan konseling.
-- [ ] **5. Bendahara Sekolah:** POS SPP, arus kas keluar/masuk, verifikasi transfer, dan manajemen tabungan siswa.
-- [ ] **6. Operator Sekolah:** Pembantu administrasi akademik dan sinkronisasi data.
-- [ ] **7. Staf Sekolah:** Tenaga kependidikan non-guru, presensi harian GPS.
-- [ ] **8. Siswa:** Portal Mobile-First Glassmorphic, KTS digital, LMS, tugas, kuis, CBT, dan e-kantin.
-- [ ] **9. Orang Tua:** Portal monitoring 4-tab instan tanpa password (NISN + Tgl Lahir + OTP WA).
+- [x] **2. Admin Sekolah / Tata Usaha (TU):** Pengelola data induk sekolah, konfigurasi, dan pengguna.
+- [x] **3. Guru Pengajar:** Pengampu mata pelajaran, absensi, input nilai. *(materi LMS belum)*
+- [x] **4. Guru BK:** Penanganan kasus pelanggaran & poin kedisiplinan. *(SP 1-3, BAP PDF, sesi konseling belum)*
+- [x] **5. Bendahara Sekolah:** POS SPP, tagihan, tabungan siswa. *(arus kas & verifikasi transfer belum)*
+- [x] **6. Operator Sekolah:** Pembantu administrasi akademik.
+- [x] **7. Staf Sekolah:** Tenaga kependidikan non-guru, presensi harian GPS.
+- [x] **8. Siswa:** Portal Mobile-First, KTS digital, e-kantin, dompet. *(LMS, tugas, kuis belum)*
+- [x] **9. Orang Tua:** Portal monitoring (NISN + Tgl Lahir). *(OTP WhatsApp sebagai faktor kedua belum)*
 - [ ] **10. Calon Siswa (PPDB):** Pendaftaran online multi-step, cetak bukti daftar, dan pengumuman seleksi.
-- [ ] **11. Vendor & Kasir Kantin:** Pengelola stand kantin, stok menu harian, kasir POS belanja, dan penarikan saldo (withdrawal).
+- [ ] **11. Vendor & Kasir Kantin:** Kasir POS stand sudah ada; stok menu dikelola dari panel admin. *(portal vendur mandiri & penarikan saldo belum)*
 
 ---
 
 ## 🚀 Rencana Kerja Bertahap (Milestones)
 
 ### [Fase 1] Pondasi SaaS, Multi-Tenancy & Platform Onboarding
-- [x] Inisialisasi Proyek Laravel 13, Tailwind CSS, Alpine.js, & Livewire
+- [x] Inisialisasi Proyek Laravel 13, Tailwind CSS, Inertia + Vue 3
 - [x] Instalasi & Konfigurasi `stancl/tenancy` v3 (Multi-Database Driver)
 - [x] Desain Database Central (`db_saas_central`):
   - [x] Tabel `tenants`, `domains` (Telah termigrasi)
   - [x] Tabel `plans`, `subscriptions`, `invoices`, `cbt_nodes` (Termigrasi & Seeder Aktif)
 - [x] Landing Page SaaS & Form Registrasi Sekolah (Onboarding Wizard Interaktif)
-- [x] Otomatisasi Pembuatan Database Tenant & Migrasi Skema Awal
+- [x] Provisioning tenant: database dibuat otomatis, satu domain per sekolah, password admin acak
+- [ ] **Isolasi data per tenant (BLOKER SaaS):** migrasi tenant masih kosong dan rute belum
+      memakai `InitializeTenancyByDomain`, sehingga seluruh sekolah berbagi database central.
+      Rincian langkah: `database/migrations/tenant/README.md`
+- [ ] Pemisahan panel Filament central (Super Admin) vs panel tenant (sekolah)
 - [ ] Manajemen Custom Domain Sekolah (Input Domain, DNS CNAME Verification Tool, & Auto-SSL)
 
 ### [Fase 2] RBAC 11 Role & Master Data Akademik
@@ -50,7 +50,10 @@ Proyek ini divalidasi dan dikerjakan oleh 4 subagent spesialis:
   - [x] Siswa: NISN + Password
   - [x] Orang Tua: NISN + Tanggal Lahir Siswa + Direct Child Verification
 - [x] Sistem Proteksi Keamanan:
-  - [x] Obfuscated Route Hash ID (`hashids/hashids`) pencegah IDOR (`HasObfuscatedId` trait)
+  - [x] Otorisasi peran per modul pada seluruh rute (`middleware('role:...')`) — matriks di `README.md`
+  - [~] Obfuscated Route Hash ID (`hashids/hashids`) pencegah IDOR (`HasObfuscatedId` trait).
+        Aktif di modul KTS & kuitansi; modul CBT dan geofence masih memakai ID integer.
+        Hash ID bukan pengganti otorisasi — endpoint tetap memverifikasi kepemilikan.
   - [x] Proteksi Brute-force & Account Lockout Otomatis (5 kali gagal terkunci 30 menit)
   - [x] Fitur 1-Klik Buka Kunci Akun (Lockout Unlocker) oleh Admin di Filament
   - [x] Dashboard Audit Trail & Login Activity Log Real-Time (`AuditTrailResource`)
@@ -76,29 +79,35 @@ Proyek ini divalidasi dan dikerjakan oleh 4 subagent spesialis:
 - [x] Presensi Guru & Staf via GPS Geolocation & Radius Geofencing Sekolah (Formula Haversine 100m) + Swafoto
 - [x] Presensi AI Face Recognition (Client-side camera matching)
 - [x] Overlay Siluet Wajah Manusia Ergonomis & Indikator Titik Tengah
-- [x] Notifikasi Presensi WhatsApp Otomatis ke Orang Tua (Masuk & Pulang)
+- [~] Notifikasi Presensi WhatsApp ke Orang Tua (Masuk & Pulang) — **masih simulasi**:
+      `AttendanceService::sendWhatsAppAttendanceAlert` hanya mencatat ke log (nomor dimasker),
+      gateway sesungguhnya (Fonnte/Wablas/Baileys) dijadwalkan di Fase 7
 - [x] Pengajuan Izin / Sakit dengan Lampiran Berkas (E-Leave Approval Workflow)
 - [x] Rekapitulasi Presensi & Ekspor Data (`AttendanceResource`)
 
 ### [Fase 4] Keuangan Sekolah, Tabungan (E-Wallet) & E-Kantin Digital
-- [ ] Master Pos Biaya (SPP Bulanan, Uang Gedung, Seragam, Ujian)
-- [ ] Distribusi Tagihan Massal per Kelas / Angkatan
-- [ ] POS Kasir Pembayaran SPP Sekolah dengan Input Rupiah Dinamis + Terbilang
-- [ ] Verifikasi Transfer Bank Manual (Approval/Rejection Bukti Bayar)
-- [ ] Cetak Kwitansi Transaksi & Riwayat Pembayaran Siswa
+- [x] Master Pos Biaya (SPP Bulanan, Uang Gedung, Seragam, Ujian) — `FinanceController` + `FeeCategoryResource`
+- [x] Distribusi Tagihan Massal per Kelas / Angkatan — `generateBatchBills`
+- [x] POS Kasir Pembayaran SPP Sekolah dengan Input Rupiah Dinamis + Terbilang — `FinanceService::terbilang`
+- [ ] Verifikasi Transfer Bank Manual (Approval/Rejection Bukti Bayar) — unggah bukti sudah ada,
+      alur approval/rejection belum. Catatan keamanan: bukti masih disimpan di disk `public`.
+- [x] Cetak Kwitansi Transaksi & Riwayat Pembayaran Siswa — `finance.receipt`
 - [ ] Pencatatan Arus Kas (Income & Expense) & Laporan Neraca Keuangan
-- [ ] Tabungan Siswa & Dompet Digital (E-Wallet): Setor, Tarik, Mutasi Buku Tabungan
-- [ ] Keamanan Transaksi Finansial: PIN 6-Digit & Database Pessimistic Locking (`lockForUpdate`)
+- [x] Tabungan Siswa & Dompet Digital (E-Wallet): Setor, Tarik, Mutasi Buku Tabungan
+- [x] Keamanan Transaksi Finansial: PIN 6-Digit & Database Pessimistic Locking (`lockForUpdate`)
+  - [x] Mutasi saldo dibatasi peran kasir (`admin`, `bendahara`); PIN & dompet diturunkan dari akun yang login
+  - [x] Limit belanja harian benar-benar terakumulasi antar transaksi (sebelumnya tidak pernah aktif)
 - [ ] E-Kantin Portal Vendor:
   - [ ] Sakelar Status Stand Buka / Tutup Real-Time
-  - [ ] Manajemen Menu, Kategori & Batch Stok Harian
-  - [ ] Kasir POS Vendor (Pencarian Siswa, Checkout, Scan QR Kupon Makanan)
+  - [x] Manajemen Menu & Stok Harian — `CanteenMenuResource` (lewat panel admin, belum portal vendor mandiri)
+  - [x] Kasir POS Vendor (Pencarian Siswa, Checkout) — `canteen.stand.pos`
+  - [ ] Scan QR Kupon Makanan
   - [ ] Penarikan Saldo Vendor (Withdrawal) & Laporan Omzet Penjualan
 - [ ] E-Kantin Portal Siswa (Mobile Marketplace & Tap RFID):
-  - [ ] Jelajah Menu per Stand & Pemesanan Makanan Online via Smartphone
-  - [ ] Pembayaran via Saldo E-Wallet Tabungan Siswa
+  - [x] Jelajah Menu per Stand & Pemesanan Makanan Online via Smartphone
+  - [x] Pembayaran via Saldo E-Wallet Tabungan Siswa
   - [ ] Kasir Tap Kartu RFID Siswa (Pembayaran Cepat Kantin Tanpa HP)
-  - [ ] Pelacakan Status Pesanan Real-Time (Menunggu, Diproses, Siap Diambil, Selesai)
+  - [x] Pelacakan Status Pesanan (Menunggu, Diproses, Siap Diambil, Selesai) — `canteen.order.status`
 
 ### [Fase 5] Pembelajaran LMS & e-Raport Digital
 - [ ] LMS: Struktur Bab, Topik Pembelajaran, Distribusi Bahan Ajar (PDF, Video, Link)

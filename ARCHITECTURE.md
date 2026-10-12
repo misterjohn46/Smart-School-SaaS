@@ -1,9 +1,28 @@
 # CETAK BIRU ARSITEKTUR: SISTEM INFORMASI SEKOLAH SAAS TERPADU
 
 > **Versi Framework:** Laravel 13.x (PHP 8.3+)  
-> **Teknologi Frontend:** Blade + Livewire + Alpine.js + Tailwind CSS (TALL Stack)  
+> **Teknologi Frontend:** Inertia 2 + Vue 3 + Tailwind CSS 3 + Vite (panel admin: Filament 5)  
 > **Mesin Multi-Tenancy:** `stancl/tenancy` v3 (Multi-Database Isolation)  
-> **Sistem Basis Data:** MySQL 8.0+ / MariaDB (InnoDB Strict Engine)
+> **Sistem Basis Data:** MySQL 8.0+ / MariaDB (InnoDB Strict Engine); SQLite untuk development
+
+---
+
+## 0. Status Implementasi terhadap Cetak Biru Ini
+
+Dokumen ini adalah **rancangan target**. Kondisi kode saat ini berbeda pada beberapa
+titik penting, dan perbedaan itu dicatat di sini agar tidak menyesatkan:
+
+| Komponen | Status | Catatan |
+|---|---|---|
+| Frontend portal | ⚠️ Berbeda | Rancangan awal menyebut TALL stack (Livewire/Alpine). Implementasi memakai **Inertia + Vue 3**. Livewire hanya hadir sebagai dependensi Filament. |
+| Isolasi database per tenant | ❌ Belum aktif | `stancl/tenancy` terkonfigurasi, tetapi seluruh migrasi operasional masih di database central dan rute belum memakai `InitializeTenancyByDomain`. Lihat `database/migrations/tenant/README.md`. |
+| Panel terpisah central vs tenant | ❌ Belum | Satu panel `/admin` melayani Super Admin SaaS dan sekolah; pemisahan masih berbasis peran, bukan tenant. |
+| Server CBT terpisah & Exambro | ❌ Belum | Manajemen bank soal, ujian, dan simulasi pengerjaan sudah ada di aplikasi utama; node CBT terpisah, API deploy/pull, dan APK belum dibangun. |
+| Proteksi IDOR via Hash ID | ⚠️ Sebagian | Aktif pada modul KTS dan kuitansi pembayaran. Modul CBT & geofence masih memakai ID integer di URL, dilindungi middleware peran. |
+| Pessimistic locking transaksi finansial | ✅ Ada | `WalletService` memakai `DB::transaction()` + `lockForUpdate()`. |
+| Otorisasi peran per modul | ✅ Ada | Seluruh rute `routes/web.php` dijaga middleware `role:`. Lihat matriks di `README.md`. |
+| Presensi IoT RFID | ✅ Ada | Token perangkat di-hash SHA-256, endpoint di-throttle, anti-double-tap 3 menit aktif. |
+| LMS, PPDB, perpustakaan, buku tamu, manajemen rapat | ❌ Belum | Lihat `ROADMAP.md` fase 5-7. |
 
 ---
 
@@ -158,6 +177,11 @@ Sistem mendukung perangkat keras mandiri (ESP32 / NodeMCU + RFID RC522/PN532 + L
 * **Spesifikasi Endpoint API IoT:**
   * **URL:** `POST https://{sekolah}.platform.id/api/v1/attendance/tap-rfid`
   * **Security Header:** `X-Device-Token: <SECRET_DEVICE_TOKEN_PER_SEKOLAH>`
+    Token **hanya** diterima lewat header (bukan query string / body) agar tidak
+    tercatat di access log, disimpan di database sebagai hash SHA-256, dan kedua
+    endpoint dibatasi `throttle:iot-device` (60 permintaan/menit per token + IP).
+    Endpoint `ping` wajib membawa token valid sehingga tidak dapat dipakai
+    memverifikasi hasil brute force token.
   * **Payload Request:**
     ```json
     {
@@ -165,14 +189,20 @@ Sistem mendukung perangkat keras mandiri (ESP32 / NodeMCU + RFID RC522/PN532 + L
       "device_id": "GATE_01_IN"
     }
     ```
-  * **Fitur Caching & Anti-Double Tap:** Mencegah kartu yang sama di-tap berulang kali dalam rentang 3 menit untuk menghindari duplikasi data presensi.
+  * **Fitur Anti-Double Tap:** Kartu yang sama ditolak bila di-tap kembali dalam rentang
+    3 menit (`AttendanceService::RFID_TAP_COOLDOWN_SECONDS`), sehingga kartu yang tersenggol
+    dua kali tidak langsung tercatat sebagai jam pulang. Respons penolakan memakai
+    `beep: warning` dan menampilkan sisa waktu tunggu di LCD.
 
 ---
 
 ## 5. Standar Keamanan & Performa Industri
 
 * **Proteksi IDOR (Insecure Direct Object References):**
-  Menggunakan `vinkla/hashids` untuk menyamarkan primary key integer pada URL (`/siswa/d7a9F2b1`).
+  Menggunakan `hashids/hashids` untuk menyamarkan primary key integer pada URL (`/siswa/d7a9F2b1`).
+  **Catatan penting:** hash ID adalah *obfuscation yang reversibel*, bukan kontrol akses.
+  Setiap endpoint tetap wajib memverifikasi kepemilikan/peran — lihat
+  `KtsController::preview` sebagai contoh (hash ID + pemeriksaan pemilik kartu).
 * **Proteksi Transaksi Finansial:**
   Semua operasi mutasi saldo tabungan dan pembayaran belanja e-kantin wajib dibungkus dalam `DB::transaction()` dengan pessimistic locking `lockForUpdate()` untuk mencegah *race conditions* atau *double spending*.
 * **Privasi Biometrik Wajah (AI Face ID):**
