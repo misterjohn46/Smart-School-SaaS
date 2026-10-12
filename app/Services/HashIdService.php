@@ -32,6 +32,6 @@ class HashIdService
     {
         $numbers = self::getEncoder()->decode($hash);
 
-        return !empty($numbers) ? (int) $numbers[0] : null;
+        return ! empty($numbers) ? (int) $numbers[0] : null;
     }
 }

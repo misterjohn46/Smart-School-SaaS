@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasSchoolAccessOnly;
 use App\Filament\Resources\SchoolGeofenceResource\Pages;
 use App\Models\SchoolGeofence;
 use Filament\Actions;
@@ -18,13 +19,16 @@ use UnitEnum;
 
 class SchoolGeofenceResource extends Resource
 {
-    use \App\Filament\Concerns\HasSchoolAccessOnly;
+    use HasSchoolAccessOnly;
 
     protected static ?string $model = SchoolGeofence::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Presensi & IoT RFID';
+    protected static string|UnitEnum|null $navigationGroup = 'Presensi & IoT RFID';
+
     protected static ?string $navigationLabel = 'Geofencing GPS Sekolah';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-map-pin';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-map-pin';
+
     protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema

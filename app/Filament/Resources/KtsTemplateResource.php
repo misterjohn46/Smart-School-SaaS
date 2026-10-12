@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasSchoolAccessOnly;
 use App\Filament\Resources\KtsTemplateResource\Pages;
 use App\Models\KtsTemplate;
 use Filament\Actions;
@@ -21,13 +22,16 @@ use UnitEnum;
 
 class KtsTemplateResource extends Resource
 {
-    use \App\Filament\Concerns\HasSchoolAccessOnly;
+    use HasSchoolAccessOnly;
 
     protected static ?string $model = KtsTemplate::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'KTS & Kartu Digital';
+    protected static string|UnitEnum|null $navigationGroup = 'KTS & Kartu Digital';
+
     protected static ?string $navigationLabel = 'Template KTS (ISO CR-80)';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-identification';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-identification';
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema

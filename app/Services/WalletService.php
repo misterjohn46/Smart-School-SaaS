@@ -24,7 +24,7 @@ class WalletService
 
         if (! $wallet) {
             $student = StudentProfile::findOrFail($studentProfileId);
-            $accountNumber = 'WAL-' . ($student->nisn ?? str_pad((string) $student->id, 8, '0', STR_PAD_LEFT));
+            $accountNumber = 'WAL-'.($student->nisn ?? str_pad((string) $student->id, 8, '0', STR_PAD_LEFT));
 
             $wallet = StudentWallet::create([
                 'student_profile_id' => $student->id,
@@ -59,7 +59,7 @@ class WalletService
             $wallet = StudentWallet::lockForUpdate()->findOrFail($walletId);
 
             if (! $wallet->is_active) {
-                throw new Exception('Rekening dompet sedang dibekukan: ' . ($wallet->locked_reason ?? 'Nonaktif'));
+                throw new Exception('Rekening dompet sedang dibekukan: '.($wallet->locked_reason ?? 'Nonaktif'));
             }
 
             $balanceBefore = (float) $wallet->balance;
@@ -69,7 +69,7 @@ class WalletService
                 'balance' => $balanceAfter,
             ]);
 
-            $trxNumber = 'TRX/TOP/' . date('Ymd') . '/' . strtoupper(Str::random(6));
+            $trxNumber = 'TRX/TOP/'.date('Ymd').'/'.strtoupper(Str::random(6));
 
             return WalletTransaction::create([
                 'student_wallet_id' => $wallet->id,
@@ -103,7 +103,7 @@ class WalletService
             $wallet = StudentWallet::lockForUpdate()->findOrFail($walletId);
 
             if (! $wallet->is_active) {
-                throw new Exception('Rekening dompet sedang dibekukan: ' . ($wallet->locked_reason ?? 'Nonaktif'));
+                throw new Exception('Rekening dompet sedang dibekukan: '.($wallet->locked_reason ?? 'Nonaktif'));
             }
 
             if (! $wallet->verifyPin($pin)) {
@@ -113,7 +113,7 @@ class WalletService
             $balanceBefore = (float) $wallet->balance;
 
             if ($balanceBefore < $amount) {
-                throw new Exception('Saldo tabungan tidak mencukupi (Tersedia: Rp ' . number_format($balanceBefore, 0, ',', '.') . ').');
+                throw new Exception('Saldo tabungan tidak mencukupi (Tersedia: Rp '.number_format($balanceBefore, 0, ',', '.').').');
             }
 
             $balanceAfter = $balanceBefore - $amount;
@@ -122,7 +122,7 @@ class WalletService
                 'balance' => $balanceAfter,
             ]);
 
-            $trxNumber = 'TRX/WTH/' . date('Ymd') . '/' . strtoupper(Str::random(6));
+            $trxNumber = 'TRX/WTH/'.date('Ymd').'/'.strtoupper(Str::random(6));
 
             return WalletTransaction::create([
                 'student_wallet_id' => $wallet->id,
@@ -171,14 +171,14 @@ class WalletService
             if (($spentToday + $amount) > (float) $wallet->daily_limit) {
                 $sisaLimit = max(0, (float) $wallet->daily_limit - $spentToday);
                 throw new Exception(
-                    'Batas belanja harian terlampaui. Sisa batas jajan hari ini: Rp ' . number_format($sisaLimit, 0, ',', '.')
+                    'Batas belanja harian terlampaui. Sisa batas jajan hari ini: Rp '.number_format($sisaLimit, 0, ',', '.')
                 );
             }
 
             $balanceBefore = (float) $wallet->balance;
             if ($balanceBefore < $amount) {
                 throw new Exception(
-                    'Saldo dompet tidak mencukupi (Saldo: Rp ' . number_format($balanceBefore, 0, ',', '.') . '). Silakan lakukan top up tabungan.'
+                    'Saldo dompet tidak mencukupi (Saldo: Rp '.number_format($balanceBefore, 0, ',', '.').'). Silakan lakukan top up tabungan.'
                 );
             }
 
@@ -190,7 +190,7 @@ class WalletService
                 'last_spent_date' => $today,
             ]);
 
-            $trxNumber = 'TRX/CAN/' . date('Ymd') . '/' . strtoupper(Str::random(6));
+            $trxNumber = 'TRX/CAN/'.date('Ymd').'/'.strtoupper(Str::random(6));
 
             return WalletTransaction::create([
                 'student_wallet_id' => $wallet->id,
@@ -242,7 +242,7 @@ class WalletService
                 'balance' => $balanceAfter,
             ]);
 
-            $trxNumber = 'TRX/BIL/' . date('Ymd') . '/' . strtoupper(Str::random(6));
+            $trxNumber = 'TRX/BIL/'.date('Ymd').'/'.strtoupper(Str::random(6));
 
             return WalletTransaction::create([
                 'student_wallet_id' => $wallet->id,
@@ -283,7 +283,7 @@ class WalletService
                 'spent_today' => $spentToday,
             ]);
 
-            $trxNumber = 'TRX/REF/' . date('Ymd') . '/' . strtoupper(Str::random(6));
+            $trxNumber = 'TRX/REF/'.date('Ymd').'/'.strtoupper(Str::random(6));
 
             return WalletTransaction::create([
                 'student_wallet_id' => $wallet->id,

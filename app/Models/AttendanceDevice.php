@@ -18,7 +18,7 @@ class AttendanceDevice extends Model
      * Daftar atribut yang boleh diisi massal. `device_token` sengaja disertakan
      * karena merupakan atribut virtual yang dialihkan ke kolom hash oleh mutator.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'device_token',

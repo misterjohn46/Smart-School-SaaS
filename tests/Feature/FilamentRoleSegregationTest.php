@@ -27,8 +27,12 @@ use App\Filament\Resources\TenantResource;
 use App\Filament\Resources\UserResource;
 use App\Filament\Widgets\SaasPlatformOverviewWidget;
 use App\Filament\Widgets\SchoolAdminOverviewWidget;
+use App\Models\Plan;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -37,6 +41,7 @@ class FilamentRoleSegregationTest extends TestCase
     use RefreshDatabase;
 
     protected User $superAdmin;
+
     protected User $schoolAdmin;
 
     protected function setUp(): void
@@ -131,8 +136,8 @@ class FilamentRoleSegregationTest extends TestCase
 
     public function test_tenant_creation_automatically_provisions_admin_user_and_domain(): void
     {
-        $tenant = \App\Models\Tenant::create([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+        $tenant = Tenant::create([
+            'id' => (string) Str::uuid(),
             'school_name' => 'SMP Bintang Gemilang',
             'npsn' => '12345678',
             'admin_name' => 'Budi Santoso',
@@ -140,15 +145,15 @@ class FilamentRoleSegregationTest extends TestCase
             'admin_phone' => '08123456789',
         ]);
 
-        $adminUser = \App\Models\User::where('email', 'budi@gemilang.sch.id')->first();
+        $adminUser = User::where('email', 'budi@gemilang.sch.id')->first();
         $this->assertNotNull($adminUser);
         $this->assertEquals('Budi Santoso', $adminUser->name);
         $this->assertTrue($adminUser->hasRole('admin'));
 
         // Password awal wajib acak, bukan literal 'password' seperti sebelumnya.
-        $this->assertFalse(\Illuminate\Support\Facades\Hash::check('password', $adminUser->password));
+        $this->assertFalse(Hash::check('password', $adminUser->password));
         $this->assertNotNull($tenant->generatedAdminPassword);
-        $this->assertTrue(\Illuminate\Support\Facades\Hash::check($tenant->generatedAdminPassword, $adminUser->password));
+        $this->assertTrue(Hash::check($tenant->generatedAdminPassword, $adminUser->password));
 
         // Satu tenant = satu domain. Sebelumnya hook model dan controller
         // masing-masing membuat domain sehingga setiap sekolah punya dua domain.
@@ -157,7 +162,7 @@ class FilamentRoleSegregationTest extends TestCase
 
     public function test_school_registration_creates_exactly_one_domain(): void
     {
-        $plan = \App\Models\Plan::firstOrCreate(
+        $plan = Plan::firstOrCreate(
             ['slug' => 'starter-test'],
             [
                 'name' => 'Starter Test',
@@ -182,7 +187,7 @@ class FilamentRoleSegregationTest extends TestCase
 
         $response->assertOk();
 
-        $tenant = \App\Models\Tenant::where('school_name', 'SMK Satu Domain')->firstOrFail();
+        $tenant = Tenant::where('school_name', 'SMK Satu Domain')->firstOrFail();
         $this->assertSame(1, $tenant->domains()->count());
         $this->assertStringStartsWith('satudomain.', $tenant->domains()->first()->domain);
 

@@ -24,6 +24,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+
 class DashboardController extends Controller
 {
     public function index(Request $request): Response|RedirectResponse
@@ -205,10 +206,13 @@ class DashboardController extends Controller
                 return [
                     'id' => $l->id,
                     'user_name' => $l->user?->name ?? 'Siswa',
+                    // Kolom `type` pada attendance_leaves berenum sakit|izin|tugas_luar.
+                    // Sebelumnya match ini memakai kunci bahasa Inggris sehingga tidak
+                    // satu pun arm pernah cocok dan semua izin tampil sebagai "Izin".
                     'type' => match ($l->type) {
-                        'sick' => 'Sakit (Surat Dokter)',
-                        'permission' => 'Izin Kepentingan Keluarga',
-                        'dispensation' => 'Dispensasi Lomba / Acara',
+                        'sakit' => 'Sakit (Surat Dokter)',
+                        'izin' => 'Izin Kepentingan Keluarga',
+                        'tugas_luar' => 'Dispensasi Lomba / Acara',
                         default => 'Izin',
                     },
                     'start_date' => $l->start_date ? $l->start_date->format('d M Y') : now()->format('d M Y'),

@@ -141,7 +141,7 @@ class ClassroomAttendanceController extends Controller
 
         $presentEffective = $countHadir + $countTerlambat;
         $attendanceRate = $totalStudents > 0
-            ? number_format(($presentEffective / $totalStudents) * 100, 1) . '%'
+            ? number_format(($presentEffective / $totalStudents) * 100, 1).'%'
             : '0%';
 
         $summary = [
@@ -237,6 +237,6 @@ class ClassroomAttendanceController extends Controller
             }
         });
 
-        return back()->with('status', 'Presensi kelas tanggal ' . Carbon::parse($date)->translatedFormat('d F Y') . ' berhasil disimpan!');
+        return back()->with('status', 'Presensi kelas tanggal '.Carbon::parse($date)->translatedFormat('d F Y').' berhasil disimpan!');
     }
 }

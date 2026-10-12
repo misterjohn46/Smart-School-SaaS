@@ -14,14 +14,32 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string|null $username
+ * @property string|null $nisn
+ * @property string $email
+ * @property string|null $phone_number
+ * @property string $password
+ * @property string|null $pin_hash
+ * @property Carbon|null $email_verified_at
+ * @property bool $is_active
+ * @property bool $is_locked
+ * @property Carbon|null $lockout_until
+ * @property string|null $lockout_reason
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, Notifiable, HasObfuscatedId;
+    use HasApiTokens, HasFactory, HasObfuscatedId, HasRoles, Notifiable;
 
     /**
      * Daftar atribut yang boleh diisi massal.
@@ -29,7 +47,7 @@ class User extends Authenticatable implements FilamentUser
      * Sebelumnya `$guarded = []` membuat `is_active`, `is_locked`, `lockout_until`,
      * dan `pin_hash` dapat ditimpa lewat satu pemanggilan update($request->all()).
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'name',
@@ -102,6 +120,7 @@ class User extends Authenticatable implements FilamentUser
 
         if ($this->is_locked && $this->lockout_until && $this->lockout_until->isPast()) {
             $this->unlockAccount();
+
             return false;
         }
 
@@ -131,7 +150,7 @@ class User extends Authenticatable implements FilamentUser
     // ─── Keamanan PIN 6-Digit Dompet Digital ───────────────────────
     public function verifyPin(string $pin): bool
     {
-        if (!$this->pin_hash) {
+        if (! $this->pin_hash) {
             return false;
         }
 

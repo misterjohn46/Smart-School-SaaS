@@ -22,11 +22,17 @@ class StudentViolationManagementTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $teacher;
+
     protected Classroom $classroom;
+
     protected StudentProfile $student;
+
     protected ViolationCategory $categoryLate;
+
     protected ViolationCategory $categorySmoke;
+
     protected AcademicYear $academicYear;
 
     protected function setUp(): void

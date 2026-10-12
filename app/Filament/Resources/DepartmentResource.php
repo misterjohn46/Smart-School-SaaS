@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasSchoolAccessOnly;
 use App\Filament\Resources\DepartmentResource\Pages;
 use App\Models\Department;
 use Filament\Actions;
@@ -19,13 +20,16 @@ use UnitEnum;
 
 class DepartmentResource extends Resource
 {
-    use \App\Filament\Concerns\HasSchoolAccessOnly;
+    use HasSchoolAccessOnly;
 
     protected static ?string $model = Department::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Master Data Akademik';
+    protected static string|UnitEnum|null $navigationGroup = 'Master Data Akademik';
+
     protected static ?string $navigationLabel = 'Jurusan / Keahlian';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-academic-cap';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-academic-cap';
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema

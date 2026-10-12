@@ -8,7 +8,6 @@ use App\Models\CanteenMenu;
 use App\Models\CanteenOrder;
 use App\Models\CanteenOrderItem;
 use App\Models\CanteenStand;
-use App\Models\StudentProfile;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -49,7 +48,7 @@ class CanteenService
                 throw new Exception("Stand kantin '{$stand->name}' sedang tutup.");
             }
 
-            $orderNumber = 'ORD/' . date('Ymd') . '/' . strtoupper(Str::random(6));
+            $orderNumber = 'ORD/'.date('Ymd').'/'.strtoupper(Str::random(6));
             $totalAmount = 0.0;
             $orderItemsData = [];
 

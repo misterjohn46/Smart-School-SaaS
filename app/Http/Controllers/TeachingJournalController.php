@@ -134,7 +134,7 @@ class TeachingJournalController extends Controller
                     'classroom_id' => $sch->classroom_id,
                     'classroom_name' => $sch->classroom?->name ?? '-',
                     'subject_id' => $sch->subject_id,
-                    'time_slot' => "Jam Ke-{$sch->order} (" . substr((string) $sch->start_time, 0, 5) . ' - ' . substr((string) $sch->end_time, 0, 5) . ')',
+                    'time_slot' => "Jam Ke-{$sch->order} (".substr((string) $sch->start_time, 0, 5).' - '.substr((string) $sch->end_time, 0, 5).')',
                     'room' => $sch->room,
                     'already_filled' => $alreadyFilled,
                 ];

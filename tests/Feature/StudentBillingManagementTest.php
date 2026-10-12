@@ -22,10 +22,15 @@ class StudentBillingManagementTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected Classroom $classroom;
+
     protected AcademicYear $academicYear;
+
     protected FeeCategory $feeCategory;
+
     protected StudentProfile $student1;
+
     protected StudentProfile $student2;
 
     protected function setUp(): void

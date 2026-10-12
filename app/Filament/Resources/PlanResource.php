@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasSuperAdminAccessOnly;
 use App\Filament\Resources\PlanResource\Pages;
 use App\Models\Plan;
 use Filament\Actions;
@@ -19,13 +20,16 @@ use UnitEnum;
 
 class PlanResource extends Resource
 {
-    use \App\Filament\Concerns\HasSuperAdminAccessOnly;
+    use HasSuperAdminAccessOnly;
 
     protected static ?string $model = Plan::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'SaaS Platform & Multi-Tenant';
+    protected static string|UnitEnum|null $navigationGroup = 'SaaS Platform & Multi-Tenant';
+
     protected static ?string $navigationLabel = 'Paket Langganan (Plans)';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-sparkles';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-sparkles';
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema

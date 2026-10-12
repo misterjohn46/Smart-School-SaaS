@@ -35,7 +35,7 @@ class SchoolRegistrationTest extends TestCase
         $payload = [
             'school_name' => 'SMA Negeri 1 Indonesia',
             'npsn' => '20199887',
-            'subdomain' => 'sman1indo-' . uniqid(),
+            'subdomain' => 'sman1indo-'.uniqid(),
             'admin_name' => 'Bpk. Hendra, M.Kom',
             'admin_email' => 'admin@sman1indo.sch.id',
             'admin_phone' => '081299887766',

@@ -14,7 +14,7 @@ class SchoolRecentActivityWidget extends Widget
 
     protected static ?int $sort = 4;
 
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     public static function canView(): bool
     {
@@ -25,13 +25,16 @@ class SchoolRecentActivityWidget extends Widget
 
     public function getRecentActivities(): array
     {
+        // Skema attendances memakai kolom date + time_in/time_out (tidak ada `tap_time`),
+        // dan Payment hanya punya relasi studentProfile / user / verifier.
         $attendances = Attendance::with(['user', 'device'])
-            ->latest('tap_time')
+            ->orderByDesc('date')
+            ->orderByDesc('time_in')
             ->limit(5)
             ->get();
 
-        $payments = Payment::with(['student', 'collector'])
-            ->latest()
+        $payments = Payment::with(['studentProfile.user', 'user'])
+            ->latest('payment_date')
             ->limit(5)
             ->get();
 

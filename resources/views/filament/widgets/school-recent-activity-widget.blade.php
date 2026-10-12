@@ -114,14 +114,15 @@
                         </div>
                         <div>
                             <p style="font-size:0.8125rem; font-weight:600; color:#0f172a; margin:0;" class="dark:text-white">{{ $att->user?->name ?? 'Siswa' }}</p>
-                            <p style="font-size:0.7rem; color:#64748b; margin:0.1rem 0 0 0;" class="dark:text-slate-400">{{ $att->device?->name ?? 'Gerbang Utama' }} • {{ $att->type === 'in' ? 'Masuk' : 'Pulang' }}</p>
+                            <p style="font-size:0.7rem; color:#64748b; margin:0.1rem 0 0 0;" class="dark:text-slate-400">{{ $att->device?->device_name ?? $att->device_name ?? 'Gerbang Utama' }} • {{ $att->time_out ? 'Pulang' : 'Masuk' }}</p>
                         </div>
                     </div>
+                    @php $lastTap = $att->time_out ?: $att->time_in; @endphp
                     <div style="text-align:right;">
-                        <span style="font-size:0.7rem; font-weight:600; padding:0.2rem 0.5rem; border-radius:0.375rem; background:{{ $att->status === 'present' ? '#d1fae5' : '#fef3c7' }}; color:{{ $att->status === 'present' ? '#065f46' : '#92400e' }};">
-                            {{ $att->status === 'present' ? 'Hadir Tepat Waktu' : ucfirst($att->status) }}
+                        <span style="font-size:0.7rem; font-weight:600; padding:0.2rem 0.5rem; border-radius:0.375rem; background:{{ $att->status === 'hadir' ? '#d1fae5' : '#fef3c7' }}; color:{{ $att->status === 'hadir' ? '#065f46' : '#92400e' }};">
+                            {{ $att->status === 'hadir' ? 'Hadir Tepat Waktu' : ucfirst($att->status) }}
                         </span>
-                        <p style="font-size:0.7rem; color:#94a3b8; font-family:monospace; margin:0.15rem 0 0 0;">{{ $att->tap_time ? \Carbon\Carbon::parse($att->tap_time)->format('H:i:s') : '-' }}</p>
+                        <p style="font-size:0.7rem; color:#94a3b8; font-family:monospace; margin:0.15rem 0 0 0;">{{ $lastTap ? \Carbon\Carbon::parse($lastTap)->format('H:i:s') : '-' }}</p>
                     </div>
                 </div>
             @empty
@@ -157,7 +158,7 @@
                             Rp
                         </div>
                         <div>
-                            <p style="font-size:0.8125rem; font-weight:600; color:#0f172a; margin:0;" class="dark:text-white">{{ $pay->student?->name ?? 'Siswa' }}</p>
+                            <p style="font-size:0.8125rem; font-weight:600; color:#0f172a; margin:0;" class="dark:text-white">{{ $pay->studentProfile?->full_name ?? 'Siswa' }}</p>
                             <p style="font-size:0.7rem; color:#64748b; margin:0.1rem 0 0 0;" class="dark:text-slate-400">{{ $pay->payment_number }} • {{ ucfirst($pay->payment_method) }}</p>
                         </div>
                     </div>

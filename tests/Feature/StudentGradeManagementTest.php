@@ -22,10 +22,15 @@ class StudentGradeManagementTest extends TestCase
     use RefreshDatabase;
 
     protected User $teacher;
+
     protected Classroom $classroom;
+
     protected Subject $subject;
+
     protected AcademicYear $academicYear;
+
     protected StudentProfile $student1;
+
     protected StudentProfile $student2;
 
     protected function setUp(): void

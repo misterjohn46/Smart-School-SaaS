@@ -68,7 +68,7 @@ class FinanceAndCanteenSeeder extends Seeder
             $wallet = StudentWallet::firstOrCreate(
                 ['student_profile_id' => $student->id],
                 [
-                    'account_number' => 'WAL-' . $student->nisn,
+                    'account_number' => 'WAL-'.$student->nisn,
                     'balance' => 125000,
                     'daily_limit' => 50000,
                     'spent_today' => 0,
@@ -82,7 +82,7 @@ class FinanceAndCanteenSeeder extends Seeder
             if ($wallet->transactions()->count() === 0) {
                 WalletTransaction::create([
                     'student_wallet_id' => $wallet->id,
-                    'transaction_number' => 'TRX/TOP/' . date('Ymd') . '/' . strtoupper(Str::random(6)),
+                    'transaction_number' => 'TRX/TOP/'.date('Ymd').'/'.strtoupper(Str::random(6)),
                     'type' => 'topup',
                     'amount' => 125000,
                     'balance_before' => 0,
@@ -103,7 +103,7 @@ class FinanceAndCanteenSeeder extends Seeder
                 ],
                 [
                     'academic_year_id' => $academicYear?->id,
-                    'bill_number' => 'INV/202609/' . strtoupper(Str::random(6)),
+                    'bill_number' => 'INV/202609/'.strtoupper(Str::random(6)),
                     'title' => 'SPP Bulan September 2026',
                     'amount' => 350000,
                     'paid_amount' => 0,
@@ -121,7 +121,7 @@ class FinanceAndCanteenSeeder extends Seeder
                 ],
                 [
                     'academic_year_id' => $academicYear?->id,
-                    'bill_number' => 'INV/202608/' . strtoupper(Str::random(6)),
+                    'bill_number' => 'INV/202608/'.strtoupper(Str::random(6)),
                     'title' => 'SPP Bulan Agustus 2026',
                     'amount' => 350000,
                     'paid_amount' => 350000,
@@ -139,7 +139,7 @@ class FinanceAndCanteenSeeder extends Seeder
                 ],
                 [
                     'academic_year_id' => $academicYear?->id,
-                    'bill_number' => 'INV/202607/' . strtoupper(Str::random(6)),
+                    'bill_number' => 'INV/202607/'.strtoupper(Str::random(6)),
                     'title' => 'Paket Seragam & Atribut KTS Siswa',
                     'amount' => 650000,
                     'paid_amount' => 650000,

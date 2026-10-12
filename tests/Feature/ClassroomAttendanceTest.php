@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\AcademicYear;
-use App\Models\Attendance;
 use App\Models\Classroom;
 use App\Models\Department;
 use App\Models\GradeLevel;
@@ -14,7 +13,6 @@ use App\Models\LessonSchedule;
 use App\Models\StudentProfile;
 use App\Models\Subject;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Role;
@@ -25,10 +23,15 @@ class ClassroomAttendanceTest extends TestCase
     use RefreshDatabase;
 
     protected User $schoolAdmin;
+
     protected User $teacher;
+
     protected User $student;
+
     protected Classroom $classroom;
+
     protected LessonSchedule $schedule;
+
     protected AcademicYear $academicYear;
 
     protected function setUp(): void

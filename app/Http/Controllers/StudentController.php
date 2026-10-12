@@ -121,7 +121,7 @@ class StudentController extends Controller
             StudentWallet::firstOrCreate(
                 ['student_profile_id' => $profile->id],
                 [
-                    'account_number' => 'WAL-' . ($profile->nisn ?: (string) rand(10000000, 99999999)),
+                    'account_number' => 'WAL-'.($profile->nisn ?: (string) rand(10000000, 99999999)),
                     'balance' => 0,
                     'daily_limit' => 50000,
                     'spent_today' => 0,
@@ -150,8 +150,8 @@ class StudentController extends Controller
 
         $validated = $request->validate([
             'full_name' => ['required', 'string', 'max:150'],
-            'email' => ['required', 'email', 'unique:users,email,' . $user->id],
-            'nisn' => ['required', 'string', 'max:20', 'unique:student_profiles,nisn,' . $profile->id],
+            'email' => ['required', 'email', 'unique:users,email,'.$user->id],
+            'nisn' => ['required', 'string', 'max:20', 'unique:student_profiles,nisn,'.$profile->id],
             'classroom_id' => ['required', 'exists:classrooms,id'],
             'gender' => ['required', 'in:L,P'],
             'nik' => ['nullable', 'string', 'max:20'],
@@ -212,7 +212,7 @@ class StudentController extends Controller
 
         // Str::random() memakai random_bytes (CSPRNG). rand() sebelumnya hanya
         // menghasilkan 9.000 kemungkinan dan dapat diprediksi.
-        $newPassword = 'siswa-' . Str::lower(Str::random(10));
+        $newPassword = 'siswa-'.Str::lower(Str::random(10));
 
         $profile->user->update([
             'password' => Hash::make($newPassword),

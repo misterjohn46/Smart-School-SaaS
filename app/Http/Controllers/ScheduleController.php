@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\RoleName;
 use App\Models\AcademicYear;
 use App\Models\Classroom;
 use App\Models\LessonSchedule;
+use App\Models\Subject;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,8 +22,8 @@ class ScheduleController extends Controller
         $activeYear = AcademicYear::where('is_active', true)->first();
         $classrooms = Classroom::with('department')->orderBy('name')->get();
 
-        $selectedClassroomId = $request->input('classroom_id') 
-            ? (int) $request->input('classroom_id') 
+        $selectedClassroomId = $request->input('classroom_id')
+            ? (int) $request->input('classroom_id')
             : $classrooms->first()?->id;
 
         $query = LessonSchedule::with(['subject', 'teacher', 'classroom.department'])
@@ -65,8 +69,8 @@ class ScheduleController extends Controller
 
         $selectedClass = $classrooms->firstWhere('id', $selectedClassroomId);
 
-        $subjects = \App\Models\Subject::where('is_active', true)->orderBy('name')->get(['id', 'code', 'name', 'type']);
-        $teachers = \App\Models\User::role(\App\Enums\RoleName::Teacher->value)->orderBy('name')->get(['id', 'name']);
+        $subjects = Subject::where('is_active', true)->orderBy('name')->get(['id', 'code', 'name', 'type']);
+        $teachers = User::role(RoleName::Teacher->value)->orderBy('name')->get(['id', 'name']);
 
         return Inertia::render('Academic/Schedules', [
             'classrooms' => $classrooms->map(fn ($c) => [
@@ -91,7 +95,7 @@ class ScheduleController extends Controller
     /**
      * Simpan jadwal baru secara instan dari modal matriks
      */
-    public function store(Request $request): \Illuminate\Http\RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'academic_year_id' => ['nullable', 'exists:academic_years,id'],
@@ -124,7 +128,7 @@ class ScheduleController extends Controller
     /**
      * Hapus jadwal pelajaran secara langsung
      */
-    public function destroy(int|string $id): \Illuminate\Http\RedirectResponse
+    public function destroy(int|string $id): RedirectResponse
     {
         $schedule = LessonSchedule::findOrFail($id);
         $schedule->delete();

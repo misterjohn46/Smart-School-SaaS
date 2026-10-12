@@ -54,7 +54,7 @@ class ManageStudentBills extends ManageRecords
                         ->options([
                             1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
                             5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
                         ])
                         ->default(now()->month),
                     TextInput::make('year')
@@ -77,7 +77,7 @@ class ManageStudentBills extends ManageRecords
                         (int) $data['academic_year_id'],
                         (int) $data['fee_category_id'],
                         array_map('intval', $data['classroom_ids']),
-                        !empty($data['month']) ? (int) $data['month'] : null,
+                        ! empty($data['month']) ? (int) $data['month'] : null,
                         (int) $data['year'],
                         (float) $data['amount'],
                         $data['due_date'] ?? null

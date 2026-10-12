@@ -20,10 +20,15 @@ class ClassroomManagementTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $teacher;
+
     protected AcademicYear $academicYear;
+
     protected GradeLevel $gradeLevel;
+
     protected Department $department;
+
     protected Classroom $classroom;
 
     protected function setUp(): void

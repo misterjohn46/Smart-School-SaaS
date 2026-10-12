@@ -118,8 +118,8 @@ class TeacherController extends Controller
 
         $validated = $request->validate([
             'full_name' => ['required', 'string', 'max:150'],
-            'email' => ['required', 'email', 'unique:users,email,' . $user->id],
-            'nip' => ['nullable', 'string', 'max:30', 'unique:teacher_profiles,nip,' . $profile->id],
+            'email' => ['required', 'email', 'unique:users,email,'.$user->id],
+            'nip' => ['nullable', 'string', 'max:30', 'unique:teacher_profiles,nip,'.$profile->id],
             'nuptk' => ['nullable', 'string', 'max:30'],
             'gender' => ['required', 'in:L,P'],
             'phone_wa' => ['nullable', 'string', 'max:25'],
@@ -176,7 +176,7 @@ class TeacherController extends Controller
 
         // Str::random() memakai random_bytes (CSPRNG). rand() sebelumnya hanya
         // menghasilkan 9.000 kemungkinan dan dapat diprediksi.
-        $newPassword = 'guru-' . Str::lower(Str::random(10));
+        $newPassword = 'guru-'.Str::lower(Str::random(10));
 
         $profile->user->update([
             'password' => Hash::make($newPassword),

@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 
 class CbtExam extends Model
 {
@@ -51,6 +50,7 @@ class CbtExam extends Model
         for ($i = 0; $i < 6; $i++) {
             $token .= $pool[random_int(0, strlen($pool) - 1)];
         }
+
         return $token;
     }
 }

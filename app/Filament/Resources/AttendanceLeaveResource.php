@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasSchoolAccessOnly;
 use App\Filament\Resources\AttendanceLeaveResource\Pages;
 use App\Models\AttendanceLeave;
 use Filament\Actions;
@@ -16,13 +17,16 @@ use UnitEnum;
 
 class AttendanceLeaveResource extends Resource
 {
-    use \App\Filament\Concerns\HasSchoolAccessOnly;
+    use HasSchoolAccessOnly;
 
     protected static ?string $model = AttendanceLeave::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Presensi & IoT RFID';
+    protected static string|UnitEnum|null $navigationGroup = 'Presensi & IoT RFID';
+
     protected static ?string $navigationLabel = 'Persetujuan Izin & Sakit';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
+
     protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema

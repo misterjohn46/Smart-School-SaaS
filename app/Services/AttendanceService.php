@@ -34,12 +34,11 @@ class AttendanceService
             return 0;
         }
 
-        $date = $attendance->date instanceof Carbon
-            ? $attendance->date->toDateString()
-            : (string) $attendance->date;
+        // Kolom `date` di-cast 'date' sehingga selalu Carbon.
+        $date = Carbon::parse($attendance->date)->toDateString();
 
         try {
-            $lastTap = Carbon::parse($date . ' ' . $lastTapTime);
+            $lastTap = Carbon::parse($date.' '.$lastTapTime);
         } catch (\Exception) {
             return 0;
         }
@@ -78,7 +77,7 @@ class AttendanceService
                 'time' => $currentTime,
                 'status' => 'Ditolak',
                 'lcd_line1' => 'KARTU DITOLAK',
-                'lcd_line2' => 'UID: ' . substr($rfidUid, 0, 10),
+                'lcd_line2' => 'UID: '.substr($rfidUid, 0, 10),
                 'message' => 'Kartu RFID belum terdaftar di sistem sekolah.',
             ];
         }
@@ -104,10 +103,10 @@ class AttendanceService
                     'name' => $name,
                     'role' => $role,
                     'classroom' => $className,
-                    'time' => $currentTime . ' WIB',
+                    'time' => $currentTime.' WIB',
                     'status' => 'Sudah Tap',
                     'lcd_line1' => substr($name, 0, 16),
-                    'lcd_line2' => 'Tunggu ' . $remainingCooldown . ' detik',
+                    'lcd_line2' => 'Tunggu '.$remainingCooldown.' detik',
                     'message' => "Kartu baru saja di-tap. Silakan tunggu {$remainingCooldown} detik lagi.",
                 ];
             }
@@ -144,10 +143,10 @@ class AttendanceService
                 'name' => $name,
                 'role' => $role,
                 'classroom' => $className,
-                'time' => $currentTime . ' WIB',
+                'time' => $currentTime.' WIB',
                 'status' => ucfirst($status),
                 'lcd_line1' => substr($name, 0, 16),
-                'lcd_line2' => ucfirst($status) . ' ' . $now->format('H:i') . ' WIB',
+                'lcd_line2' => ucfirst($status).' '.$now->format('H:i').' WIB',
                 'message' => "Presensi masuk berhasil dicatat ({$status}).",
             ];
         }
@@ -169,10 +168,10 @@ class AttendanceService
                 'name' => $name,
                 'role' => $role,
                 'classroom' => $className,
-                'time' => $currentTime . ' WIB',
+                'time' => $currentTime.' WIB',
                 'status' => 'Pulang',
                 'lcd_line1' => substr($name, 0, 16),
-                'lcd_line2' => 'Pulang ' . $now->format('H:i') . ' WIB',
+                'lcd_line2' => 'Pulang '.$now->format('H:i').' WIB',
                 'message' => 'Presensi pulang berhasil dicatat.',
             ];
         }
@@ -184,7 +183,7 @@ class AttendanceService
             'name' => $name,
             'role' => $role,
             'classroom' => $className,
-            'time' => $currentTime . ' WIB',
+            'time' => $currentTime.' WIB',
             'status' => 'Sudah Hadir',
             'lcd_line1' => substr($name, 0, 16),
             'lcd_line2' => 'Presensi Lengkap',
@@ -223,6 +222,7 @@ class AttendanceService
 
         if ($distance > $geofence->radius_meters) {
             $distanceFormatted = number_format($distance, 1);
+
             return [
                 'success' => false,
                 'distance_meters' => $distance,
@@ -243,7 +243,7 @@ class AttendanceService
                 'latitude' => $latitude,
                 'longitude' => $longitude,
                 'photo_path' => $photoPath,
-                'notes' => "Presensi GPS Geofencing (Jarak: " . round($distance) . "m)",
+                'notes' => 'Presensi GPS Geofencing (Jarak: '.round($distance).'m)',
             ]
         );
 

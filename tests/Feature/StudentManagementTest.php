@@ -21,7 +21,9 @@ class StudentManagementTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected Classroom $classroom;
+
     protected AcademicYear $academicYear;
 
     protected function setUp(): void

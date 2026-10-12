@@ -6,9 +6,12 @@ namespace Database\Seeders;
 
 use App\Enums\RoleName;
 use App\Models\AcademicYear;
+use App\Models\AttendanceDevice;
 use App\Models\Classroom;
 use App\Models\Department;
 use App\Models\GradeLevel;
+use App\Models\KtsTemplate;
+use App\Models\SchoolGeofence;
 use App\Models\StudentProfile;
 use App\Models\Subject;
 use App\Models\TeacherProfile;
@@ -390,8 +393,8 @@ class AcademicMasterSeeder extends Seeder
         }
 
         // 9. Perangkat IoT RFID Standalone (ESP32 via WiFi)
-        \App\Models\AttendanceDevice::firstOrCreate(
-            ['device_token_hash' => \App\Models\AttendanceDevice::hashToken('ESP32-GATE-MAIN-001')],
+        AttendanceDevice::firstOrCreate(
+            ['device_token_hash' => AttendanceDevice::hashToken('ESP32-GATE-MAIN-001')],
             [
                 'device_token' => 'ESP32-GATE-MAIN-001',
                 'device_name' => 'Gerbang Utama Siswa (ESP32 RFID)',
@@ -402,7 +405,7 @@ class AcademicMasterSeeder extends Seeder
         );
 
         // 10. Titik Geofencing GPS Sekolah
-        \App\Models\SchoolGeofence::firstOrCreate(
+        SchoolGeofence::firstOrCreate(
             ['name' => 'Kampus Utama SMK'],
             [
                 'latitude' => -6.2088000,
@@ -413,7 +416,7 @@ class AcademicMasterSeeder extends Seeder
         );
 
         // 11. Template KTS Digital ISO CR-80
-        \App\Models\KtsTemplate::firstOrCreate(
+        KtsTemplate::firstOrCreate(
             ['template_name' => 'Standar ISO CR-80'],
             [
                 'primary_color' => '#4f46e5',

@@ -22,9 +22,13 @@ class TeachingJournalManagementTest extends TestCase
     use RefreshDatabase;
 
     protected User $teacher;
+
     protected User $admin;
+
     protected Classroom $classroom;
+
     protected Subject $subject;
+
     protected AcademicYear $academicYear;
 
     protected function setUp(): void

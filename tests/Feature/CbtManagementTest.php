@@ -10,7 +10,6 @@ use App\Models\CbtExam;
 use App\Models\CbtQuestion;
 use App\Models\CbtSubmission;
 use App\Models\Classroom;
-use App\Models\StudentGrade;
 use App\Models\StudentProfile;
 use App\Models\Subject;
 use App\Models\User;
@@ -22,10 +21,15 @@ class CbtManagementTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $teacher;
+
     protected Subject $subject;
+
     protected Classroom $classroom;
+
     protected StudentProfile $student;
+
     protected AcademicYear $academicYear;
 
     protected function setUp(): void

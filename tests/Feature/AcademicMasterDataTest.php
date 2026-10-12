@@ -4,12 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Models\AcademicYear;
 use App\Models\Classroom;
-use App\Models\Department;
-use App\Models\GradeLevel;
-use App\Models\Subject;
-use App\Models\User;
 use App\Services\HashIdService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

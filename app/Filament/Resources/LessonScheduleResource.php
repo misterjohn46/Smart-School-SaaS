@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Enums\RoleName;
+use App\Filament\Concerns\HasSchoolAccessOnly;
 use App\Filament\Resources\LessonScheduleResource\Pages;
 use App\Models\AcademicYear;
 use App\Models\LessonSchedule;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -24,13 +25,16 @@ use UnitEnum;
 
 class LessonScheduleResource extends Resource
 {
-    use \App\Filament\Concerns\HasSchoolAccessOnly;
+    use HasSchoolAccessOnly;
 
     protected static ?string $model = LessonSchedule::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Master Data Akademik';
+    protected static string|UnitEnum|null $navigationGroup = 'Master Data Akademik';
+
     protected static ?string $navigationLabel = 'Jadwal Mengajar';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-calendar-days';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
+
     protected static ?int $navigationSort = 5;
 
     public static function form(Schema $schema): Schema

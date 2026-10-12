@@ -16,6 +16,7 @@ class SubjectManagementTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected Subject $subject;
 
     protected function setUp(): void

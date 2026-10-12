@@ -12,7 +12,6 @@ use App\Models\Payment;
 use App\Models\StudentBill;
 use App\Models\StudentProfile;
 use App\Services\FinanceService;
-use App\Services\HashIdService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -57,7 +56,7 @@ class FinanceController extends Controller
             'wallet',
             'bills' => function ($q) {
                 $q->whereIn('status', ['unpaid', 'partial'])->with('feeCategory');
-            }
+            },
         ]);
 
         if (! empty($classroomId)) {
@@ -67,8 +66,8 @@ class FinanceController extends Controller
         if (! empty($query)) {
             $studentsQuery->where(function ($q) use ($query) {
                 $q->where('full_name', 'like', "%{$query}%")
-                  ->orWhere('nisn', 'like', "%{$query}%")
-                  ->orWhere('rfid_uid', 'like', "%{$query}%");
+                    ->orWhere('nisn', 'like', "%{$query}%")
+                    ->orWhere('rfid_uid', 'like', "%{$query}%");
             });
         }
 
@@ -179,10 +178,10 @@ class FinanceController extends Controller
                 'hash_id' => $payment->hash_id,
                 'payment_number' => $payment->payment_number,
                 'amount' => (float) $payment->amount,
-                'amount_formatted' => 'Rp ' . number_format((float) $payment->amount, 0, ',', '.'),
+                'amount_formatted' => 'Rp '.number_format((float) $payment->amount, 0, ',', '.'),
                 'terbilang' => $terbilangText,
                 'payment_method' => $payment->payment_method,
-                'payment_date' => $payment->payment_date->format('d F Y, H:i:s') . ' WIB',
+                'payment_date' => $payment->payment_date->format('d F Y, H:i:s').' WIB',
                 'cashier_name' => $payment->user?->name ?? 'Kasir Sekolah',
                 'status' => $payment->status,
                 'notes' => $payment->notes,
@@ -196,7 +195,7 @@ class FinanceController extends Controller
                     return [
                         'title' => $bp->studentBill->title,
                         'amount' => (float) $bp->amount_allocated,
-                        'amount_formatted' => 'Rp ' . number_format((float) $bp->amount_allocated, 0, ',', '.'),
+                        'amount_formatted' => 'Rp '.number_format((float) $bp->amount_allocated, 0, ',', '.'),
                     ];
                 }),
             ],
@@ -405,10 +404,11 @@ class FinanceController extends Controller
 
                 if ($existsQuery->exists()) {
                     $skippedCount++;
+
                     continue;
                 }
 
-                $billNumber = 'INV-' . date('Ymd') . '-' . strtoupper(bin2hex(random_bytes(3)));
+                $billNumber = 'INV-'.date('Ymd').'-'.strtoupper(bin2hex(random_bytes(3)));
 
                 StudentBill::create([
                     'student_profile_id' => $student->id,
@@ -446,7 +446,7 @@ class FinanceController extends Controller
 
         if ((float) $bill->paid_amount > 0) {
             return back()->withErrors([
-                'error' => "Tagihan {$bill->bill_number} tidak dapat dihapus karena sudah memiliki riwayat pembayaran sebesar Rp " . number_format((float) $bill->paid_amount, 0, ',', '.'),
+                'error' => "Tagihan {$bill->bill_number} tidak dapat dihapus karena sudah memiliki riwayat pembayaran sebesar Rp ".number_format((float) $bill->paid_amount, 0, ',', '.'),
             ]);
         }
 
@@ -498,7 +498,7 @@ class FinanceController extends Controller
         $category = FeeCategory::findOrFail($id);
 
         $validated = $request->validate([
-            'code' => ['required', 'string', 'max:50', 'unique:fee_categories,code,' . $category->id],
+            'code' => ['required', 'string', 'max:50', 'unique:fee_categories,code,'.$category->id],
             'name' => ['required', 'string', 'max:100'],
             'default_amount' => ['required', 'numeric', 'min:0'],
             'is_recurring' => ['boolean'],
@@ -530,4 +530,3 @@ class FinanceController extends Controller
         return back()->with('status', "Pos biaya {$name} berhasil dihapus!");
     }
 }
-

@@ -9,6 +9,7 @@ use App\Models\StudentWallet;
 use App\Models\User;
 use App\Services\WalletService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -66,7 +67,7 @@ class RouteAuthorizationTest extends TestCase
         ];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('adminOnlyEndpoints')]
+    #[DataProvider('adminOnlyEndpoints')]
     public function test_student_cannot_reach_academic_admin_endpoints(string $method, string $uri): void
     {
         $this->actingAs($this->user('siswa@sekolah.id'))
@@ -74,7 +75,7 @@ class RouteAuthorizationTest extends TestCase
             ->assertForbidden();
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('adminOnlyEndpoints')]
+    #[DataProvider('adminOnlyEndpoints')]
     public function test_parent_cannot_reach_academic_admin_endpoints(string $method, string $uri): void
     {
         $this->actingAs($this->user('ortu@sekolah.id'))
@@ -82,7 +83,7 @@ class RouteAuthorizationTest extends TestCase
             ->assertForbidden();
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('financeEndpoints')]
+    #[DataProvider('financeEndpoints')]
     public function test_student_cannot_reach_finance_endpoints(string $method, string $uri): void
     {
         $this->actingAs($this->user('siswa@sekolah.id'))
@@ -90,7 +91,7 @@ class RouteAuthorizationTest extends TestCase
             ->assertForbidden();
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('financeEndpoints')]
+    #[DataProvider('financeEndpoints')]
     public function test_teacher_cannot_reach_finance_endpoints(string $method, string $uri): void
     {
         $this->actingAs($this->user('guru@sekolah.id'))

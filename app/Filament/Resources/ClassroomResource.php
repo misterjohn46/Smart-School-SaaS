@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Enums\RoleName;
+use App\Filament\Concerns\HasSchoolAccessOnly;
 use App\Filament\Resources\ClassroomResource\Pages;
 use App\Models\Classroom;
 use App\Models\User;
@@ -19,13 +20,16 @@ use UnitEnum;
 
 class ClassroomResource extends Resource
 {
-    use \App\Filament\Concerns\HasSchoolAccessOnly;
+    use HasSchoolAccessOnly;
 
     protected static ?string $model = Classroom::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Master Data Akademik';
+    protected static string|UnitEnum|null $navigationGroup = 'Master Data Akademik';
+
     protected static ?string $navigationLabel = 'Rombongan Belajar (Kelas)';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
+
     protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema

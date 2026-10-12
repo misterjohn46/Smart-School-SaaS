@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasSuperAdminAccessOnly;
 use App\Filament\Resources\CbtNodeResource\Pages;
 use App\Models\CbtNode;
 use Filament\Actions;
@@ -17,13 +18,16 @@ use UnitEnum;
 
 class CbtNodeResource extends Resource
 {
-    use \App\Filament\Concerns\HasSuperAdminAccessOnly;
+    use HasSuperAdminAccessOnly;
 
     protected static ?string $model = CbtNode::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'SaaS Platform & Multi-Tenant';
+    protected static string|UnitEnum|null $navigationGroup = 'SaaS Platform & Multi-Tenant';
+
     protected static ?string $navigationLabel = 'Node Server CBT ANBK';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-server-stack';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-server-stack';
+
     protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema

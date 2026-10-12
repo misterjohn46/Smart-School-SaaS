@@ -412,7 +412,7 @@ class CbtController extends Controller
             'status' => 'submitted',
         ]);
 
-        return back()->with('success', "Simulasi pengerjaan ujian berhasil! Skor diperoleh: {$finalScore} / 100 (" . ($isPassed ? 'TUNTAS' : 'REMEDIAL') . ")");
+        return back()->with('success', "Simulasi pengerjaan ujian berhasil! Skor diperoleh: {$finalScore} / 100 (".($isPassed ? 'TUNTAS' : 'REMEDIAL').')');
     }
 
     protected function resolveBank(string|int $id): CbtBank
@@ -420,6 +420,7 @@ class CbtController extends Controller
         if (is_numeric($id)) {
             return CbtBank::findOrFail((int) $id);
         }
+
         return CbtBank::findByHashId((string) $id) ?? CbtBank::findOrFail($id);
     }
 
@@ -428,6 +429,7 @@ class CbtController extends Controller
         if (is_numeric($id)) {
             return CbtQuestion::findOrFail((int) $id);
         }
+
         return CbtQuestion::findByHashId((string) $id) ?? CbtQuestion::findOrFail($id);
     }
 
@@ -436,6 +438,7 @@ class CbtController extends Controller
         if (is_numeric($id)) {
             return CbtExam::findOrFail((int) $id);
         }
+
         return CbtExam::findByHashId((string) $id) ?? CbtExam::findOrFail($id);
     }
 }

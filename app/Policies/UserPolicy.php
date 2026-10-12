@@ -15,6 +15,7 @@ class UserPolicy
             if (in_array($ability, ['delete', 'forceDelete'], true)) {
                 return null; // biarkan method delete mengecek ! $user->is($record)
             }
+
             return true;
         }
 

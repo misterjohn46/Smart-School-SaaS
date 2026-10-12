@@ -7,10 +7,10 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\AuditTrailResource\Pages;
 use App\Models\AuditTrail;
 use Filament\Resources\Resource;
-use Illuminate\Database\Eloquent\Model;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 class AuditTrailResource extends Resource
@@ -53,9 +53,12 @@ class AuditTrailResource extends Resource
         return false;
     }
 
-    protected static string | UnitEnum | null $navigationGroup = 'Sistem & Keamanan';
+    protected static string|UnitEnum|null $navigationGroup = 'Sistem & Keamanan';
+
     protected static ?string $navigationLabel = 'Audit Trail & Log Keamanan';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-shield-check';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-shield-check';
+
     protected static ?int $navigationSort = 10;
 
     public static function form(Schema $schema): Schema

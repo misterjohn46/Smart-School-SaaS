@@ -79,7 +79,7 @@ class SchoolBillingAndPaymentTest extends TestCase
                 [
                     'bill_id' => $unpaidBill->id,
                     'amount' => (float) $unpaidBill->amount,
-                ]
+                ],
             ],
             'total_amount' => (float) $unpaidBill->amount,
             'notes' => 'Pembayaran lunas via Kasir',
@@ -98,7 +98,7 @@ class SchoolBillingAndPaymentTest extends TestCase
         $payment = Payment::where('student_profile_id', $student->id)->latest()->first();
         $this->assertNotNull($payment);
 
-        $receiptResponse = $this->actingAs($admin)->get('/finance/receipt/' . $payment->hash_id);
+        $receiptResponse = $this->actingAs($admin)->get('/finance/receipt/'.$payment->hash_id);
         $receiptResponse->assertStatus(200);
     }
 

@@ -8,7 +8,6 @@ use App\Models\AcademicYear;
 use App\Models\Classroom;
 use App\Models\StudentGrade;
 use App\Models\StudentProfile;
-use App\Models\StudentReportRemark;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,12 +18,19 @@ class AcademicReportManagementTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $teacher;
+
     protected Classroom $classroom;
+
     protected AcademicYear $academicYear;
+
     protected Subject $subject1;
+
     protected Subject $subject2;
+
     protected StudentProfile $student1;
+
     protected StudentProfile $student2;
 
     protected function setUp(): void

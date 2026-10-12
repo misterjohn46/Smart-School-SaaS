@@ -62,7 +62,7 @@ class AcademicYearController extends Controller
 
         $stats = [
             'total_years' => AcademicYear::count(),
-            'active_year_name' => $activeYear ? "{$activeYear->name} (" . ucfirst($activeYear->semester) . ")" : 'Belum Ada',
+            'active_year_name' => $activeYear ? "{$activeYear->name} (".ucfirst($activeYear->semester).')' : 'Belum Ada',
             'active_year_id' => $activeYearId,
             'total_classrooms' => Classroom::count(),
             'active_classrooms_count' => $activeYearId ? Classroom::where('academic_year_id', $activeYearId)->count() : 0,
@@ -174,6 +174,6 @@ class AcademicYearController extends Controller
         AcademicYear::query()->update(['is_active' => false]);
         $academicYear->update(['is_active' => true]);
 
-        return back()->with('status', "Tahun ajaran {$academicYear->name} (" . ucfirst($academicYear->semester) . ") kini aktif sebagai tahun ajaran operasional!");
+        return back()->with('status', "Tahun ajaran {$academicYear->name} (".ucfirst($academicYear->semester).') kini aktif sebagai tahun ajaran operasional!');
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasSchoolAccessOnly;
 use App\Filament\Resources\AttendanceDeviceResource\Pages;
 use App\Models\AttendanceDevice;
 use Filament\Actions;
@@ -20,13 +21,16 @@ use UnitEnum;
 
 class AttendanceDeviceResource extends Resource
 {
-    use \App\Filament\Concerns\HasSchoolAccessOnly;
+    use HasSchoolAccessOnly;
 
     protected static ?string $model = AttendanceDevice::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Presensi & IoT RFID';
+    protected static string|UnitEnum|null $navigationGroup = 'Presensi & IoT RFID';
+
     protected static ?string $navigationLabel = 'Perangkat IoT ESP32';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cpu-chip';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cpu-chip';
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema

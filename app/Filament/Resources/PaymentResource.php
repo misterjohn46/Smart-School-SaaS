@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasFinanceAccessOnly;
 use App\Filament\Resources\PaymentResource\Pages;
 use App\Models\Payment;
 use App\Services\FinanceService;
@@ -18,13 +19,16 @@ use UnitEnum;
 
 class PaymentResource extends Resource
 {
-    use \App\Filament\Concerns\HasFinanceAccessOnly;
+    use HasFinanceAccessOnly;
 
     protected static ?string $model = Payment::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Keuangan & Billing';
+    protected static string|UnitEnum|null $navigationGroup = 'Keuangan & Billing';
+
     protected static ?string $navigationLabel = 'Penerimaan Kas & Pembayaran';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-banknotes';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
+
     protected static ?int $navigationSort = 3;
 
     public static function table(Table $table): Table

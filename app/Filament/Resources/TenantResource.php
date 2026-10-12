@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasSuperAdminAccessOnly;
 use App\Filament\Resources\TenantResource\Pages;
 use App\Models\Tenant;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -21,13 +23,16 @@ use UnitEnum;
 
 class TenantResource extends Resource
 {
-    use \App\Filament\Concerns\HasSuperAdminAccessOnly;
+    use HasSuperAdminAccessOnly;
 
     protected static ?string $model = Tenant::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'SaaS Platform & Multi-Tenant';
+    protected static string|UnitEnum|null $navigationGroup = 'SaaS Platform & Multi-Tenant';
+
     protected static ?string $navigationLabel = 'Sekolah Mitra (Tenants)';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office-2';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
@@ -104,33 +109,33 @@ class TenantResource extends Resource
                     ->modalHeading(fn (Tenant $record): string => "Kredensial Login: {$record->school_name}")
                     ->modalDescription('Gunakan informasi akun berikut untuk masuk sebagai Administrator Sekolah:')
                     ->infolist([
-                        \Filament\Infolists\Components\TextEntry::make('school_name')
+                        TextEntry::make('school_name')
                             ->label('Nama Sekolah')
                             ->weight('bold'),
-                        \Filament\Infolists\Components\TextEntry::make('npsn')
+                        TextEntry::make('npsn')
                             ->label('NPSN Sekolah')
                             ->badge()
                             ->color('gray'),
-                        \Filament\Infolists\Components\TextEntry::make('admin_name')
+                        TextEntry::make('admin_name')
                             ->label('Nama Penanggung Jawab'),
-                        \Filament\Infolists\Components\TextEntry::make('admin_email')
+                        TextEntry::make('admin_email')
                             ->label('Email Login Admin')
                             ->copyable()
                             ->badge()
                             ->color('primary'),
-                        \Filament\Infolists\Components\TextEntry::make('admin_password')
+                        TextEntry::make('admin_password')
                             ->label('Kata Sandi Default')
                             ->state('password')
                             ->copyable()
                             ->badge()
                             ->color('warning'),
-                        \Filament\Infolists\Components\TextEntry::make('login_url')
+                        TextEntry::make('login_url')
                             ->label('Tautan Halaman Login')
                             ->state(fn (): string => url('/login'))
                             ->copyable()
                             ->url(fn (): string => url('/login'), shouldOpenInNewTab: true)
                             ->color('info'),
-                        \Filament\Infolists\Components\TextEntry::make('role')
+                        TextEntry::make('role')
                             ->label('Hak Akses / Role')
                             ->state('Administrator Sekolah (Admin TU)')
                             ->badge()
@@ -150,7 +155,7 @@ class TenantResource extends Resource
                         $user = User::updateOrCreate(
                             ['email' => $record->admin_email],
                             [
-                                'name' => $record->admin_name ?: 'Admin ' . $record->school_name,
+                                'name' => $record->admin_name ?: 'Admin '.$record->school_name,
                                 'phone_number' => $record->admin_phone,
                                 'password' => Hash::make('password'),
                                 'is_active' => true,

@@ -22,7 +22,7 @@ class GpsGeofenceAttendanceTest extends TestCase
 
     public function test_haversine_distance_calculation(): void
     {
-        $service = new AttendanceService();
+        $service = new AttendanceService;
 
         // Jarak antara 2 titik identik harus 0 meter
         $distSame = $service->calculateHaversineDistance(-6.2088, 106.8456, -6.2088, 106.8456);

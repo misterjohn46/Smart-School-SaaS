@@ -53,7 +53,7 @@ class SaasPlatformOverviewWidget extends BaseWidget
                 ->color('success')
                 ->chart([15, 20, 25, 30, 35, 42, 48]),
 
-            Stat::make('Audit Trail & Keamanan', number_format($auditCount, 0, ',', '.') . ' Event')
+            Stat::make('Audit Trail & Keamanan', number_format($auditCount, 0, ',', '.').' Event')
                 ->description('Log aktivitas sistem & audit trail SaaS')
                 ->descriptionIcon('heroicon-m-shield-check')
                 ->color('gray'),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasSchoolAccessOnly;
 use App\Filament\Resources\AcademicYearResource\Pages;
 use App\Models\AcademicYear;
 use Filament\Actions;
@@ -20,13 +21,16 @@ use UnitEnum;
 
 class AcademicYearResource extends Resource
 {
-    use \App\Filament\Concerns\HasSchoolAccessOnly;
+    use HasSchoolAccessOnly;
 
     protected static ?string $model = AcademicYear::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Master Data Akademik';
+    protected static string|UnitEnum|null $navigationGroup = 'Master Data Akademik';
+
     protected static ?string $navigationLabel = 'Tahun Ajaran & Semester';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-calendar-days';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema

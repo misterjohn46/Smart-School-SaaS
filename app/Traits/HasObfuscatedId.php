@@ -28,7 +28,7 @@ trait HasObfuscatedId
     /**
      * Menemukan model berdasarkan hash ID terenkripsi.
      */
-    public static function findByHashId(string $hash): ?Model
+    public static function findByHashId(string $hash): ?self
     {
         $id = HashIdService::decode($hash);
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasFinanceAccessOnly;
 use App\Filament\Resources\StudentBillResource\Pages;
 use App\Models\StudentBill;
 use Filament\Actions;
@@ -16,17 +17,21 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 use UnitEnum;
 
 class StudentBillResource extends Resource
 {
-    use \App\Filament\Concerns\HasFinanceAccessOnly;
+    use HasFinanceAccessOnly;
 
     protected static ?string $model = StudentBill::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Keuangan & Billing';
+    protected static string|UnitEnum|null $navigationGroup = 'Keuangan & Billing';
+
     protected static ?string $navigationLabel = 'Tagihan Siswa (Invoices)';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-receipt-percent';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-receipt-percent';
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
@@ -50,7 +55,7 @@ class StudentBillResource extends Resource
                     ->required(),
                 TextInput::make('bill_number')
                     ->label('Nomor Invoice')
-                    ->default(fn () => 'INV/' . date('Ym') . '/' . strtoupper(\Illuminate\Support\Str::random(6)))
+                    ->default(fn () => 'INV/'.date('Ym').'/'.strtoupper(Str::random(6)))
                     ->required()
                     ->disabled(),
                 TextInput::make('title')

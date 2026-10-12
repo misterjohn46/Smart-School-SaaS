@@ -1,8 +1,17 @@
 includes:
     - vendor/larastan/larastan/extension.neon
-
+    # Baseline berisi 315 error yang sudah ada sebelum static analysis ditegakkan.
+    # Tujuannya agar error BARU langsung menggagalkan CI, sementara sisa baseline
+    # dibereskan bertahap (mayoritas: @property model yang belum dianotasi dan
+    # operator ?-> yang tidak perlu). Jangan regenerate baseline untuk menutup
+    # error baru - perbaiki errornya.
+    - phpstan-baseline.neon
 parameters:
     paths:
         - app
     level: 5
     tmpDir: storage/framework/cache/phpstan
+    # Analisis proyek ini melampaui memory_limit PHP bawaan (128M) dan prosesnya
+    # crash, bukan sekadar melaporkan error. CI menjalankannya dengan --memory-limit=2G.
+    parallel:
+        maximumNumberOfProcesses: 4

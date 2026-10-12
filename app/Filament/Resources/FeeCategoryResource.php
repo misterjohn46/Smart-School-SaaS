@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasFinanceAccessOnly;
 use App\Filament\Resources\FeeCategoryResource\Pages;
 use App\Models\FeeCategory;
 use Filament\Actions;
@@ -20,13 +21,16 @@ use UnitEnum;
 
 class FeeCategoryResource extends Resource
 {
-    use \App\Filament\Concerns\HasFinanceAccessOnly;
+    use HasFinanceAccessOnly;
 
     protected static ?string $model = FeeCategory::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Keuangan & Billing';
+    protected static string|UnitEnum|null $navigationGroup = 'Keuangan & Billing';
+
     protected static ?string $navigationLabel = 'Kategori Biaya Sekolah';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-tag';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-tag';
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema

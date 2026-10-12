@@ -12,6 +12,7 @@ use App\Models\GradeLevel;
 use App\Models\LessonSchedule;
 use App\Models\Subject;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Role;
@@ -22,10 +23,15 @@ class LessonScheduleTest extends TestCase
     use RefreshDatabase;
 
     protected User $superAdmin;
+
     protected User $schoolAdmin;
+
     protected User $teacher;
+
     protected AcademicYear $academicYear;
+
     protected Classroom $classroom;
+
     protected Subject $subject;
 
     protected function setUp(): void
@@ -138,7 +144,7 @@ class LessonScheduleTest extends TestCase
 
     public function test_teacher_sees_actual_schedule_on_dashboard_when_available(): void
     {
-        \Carbon\Carbon::setTestNow('2026-09-14 08:00:00'); // Monday
+        Carbon::setTestNow('2026-09-14 08:00:00'); // Monday
         $todayDay = 'senin';
 
         LessonSchedule::create([

@@ -93,7 +93,7 @@ class ClassroomController extends Controller
         $academicYears = AcademicYear::orderByDesc('is_active')->orderBy('name')->get(['id', 'name', 'is_active']);
         $gradeLevels = GradeLevel::orderBy('level_numeric')->get(['id', 'name', 'level_numeric']);
         $departments = Department::where('is_active', true)->orderBy('name')->get(['id', 'code', 'name']);
-        
+
         // Daftar Guru untuk Wali Kelas
         $teachers = User::whereHas('roles', function ($q) {
             $q->where('name', 'guru');

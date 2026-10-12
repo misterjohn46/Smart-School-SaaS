@@ -11,7 +11,6 @@ use App\Models\StudentViolation;
 use App\Models\ViolationCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -255,7 +254,7 @@ class StudentViolationController extends Controller
         $activeYear = AcademicYear::where('is_active', true)->first();
         if (! $activeYear) {
             $activeYear = AcademicYear::firstOrCreate([
-                'name' => date('Y') . '/' . (date('Y') + 1),
+                'name' => date('Y').'/'.(date('Y') + 1),
                 'semester' => 'ganjil',
                 'is_active' => true,
             ]);

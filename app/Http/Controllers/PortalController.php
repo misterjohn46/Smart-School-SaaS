@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\AcademicYear;
-use App\Models\Classroom;
+use App\Models\Attendance;
+use App\Models\StudentBill;
 use App\Models\StudentProfile;
-use App\Models\Subject;
+use App\Models\StudentWallet;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -51,19 +51,19 @@ class PortalController extends Controller
             ],
         ];
 
-        $todayAttendance = \App\Models\Attendance::where('user_id', $user->id)
+        $todayAttendance = Attendance::where('user_id', $user->id)
             ->whereDate('date', now()->toDateString())
             ->first();
 
         $attendanceToday = [
             'status' => $todayAttendance ? ucfirst($todayAttendance->status) : 'Belum Presensi',
-            'check_in_time' => $todayAttendance?->time_in ? date('H:i', strtotime($todayAttendance->time_in)) . ' WIB' : '-',
+            'check_in_time' => $todayAttendance?->time_in ? date('H:i', strtotime($todayAttendance->time_in)).' WIB' : '-',
             'method' => $todayAttendance?->method ? strtoupper($todayAttendance->method) : 'RFID Gate Standalone (ESP32)',
             'rfid_uid' => $profile?->rfid_uid ?? 'RFID-SISWA-001',
         ];
 
         // Ambil Dompet Siswa dari database
-        $studentWallet = $profile ? \App\Models\StudentWallet::where('student_profile_id', $profile->id)->first() : null;
+        $studentWallet = $profile ? StudentWallet::where('student_profile_id', $profile->id)->first() : null;
         $wallet = [
             'balance' => (float) ($studentWallet?->balance ?? 85000),
             'daily_limit' => (float) ($studentWallet?->daily_limit ?? 50000),
@@ -72,7 +72,7 @@ class PortalController extends Controller
         ];
 
         // Ambil Tagihan SPP Siswa dari database
-        $studentBills = $profile ? \App\Models\StudentBill::where('student_profile_id', $profile->id)->with('feeCategory')->get() : collect();
+        $studentBills = $profile ? StudentBill::where('student_profile_id', $profile->id)->with('feeCategory')->get() : collect();
         $unpaidBillsCount = $studentBills->whereIn('status', ['unpaid', 'partial'])->count();
         $totalArrears = $studentBills->whereIn('status', ['unpaid', 'partial'])->sum(fn ($b) => $b->remaining_amount);
 
@@ -125,7 +125,7 @@ class PortalController extends Controller
             ->where('parent_user_id', $user->id)
             ->get()
             ->map(function ($child) {
-                $todayAttendance = \App\Models\Attendance::where('user_id', $child->user_id)
+                $todayAttendance = Attendance::where('user_id', $child->user_id)
                     ->whereDate('date', now()->toDateString())
                     ->first();
 
@@ -141,11 +141,11 @@ class PortalController extends Controller
                     'rfid_uid' => $child->rfid_uid,
                     'attendance_today' => [
                         'status' => $todayAttendance ? ucfirst($todayAttendance->status) : 'Hadir Tepat Waktu',
-                        'time' => $todayAttendance?->time_in ? date('H:i', strtotime($todayAttendance->time_in)) . ' WIB' : '06:48 WIB',
+                        'time' => $todayAttendance?->time_in ? date('H:i', strtotime($todayAttendance->time_in)).' WIB' : '06:48 WIB',
                         'gate' => 'Gerbang Utama Siswa',
                     ],
                     'bills' => [
-                        'spp_status' => $unpaidBills->isEmpty() ? 'Lunas (Bulan Berjalan)' : 'Ada ' . $unpaidBills->count() . ' Tunggakan',
+                        'spp_status' => $unpaidBills->isEmpty() ? 'Lunas (Bulan Berjalan)' : 'Ada '.$unpaidBills->count().' Tunggakan',
                         'total_arrears' => (float) $totalTunggakan,
                         'savings_balance' => (float) ($child->wallet?->balance ?? 125000),
                         'daily_limit' => (float) ($child->wallet?->daily_limit ?? 50000),

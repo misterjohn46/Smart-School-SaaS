@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Models\AcademicYear;
-use App\Models\Classroom;
-use App\Models\Department;
-use App\Models\StudentProfile;
-use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -20,9 +15,13 @@ class SchoolAdminDashboardTest extends TestCase
     use RefreshDatabase;
 
     protected User $superAdmin;
+
     protected User $schoolAdmin;
+
     protected User $teacher;
+
     protected User $student;
+
     protected User $parent;
 
     protected function setUp(): void

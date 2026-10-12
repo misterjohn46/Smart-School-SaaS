@@ -43,19 +43,19 @@ class SchoolAdminOverviewWidget extends BaseWidget
                 ->color('primary')
                 ->chart([20, 30, 45, 60, 80, 110, 150]),
 
-            Stat::make('Presensi Hari Ini', number_format($todayAttendanceCount, 0, ',', '.') . ' Tap')
+            Stat::make('Presensi Hari Ini', number_format($todayAttendanceCount, 0, ',', '.').' Tap')
                 ->description('Kehadiran RFID tap & GPS geofencing')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('success')
                 ->chart([10, 25, 40, 55, 70, 90, 100]),
 
-            Stat::make('Penerimaan Kas & SPP', 'Rp ' . number_format((float) $totalPayments, 0, ',', '.'))
+            Stat::make('Penerimaan Kas & SPP', 'Rp '.number_format((float) $totalPayments, 0, ',', '.'))
                 ->description('Total kas SPP & tagihan terverifikasi')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('warning')
                 ->chart([5, 15, 25, 45, 65, 80, 95]),
 
-            Stat::make('Omset E-Kantin Cashless', 'Rp ' . number_format((float) $totalCanteen, 0, ',', '.'))
+            Stat::make('Omset E-Kantin Cashless', 'Rp '.number_format((float) $totalCanteen, 0, ',', '.'))
                 ->description('Transaksi dompet digital kartu KTS')
                 ->descriptionIcon('heroicon-m-shopping-bag')
                 ->color('info')

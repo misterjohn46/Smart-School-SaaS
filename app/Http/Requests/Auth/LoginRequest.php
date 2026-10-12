@@ -66,11 +66,13 @@ class LoginRequest extends FormRequest
 
         if ($loginType === 'parent') {
             $this->authenticateParent($identifier);
+
             return;
         }
 
         if ($loginType === 'student') {
             $this->authenticateStudent($identifier);
+
             return;
         }
 

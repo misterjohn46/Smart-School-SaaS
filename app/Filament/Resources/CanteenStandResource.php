@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasSchoolAccessOnly;
 use App\Filament\Resources\CanteenStandResource\Pages;
 use App\Models\CanteenStand;
 use Filament\Actions;
@@ -20,13 +21,16 @@ use UnitEnum;
 
 class CanteenStandResource extends Resource
 {
-    use \App\Filament\Concerns\HasSchoolAccessOnly;
+    use HasSchoolAccessOnly;
 
     protected static ?string $model = CanteenStand::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'E-Kantin Sekolah';
+    protected static string|UnitEnum|null $navigationGroup = 'E-Kantin Sekolah';
+
     protected static ?string $navigationLabel = 'Stand & Vendor Kantin';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-storefront';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-storefront';
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasFinanceAccessOnly;
 use App\Filament\Resources\StudentWalletResource\Pages;
 use App\Models\StudentWallet;
 use App\Services\WalletService;
@@ -18,13 +19,16 @@ use UnitEnum;
 
 class StudentWalletResource extends Resource
 {
-    use \App\Filament\Concerns\HasFinanceAccessOnly;
+    use HasFinanceAccessOnly;
 
     protected static ?string $model = StudentWallet::class;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Tabungan & E-Wallet';
+    protected static string|UnitEnum|null $navigationGroup = 'Tabungan & E-Wallet';
+
     protected static ?string $navigationLabel = 'Rekening Tabungan Siswa';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-wallet';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-wallet';
+
     protected static ?int $navigationSort = 1;
 
     public static function table(Table $table): Table

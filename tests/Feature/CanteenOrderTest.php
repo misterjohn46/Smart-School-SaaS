@@ -10,7 +10,6 @@ use App\Models\CanteenStand;
 use App\Models\StudentProfile;
 use App\Models\StudentWallet;
 use App\Services\CanteenService;
-use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -43,7 +42,7 @@ class CanteenOrderTest extends TestCase
                     'menu_id' => $menu->id,
                     'quantity' => $orderQty,
                     'special_request' => 'Pedas sedang',
-                ]
+                ],
             ],
             'payment_method' => 'wallet',
             'pin' => '123456',
@@ -82,7 +81,7 @@ class CanteenOrderTest extends TestCase
                 [
                     'menu_id' => $menu->id,
                     'quantity' => 5, // melebihi stok
-                ]
+                ],
             ],
             'payment_method' => 'wallet',
             'pin' => '123456',

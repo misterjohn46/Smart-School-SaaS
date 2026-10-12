@@ -44,9 +44,9 @@ class SchoolRegistrationController extends Controller
 
         $subdomain = Str::lower($validated['subdomain']);
         $host = $request->getHost();
-        
+
         // Bentuk domain penuh (misal: sman1.localhost atau sman1.sekolahku.id)
-        $domainName = $subdomain . '.' . $host;
+        $domainName = $subdomain.'.'.$host;
 
         // Cek apakah domain sudah digunakan
         if (DB::table('domains')->where('domain', $domainName)->exists()) {
@@ -93,8 +93,8 @@ class SchoolRegistrationController extends Controller
 
             $protocol = $request->secure() ? 'https://' : 'http://';
             $port = $request->getPort();
-            $portSuffix = ($port && !in_array($port, [80, 443])) ? ':' . $port : '';
-            $tenantUrl = $protocol . $domainName . $portSuffix;
+            $portSuffix = ($port && ! in_array($port, [80, 443])) ? ':'.$port : '';
+            $tenantUrl = $protocol.$domainName.$portSuffix;
 
             return response()->json([
                 'success' => true,

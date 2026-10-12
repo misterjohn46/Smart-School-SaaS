@@ -9,7 +9,6 @@ use App\Models\FeeCategory;
 use App\Models\Payment;
 use App\Models\StudentBill;
 use App\Models\StudentProfile;
-use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -59,12 +58,12 @@ class FinanceService
                 $monthNames = [
                     1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
                     5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
                 ];
-                $periodText = $month ? ($monthNames[$month] ?? "Bulan $month") . " $year" : "Tahun $year";
+                $periodText = $month ? ($monthNames[$month] ?? "Bulan $month")." $year" : "Tahun $year";
                 $title = "{$category->name} - {$periodText}";
 
-                $billNumber = 'INV/' . date('Ym') . '/' . strtoupper(Str::random(6));
+                $billNumber = 'INV/'.date('Ym').'/'.strtoupper(Str::random(6));
 
                 StudentBill::create([
                     'student_profile_id' => $student->id,
@@ -90,7 +89,7 @@ class FinanceService
     /**
      * Proses pembayaran tagihan siswa (Tunai, Transfer, QRIS, atau Dompet Digital).
      *
-     * @param array $billAllocations [ ['bill_id' => 1, 'amount' => 350000], ... ]
+     * @param  array  $billAllocations  [ ['bill_id' => 1, 'amount' => 350000], ... ]
      */
     public function processPayment(
         int $studentProfileId,
@@ -115,7 +114,7 @@ class FinanceService
             $notes
         ) {
             $student = StudentProfile::findOrFail($studentProfileId);
-            $paymentNumber = 'PAY/' . date('Ymd') . '/' . strtoupper(Str::random(6));
+            $paymentNumber = 'PAY/'.date('Ymd').'/'.strtoupper(Str::random(6));
 
             // Jika metode pembayaran menggunakan dompet digital sekolah
             if ($paymentMethod === 'wallet') {
@@ -131,7 +130,7 @@ class FinanceService
                 );
             }
 
-            $status = ($paymentMethod === 'bank_transfer' && !empty($proofDocument)) ? 'pending' : 'verified';
+            $status = ($paymentMethod === 'bank_transfer' && ! empty($proofDocument)) ? 'pending' : 'verified';
 
             $payment = Payment::create([
                 'payment_number' => $paymentNumber,
@@ -232,25 +231,25 @@ class FinanceService
         $terbilang = '';
 
         if ($angka < 12) {
-            $terbilang = ' ' . $baca[(int) $angka];
+            $terbilang = ' '.$baca[(int) $angka];
         } elseif ($angka < 20) {
-            $terbilang = self::penyebut($angka - 10) . ' Belas';
+            $terbilang = self::penyebut($angka - 10).' Belas';
         } elseif ($angka < 100) {
-            $terbilang = self::penyebut((int) ($angka / 10)) . ' Puluh' . self::penyebut($angka % 10);
+            $terbilang = self::penyebut((int) ($angka / 10)).' Puluh'.self::penyebut($angka % 10);
         } elseif ($angka < 200) {
-            $terbilang = ' Seratus' . self::penyebut($angka - 100);
+            $terbilang = ' Seratus'.self::penyebut($angka - 100);
         } elseif ($angka < 1000) {
-            $terbilang = self::penyebut((int) ($angka / 100)) . ' Ratus' . self::penyebut($angka % 100);
+            $terbilang = self::penyebut((int) ($angka / 100)).' Ratus'.self::penyebut($angka % 100);
         } elseif ($angka < 2000) {
-            $terbilang = ' Seribu' . self::penyebut($angka - 1000);
+            $terbilang = ' Seribu'.self::penyebut($angka - 1000);
         } elseif ($angka < 1000000) {
-            $terbilang = self::penyebut((int) ($angka / 1000)) . ' Ribu' . self::penyebut($angka % 1000);
+            $terbilang = self::penyebut((int) ($angka / 1000)).' Ribu'.self::penyebut($angka % 1000);
         } elseif ($angka < 1000000000) {
-            $terbilang = self::penyebut((int) ($angka / 1000000)) . ' Juta' . self::penyebut(fmod($angka, 1000000));
+            $terbilang = self::penyebut((int) ($angka / 1000000)).' Juta'.self::penyebut(fmod($angka, 1000000));
         } elseif ($angka < 1000000000000) {
-            $terbilang = self::penyebut((int) ($angka / 1000000000)) . ' Miliar' . self::penyebut(fmod($angka, 1000000000));
+            $terbilang = self::penyebut((int) ($angka / 1000000000)).' Miliar'.self::penyebut(fmod($angka, 1000000000));
         } else {
-            $terbilang = self::penyebut((int) ($angka / 1000000000000)) . ' Triliun' . self::penyebut(fmod($angka, 1000000000000));
+            $terbilang = self::penyebut((int) ($angka / 1000000000000)).' Triliun'.self::penyebut(fmod($angka, 1000000000000));
         }
 
         return $terbilang;
@@ -262,6 +261,7 @@ class FinanceService
     public static function terbilang(float|int $angka): string
     {
         $hasil = trim(preg_replace('/\s+/', ' ', self::penyebut($angka)));
-        return $hasil === '' ? 'Nol Rupiah' : $hasil . ' Rupiah';
+
+        return $hasil === '' ? 'Nol Rupiah' : $hasil.' Rupiah';
     }
 }
