@@ -357,7 +357,7 @@ class CbtController extends Controller
                 (float) $grade->quiz_score,
                 (float) $grade->midterm_score,
                 (float) $grade->final_score,
-                (int) ($bank->subject->passing_grade ?? 75)
+                (int) ($bank->subject->kkm ?? 75)
             );
 
             $grade->overall_score = $calc['overall_score'];

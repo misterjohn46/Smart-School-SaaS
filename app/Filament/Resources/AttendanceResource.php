@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasSchoolAccessOnly;
+use App\Filament\Exports\AttendanceExporter;
 use App\Filament\Resources\AttendanceResource\Pages;
 use App\Models\Attendance;
 use Filament\Actions;
@@ -146,6 +147,10 @@ class AttendanceResource extends Resource
             ])
             ->bulkActions([
                 Actions\BulkActionGroup::make([
+                    // Ekspor hanya baris yang dipilih (mis. satu rombel / satu bulan).
+                    Actions\ExportBulkAction::make()
+                        ->label('Ekspor Terpilih')
+                        ->exporter(AttendanceExporter::class),
                     Actions\DeleteBulkAction::make(),
                 ]),
             ]);

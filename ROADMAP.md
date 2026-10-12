@@ -4,7 +4,10 @@
 > **Arsitektur Utama:** Multi-Tenancy (Multi-Database via `stancl/tenancy` v3)  
 > **Mesin CBT:** Decoupled Architecture (Server Ujian VPS Terpisah On-Demand)  
 > **Frontend Nyata:** Inertia 2 + Vue 3 + Tailwind CSS 3 (panel admin: Filament 5)  
-> **Status:** Fase 1-3 berjalan; Fase 4 sebagian besar selesai; isolasi tenant belum aktif
+> **Status:** Fase 1-4 praktis tuntas (sisa: arus kas & kelengkapan kantin vendor).
+> Fase 5 (LMS), Fase 6 (mesin CBT & klien ujian), dan Fase 7 (layanan pendukung) belum dimulai.
+>
+> Legenda: `[x]` selesai · `[~]` sebagian · `[ ]` belum
 
 > ⚠️ **Perbedaan dengan rancangan awal:** dokumen ini semula merencanakan TALL stack
 > (Livewire 3 + Alpine.js). Implementasinya memakai **Inertia + Vue 3**; Livewire hanya
@@ -16,8 +19,8 @@
 - [x] **1. Super Admin Platform:** Pemilik SaaS (billing langganan, manajemen tenant sekolah, node CBT).
 - [x] **2. Admin Sekolah / Tata Usaha (TU):** Pengelola data induk sekolah, konfigurasi, dan pengguna.
 - [x] **3. Guru Pengajar:** Pengampu mata pelajaran, absensi, input nilai. *(materi LMS belum)*
-- [x] **4. Guru BK:** Penanganan kasus pelanggaran & poin kedisiplinan. *(SP 1-3, BAP PDF, sesi konseling belum)*
-- [x] **5. Bendahara Sekolah:** POS SPP, tagihan, tabungan siswa. *(arus kas & verifikasi transfer belum)*
+- [x] **4. Guru BK:** Pelanggaran, poin kedisiplinan, dan level SP-1/2/3. *(BAP PDF & sesi konseling belum)*
+- [x] **5. Bendahara Sekolah:** POS SPP, tagihan, tabungan siswa, verifikasi transfer. *(arus kas & neraca belum)*
 - [x] **6. Operator Sekolah:** Pembantu administrasi akademik.
 - [x] **7. Staf Sekolah:** Tenaga kependidikan non-guru, presensi harian GPS.
 - [x] **8. Siswa:** Portal Mobile-First, KTS digital, e-kantin, dompet. *(LMS, tugas, kuis belum)*
@@ -76,7 +79,9 @@
 ### [Fase 3] KTS Digital & Presensi Cerdas Terintegrasi
 - [x] Generator Kartu Tanda Siswa (KTS) Digital format standar ISO CR-80 (85.6mm x 54mm)
 - [x] Generator QR Code Vektor presisi tinggi berbasis NISN
-- [x] KTS Template Builder (warna header, aksen, watermark) & Bulk Print PDF format A4 (8 kartu/halaman)
+- [x] KTS Template Builder (warna header, aksen, watermark) & Bulk Print PDF A4 (8 kartu/halaman)
+      — PDF digenerate server (`kts.batch.pdf`, dompdf) dengan satuan milimeter sehingga
+      kartu presisi 85,6mm x 54mm; cetak lewat dialog browser tetap tersedia sebagai opsi
 - [x] Modul Presensi QR Code Siswa & preview kartu bolak-balik 3D
 - [x] **Presensi IoT RFID Standalone (Opsi B - ESP32 / RC522 via WiFi):**
   - [x] Endpoint API Aman: `POST /api/v1/attendance/tap-rfid` dengan validasi `X-Device-Token`
@@ -89,7 +94,10 @@
       `AttendanceService::sendWhatsAppAttendanceAlert` hanya mencatat ke log (nomor dimasker),
       gateway sesungguhnya (Fonnte/Wablas/Baileys) dijadwalkan di Fase 7
 - [x] Pengajuan Izin / Sakit dengan Lampiran Berkas (E-Leave Approval Workflow)
-- [x] Rekapitulasi Presensi & Ekspor Data (`AttendanceResource`)
+- [x] Rekapitulasi Presensi & Ekspor Data (`AttendanceResource`) — ekspor XLSX/CSV lewat
+      `AttendanceExporter`: aksi header (mengikuti filter tabel) dan aksi massal
+      (baris terpilih). Query ekspor dibatasi tenant secara eksplisit dan nilai teks
+      bebas dinetralkan terhadap CSV formula injection.
 
 ### [Fase 4] Keuangan Sekolah, Tabungan (E-Wallet) & E-Kantin Digital
 - [x] Master Pos Biaya (SPP Bulanan, Uang Gedung, Seragam, Ujian) — `FinanceController` + `FeeCategoryResource`
@@ -124,12 +132,23 @@
 - [ ] LMS: Tugas Siswa, Batas Deadline, Submisi Berkas & Penilaian Guru
 - [ ] LMS: Topik Kuis Interaktif & Integrasi Live Class Meeting Stream
 - [ ] Gamifikasi Belajar: Perolehan XP, Lencana (Badges), Leaderboard, & Progress Bar
-- [ ] Transkrip Nilai Akademik Terpadu (Tugas, Harian, UTS, UAS) & Bulk Grading
-- [ ] Modul Cetak e-Raport Digital PDF (Format Resmi Kurikulum Merdeka / K13)
-- [ ] Kalkulasi Predikat KKM & Catatan Akademik Wali Kelas Otomatis
+- [x] Transkrip Nilai Akademik Terpadu (Tugas, Harian, UTS, UAS) & Bulk Grading
+      — kolom `assignment_score`/`quiz_score`/`midterm_score`/`final_score` pada
+      `student_grades`, input massal lewat `GradeController::batchStoreOrUpdate`
+- [x] Kalkulasi Predikat KKM & Catatan Akademik Wali Kelas
+      — `StudentGrade::calculateScore()` (bobot 20/20/30/30, predikat A-D, status
+      ketuntasan) dan `AcademicReportController::storeRemark`
+- [x] Modul Cetak e-Raport Digital PDF — `academic.reports.pdf` (dompdf): kop sekolah,
+      identitas siswa, rincian nilai per mapel (tugas/harian/UTS/UAS), nilai akhir,
+      predikat, ketuntasan KKM, rekap ketidakhadiran, ekstrakurikuler, catatan wali
+      kelas, keputusan kenaikan, dan ruang tanda tangan
+  - [ ] Penyesuaian format resmi Kurikulum Merdeka / K13 (capaian pembelajaran per
+        elemen & deskripsi otomatis) — struktur saat ini masih format nilai angka
 
 ### [Fase 6] Standalone CBT Engine (Server Ujian Terpisah & Android Exambro)
-- [ ] Modul Manajemen Ujian & Bank Soal di Server Utama (Impor/Ekspor Excel .xlsx)
+- [x] Modul Manajemen Ujian & Bank Soal di Server Utama — `CbtController`:
+      bank soal, butir soal, sesi ujian, token ujian, sinkron nilai ke buku nilai
+- [ ] Impor/Ekspor Bank Soal format Excel .xlsx
 - [ ] Aplikasi Node CBT Terpisah (High-Performance Engine):
   - [ ] **Mode 1 (Full Online):** VPS Cloud On-Demand terpisah dengan Redis Auto-Save Caching
   - [ ] **Mode 2 (Semi-Offline Gaya ANBK):** Server Lab Lokal Sekolah (Download Soal, Ujian 100% Offline via LAN/WiFi, Upload Nilai ke Cloud)
@@ -143,17 +162,27 @@
   - [ ] Blokir Klik Kanan, Inspect Element, Text Selection & Copy-Paste
 - [ ] REST API Deploy Soal & Peserta dari Server Utama ke Server CBT
 - [ ] Antarmuka Ujian Siswa: Live Timer, Indikator Ragu-ragu, Auto-Save LocalStorage + Redis
-- [ ] Auto-Grading Pilihan Ganda & Antarmuka Koreksi Manual Essay + Catatan Guru
+      — yang ada baru simulator pengerjaan dari sisi admin (`submitSimulation`),
+      belum antarmuka ujian untuk siswa
+- [~] Auto-Grading Pilihan Ganda & Koreksi Manual Essay
+  - [x] Auto-grading pilihan ganda (`CbtController::submitSimulation`)
+  - [ ] Antarmuka koreksi manual essay + catatan guru
 - [ ] REST API Sinkronisasi Nilai Ujian kembali ke Server Utama (e-Raport)
 - [ ] Dashboard Diagnostik Server CBT: RAM, CPU, PHP Memory, Concurrent Users Calculator, 1-Click Cache Toolkit
 
 ### [Fase 7] Layanan Pendukung (BK, PPDB, Perpustakaan, Profil Web, Maintenance)
-- [ ] Modul BK: Poin Pelanggaran (Ringan-Sangat Berat), SP-1/2/3, Berita Acara (BAP) Generator PDF
+- [~] Modul BK: Poin Pelanggaran, SP-1/2/3, Berita Acara (BAP) PDF
+  - [x] Katalog tata tertib berbobot poin & pencatatan pelanggaran (`StudentViolationController`)
+  - [x] Perhitungan otomatis level sanksi SP-1 (21-40) / SP-2 (41-74) / SP-3 (>=75)
+  - [ ] Generator Berita Acara (BAP) format PDF
 - [ ] Modul BK: Sesi Konseling (Individu, Kelompok, Karir) & Asesmen Minat Bakat
-- [ ] Portal Orang Tua: Dashboard Monitoring 4-Tab (Presensi, Nilai, SPP, Jadwal/Pengumuman)
+- [x] Portal Orang Tua: Dashboard Monitoring (Presensi, Nilai, SPP/Tunggakan, Jadwal)
+      — `PortalController::parent` + `Portal/ParentDashboard.vue`
 - [ ] Penerimaan Murid Baru (SPMB / PPDB Online) Multi-Step & Konversi Otomatis Akun Siswa
 - [ ] Perpustakaan Digital: Katalog Buku Fisik, Sirkulasi Tap RFID & Built-in Mozilla PDF.js Reader
-- [ ] Manajemen Akademik: Jadwal Pelajaran KBM, Kurikulum & Ekstrakurikuler
+- [~] Manajemen Akademik: Jadwal Pelajaran KBM, Kurikulum & Ekstrakurikuler
+  - [x] Jadwal Pelajaran KBM (`LessonSchedule`, `ScheduleController`, `LessonScheduleResource`)
+  - [ ] Kurikulum & Ekstrakurikuler
 - [ ] WhatsApp Gateway & Broadcast Manager (Fonnte, Wablas, Baileys HTTP)
 - [ ] Website Utama Profil Sekolah (CMS, Berita SEO, Banner Slider, Galeri)
 - [ ] **Buku Tamu Digital (Digital Guest Book & Front Office Kiosk):**

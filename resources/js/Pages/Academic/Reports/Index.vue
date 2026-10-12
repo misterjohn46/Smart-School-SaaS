@@ -114,6 +114,13 @@ const printDocument = () => {
     window.print();
 };
 
+// Tautan e-Raport PDF per siswa, mengikuti tahun ajaran yang sedang dipilih.
+const reportPdfUrl = (row) =>
+    route('academic.reports.pdf', {
+        hashId: row.hash_id,
+        academic_year_id: props.selectedYearId,
+    });
+
 const selectedYearName = computed(() => {
     const yr = props.academicYears.find(y => y.id === props.selectedYearId);
     return yr ? `${yr.name} - Semester ${yr.semester}` : '2026/2027';
@@ -262,7 +269,7 @@ const selectedYearName = computed(() => {
                                         class="px-3 py-3 text-center border-r border-slate-200 min-w-[70px]"
                                     >
                                         <div class="font-bold">{{ sub.code }}</div>
-                                        <div class="text-[9px] text-slate-400 font-normal">KKM: {{ sub.passing_grade ?? 75 }}</div>
+                                        <div class="text-[9px] text-slate-400 font-normal">KKM: {{ sub.kkm ?? 75 }}</div>
                                     </th>
 
                                     <th class="px-3 py-3 text-center border-r border-slate-200 bg-indigo-50/50 text-indigo-950 font-black">Total</th>
@@ -333,6 +340,16 @@ const selectedYearName = computed(() => {
                                         >
                                             Rapor
                                         </button>
+                                        <!-- e-Raport PDF digenerate server, bukan dialog cetak browser -->
+                                        <a
+                                            :href="reportPdfUrl(row)"
+                                            target="_blank"
+                                            rel="noopener"
+                                            class="inline-block px-2 py-1 text-xs font-semibold text-rose-600 bg-rose-50 rounded-lg hover:bg-rose-100 transition-colors"
+                                            title="Unduh e-Raport PDF"
+                                        >
+                                            PDF
+                                        </a>
                                         <button
                                             @click="openRemarkModal(row)"
                                             class="px-2 py-1 text-xs font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
@@ -637,7 +654,7 @@ const selectedYearName = computed(() => {
                                 <tr v-for="(sub, idx) in subjects" :key="sub.id">
                                     <td class="border border-slate-300 px-2 py-1.5 text-center">{{ idx + 1 }}</td>
                                     <td class="border border-slate-300 px-3 py-1.5 font-medium">{{ sub.name }}</td>
-                                    <td class="border border-slate-300 px-2 py-1.5 text-center">{{ sub.passing_grade ?? 75 }}</td>
+                                    <td class="border border-slate-300 px-2 py-1.5 text-center">{{ sub.kkm ?? 75 }}</td>
                                     <td class="border border-slate-300 px-2 py-1.5 text-center font-bold">
                                         {{ st?.grades[sub.id]?.overall_score ?? '-' }}
                                     </td>

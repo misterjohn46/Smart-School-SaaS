@@ -57,7 +57,7 @@ class AcademicReportManagementTest extends TestCase
         $this->subject2 = $subjects[1] ?? Subject::create([
             'code' => 'KDK02',
             'name' => 'Kejuruan 2',
-            'passing_grade' => 75.0,
+            'kkm' => 75,
             'is_active' => true,
         ]);
 

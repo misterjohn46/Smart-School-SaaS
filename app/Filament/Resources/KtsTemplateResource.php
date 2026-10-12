@@ -110,6 +110,12 @@ class KtsTemplateResource extends Resource
                     ->icon('heroicon-o-printer')
                     ->color('success')
                     ->url('/kts/batch-print', shouldOpenInNewTab: true),
+
+                Actions\Action::make('batch_print_pdf')
+                    ->label('Unduh PDF (ISO CR-80)')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('gray')
+                    ->url('/kts/batch-print/pdf', shouldOpenInNewTab: true),
                 Actions\EditAction::make(),
                 Actions\DeleteAction::make(),
             ])

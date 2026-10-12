@@ -10,8 +10,10 @@ use App\Models\StudentGrade;
 use App\Models\StudentProfile;
 use App\Models\StudentReportRemark;
 use App\Models\Subject;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -35,7 +37,10 @@ class AcademicReportController extends Controller
             : ($classrooms->first()?->id ?? 0);
 
         $selectedClassroom = $classrooms->firstWhere('id', $selectedClassroomId);
-        $subjects = Subject::where('is_active', true)->orderBy('name')->get(['id', 'code', 'name', 'passing_grade']);
+        // Kolom KKM pada tabel subjects bernama `kkm`, bukan `passing_grade`.
+        // Dengan nama lama, SELECT diam-diam lolos di SQLite (identifier tak dikenal
+        // dalam kutip ganda diperlakukan sebagai literal string) tetapi gagal di MySQL.
+        $subjects = Subject::where('is_active', true)->orderBy('name')->get(['id', 'code', 'name', 'kkm']);
 
         // Data Siswa dalam Rombel
         $students = [];
@@ -103,6 +108,8 @@ class AcademicReportController extends Controller
 
                 $tempRows[] = [
                     'student_id' => $student->id,
+                    // Dipakai tautan unduh PDF rapor (route academic.reports.pdf).
+                    'hash_id' => $student->hash_id,
                     'nisn' => $student->nisn,
                     'name' => $student->full_name ?? $student->user?->name ?? 'Siswa',
                     'gender' => $student->gender ?? 'L',
@@ -185,5 +192,84 @@ class AcademicReportController extends Controller
         ]);
 
         return back()->with('success', 'Catatan wali kelas dan absensi rapor berhasil disimpan.');
+    }
+
+    /**
+     * Cetak e-Raport satu siswa sebagai berkas PDF.
+     *
+     * Nilai, predikat, dan status ketuntasan memakai perhitungan yang sama dengan
+     * buku nilai (StudentGrade::calculateScore) agar rapor tidak pernah berbeda
+     * dengan leger.
+     */
+    public function printReportCard(Request $request, string $hashId): HttpResponse
+    {
+        $student = StudentProfile::with(['user', 'classroom.department', 'classroom.gradeLevel'])
+            ->whereHashId($hashId)
+            ->firstOrFail();
+
+        $academicYear = $request->filled('academic_year_id')
+            ? AcademicYear::findOrFail((int) $request->input('academic_year_id'))
+            : (AcademicYear::where('is_active', true)->firstOrFail());
+
+        $subjects = Subject::where('is_active', true)->orderBy('name')->get(['id', 'code', 'name', 'kkm']);
+
+        $grades = StudentGrade::where('academic_year_id', $academicYear->id)
+            ->where('student_profile_id', $student->id)
+            ->get()
+            ->keyBy('subject_id');
+
+        $rows = [];
+        $totalScore = 0.0;
+        $scoredCount = 0;
+        $passedCount = 0;
+
+        foreach ($subjects as $subject) {
+            $grade = $grades->get($subject->id);
+
+            if (! $grade) {
+                continue;
+            }
+
+            $overall = (float) $grade->overall_score;
+            $totalScore += $overall;
+            $scoredCount++;
+
+            if ($grade->is_passed) {
+                $passedCount++;
+            }
+
+            $rows[] = [
+                'code' => $subject->code,
+                'name' => $subject->name,
+                'kkm' => (int) $subject->kkm,
+                'assignment' => (float) $grade->assignment_score,
+                'quiz' => (float) $grade->quiz_score,
+                'midterm' => (float) $grade->midterm_score,
+                'final' => (float) $grade->final_score,
+                'overall' => $overall,
+                'letter' => $grade->letter_grade,
+                'is_passed' => (bool) $grade->is_passed,
+            ];
+        }
+
+        $remark = StudentReportRemark::where('academic_year_id', $academicYear->id)
+            ->where('student_profile_id', $student->id)
+            ->first();
+
+        $pdf = Pdf::loadView('pdf.report-card', [
+            'student' => $student,
+            'academicYear' => $academicYear,
+            'rows' => $rows,
+            'average' => $scoredCount > 0 ? round($totalScore / $scoredCount, 2) : 0.0,
+            'scoredCount' => $scoredCount,
+            'passedCount' => $passedCount,
+            'remark' => $remark,
+            'schoolName' => tenancy()->initialized ? (string) tenant()->school_name : config('app.name'),
+            'printedAt' => now(),
+        ])->setPaper('a4', 'portrait');
+
+        $fileName = 'e-raport-'.str($student->nisn ?: $student->id)->slug().'-'.$academicYear->id.'.pdf';
+
+        return $pdf->stream($fileName);
     }
 }

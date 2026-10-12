@@ -165,6 +165,7 @@ Route::middleware(['auth', $roleAcademicAdmin])->group(function () {
 
     // Modul KTS Digital ISO CR-80 & Batch Print
     Route::get('/kts/batch-print', [KtsController::class, 'batchPrint'])->name('kts.batch');
+    Route::get('/kts/batch-print/pdf', [KtsController::class, 'batchPrintPdf'])->name('kts.batch.pdf');
 
     // Pengaturan Geofence GPS & Jam Kerja Presensi
     Route::get('/attendance/settings', [AttendanceSettingController::class, 'index'])->name('attendance.settings.index');
@@ -186,6 +187,7 @@ Route::middleware(['auth', $roleAcademicStaff])->group(function () {
     // Leger Nilai & Buku Rapor Siswa
     Route::get('/academic/reports', [AcademicReportController::class, 'index'])->name('academic.reports.index');
     Route::post('/academic/reports/remarks', [AcademicReportController::class, 'storeRemark'])->name('academic.reports.remarks.store');
+    Route::get('/academic/reports/{hashId}/pdf', [AcademicReportController::class, 'printReportCard'])->name('academic.reports.pdf');
 
     // Presensi Kelas & Absensi Siswa per Jam Pelajaran
     Route::get('/attendance/classroom', [ClassroomAttendanceController::class, 'index'])->name('attendance.classroom.index');

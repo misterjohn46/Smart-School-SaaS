@@ -176,6 +176,23 @@ production build. Untuk produksi: `APP_ENV=production`, `APP_DEBUG=false`,
 `SESSION_ENCRYPT=true`, `LOG_LEVEL=warning`, serta atur `CENTRAL_DOMAINS`,
 database, mail, queue, cache, dan domain Sanctum sesuai lingkungan.
 
+## Cetak PDF & ekspor data
+
+| Keluaran | Rute / Aksi | Catatan |
+|---|---|---|
+| e-Raport PDF per siswa | `GET /academic/reports/{hashId}/pdf` | peran akademik; memakai perhitungan `StudentGrade::calculateScore` yang sama dengan buku nilai |
+| KTS massal PDF A4 | `GET /kts/batch-print/pdf` | 8 kartu/halaman, satuan milimeter sehingga presisi ISO CR-80 (85,6mm × 54mm) |
+| Rekap presensi XLSX/CSV | aksi "Ekspor Rekap" & "Ekspor Terpilih" di `AttendanceResource` | mengikuti filter tabel; query dibatasi tenant secara eksplisit |
+
+PDF dibuat dengan `barryvdh/laravel-dompdf`; ekspor memakai dukungan bawaan Filament
+(`openspout`, tanpa paket tambahan). Ekspor berjalan di queue — pastikan worker aktif
+di produksi (`php artisan queue:work`), jika tidak berkas ekspor tidak akan pernah jadi.
+
+Catatan keamanan ekspor: `Filament\Actions\Exports\Exporter` tidak memeriksa policy
+per baris, jadi pembatasan dilakukan di `AttendanceExporter::modifyQuery()`. Nilai teks
+bebas (nama, catatan) diberi prefix apostrof bila diawali `=`, `+`, `-`, atau `@` untuk
+mencegah CSV formula injection.
+
 ## Penyimpanan berkas sensitif
 
 Bukti transfer bank disimpan di disk **`secure`** (`storage/app/secure`), bukan di

@@ -7,7 +7,9 @@ namespace App\Http\Controllers;
 use App\Models\Classroom;
 use App\Models\KtsTemplate;
 use App\Models\StudentProfile;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -119,5 +121,46 @@ class KtsController extends Controller
             'template' => $template,
             'classrooms' => Classroom::select('id', 'name')->get(),
         ]);
+    }
+
+    /**
+     * Cetak massal KTS sebagai berkas PDF A4 (8 kartu per halaman).
+     *
+     * Dibuat di sisi server dengan satuan milimeter supaya ukuran kartu benar-benar
+     * 85.6mm x 54mm (ISO/IEC 7810 ID-1 / CR-80). Halaman cetak browser tidak dapat
+     * menjamin ini karena bergantung pada skala dan margin pada dialog cetak.
+     */
+    public function batchPrintPdf(Request $request): HttpResponse
+    {
+        $validated = $request->validate([
+            'classroom_id' => ['nullable', 'integer', 'exists:classrooms,id'],
+        ]);
+
+        $query = StudentProfile::with(['classroom.department', 'user'])->orderBy('full_name');
+
+        if (! empty($validated['classroom_id'])) {
+            $query->where('classroom_id', (int) $validated['classroom_id']);
+        }
+
+        $students = $query->get();
+
+        if ($students->isEmpty()) {
+            abort(404, 'Tidak ada data siswa untuk dicetak.');
+        }
+
+        $classroom = ! empty($validated['classroom_id'])
+            ? Classroom::find((int) $validated['classroom_id'])
+            : null;
+
+        $pdf = Pdf::loadView('pdf.kts-batch', [
+            'pages' => $students->chunk(8),
+            'template' => KtsTemplate::where('is_active', true)->first(),
+            'schoolName' => tenancy()->initialized ? (string) tenant()->school_name : config('app.name'),
+            'printedAt' => now(),
+        ])->setPaper('a4', 'portrait');
+
+        $slug = $classroom ? str($classroom->name)->slug()->value() : 'semua-kelas';
+
+        return $pdf->stream('kts-'.$slug.'-'.now()->format('Ymd-His').'.pdf');
     }
 }
