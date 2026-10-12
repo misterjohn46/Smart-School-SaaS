@@ -102,6 +102,7 @@ class AttendanceDevice extends Model
         return $token;
     }
 
+    /** @return HasMany<Attendance, $this> */
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class, 'device_id');

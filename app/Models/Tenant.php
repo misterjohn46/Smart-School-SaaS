@@ -101,17 +101,20 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         ];
     }
 
+    /** @return HasMany<Subscription, $this> */
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class, 'tenant_id');
     }
 
+    /** @return HasOne<Subscription, $this> */
     public function activeSubscription(): HasOne
     {
         return $this->hasOne(Subscription::class, 'tenant_id')
             ->latestOfMany();
     }
 
+    /** @return HasMany<Invoice, $this> */
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class, 'tenant_id');

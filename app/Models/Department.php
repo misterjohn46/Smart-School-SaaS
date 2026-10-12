@@ -19,6 +19,7 @@ class Department extends Model
         'is_active' => 'boolean',
     ];
 
+    /** @return HasMany<Classroom, $this> */
     public function classrooms(): HasMany
     {
         return $this->hasMany(Classroom::class);

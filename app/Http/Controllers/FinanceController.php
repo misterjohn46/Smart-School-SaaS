@@ -17,11 +17,19 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FinanceController extends Controller
 {
+    /**
+     * Disk penyimpanan bukti transfer. Lihat config/filesystems.php - disk ini
+     * tidak disajikan lewat rute bawaan framework.
+     */
+    public const PROOF_DISK = 'secure';
+
     public function __construct(
         protected FinanceService $financeService
     ) {}
@@ -224,7 +232,18 @@ class FinanceController extends Controller
             'notes' => 'nullable|string|max:255',
         ]);
 
-        $filePath = $request->file('proof_file')->store('payment_proofs', 'public');
+        $studentProfile = StudentProfile::findOrFail((int) $validated['student_profile_id']);
+
+        // Siswa / orang tua hanya boleh mengunggah bukti untuk dirinya sendiri.
+        // Petugas keuangan boleh mengunggah atas nama siswa mana pun.
+        if (! $this->isFinanceStaff($request) && ! $this->ownsStudentProfile($request, $studentProfile)) {
+            abort(403, 'Anda hanya dapat mengunggah bukti transfer untuk tagihan sendiri.');
+        }
+
+        // Disimpan di disk `secure`, bukan `public` maupun `local`. Bukti transfer
+        // memuat data rekening dan identitas sehingga tidak boleh dapat diakses lewat
+        // URL publik (/storage/...) tanpa pemeriksaan peran / kepemilikan.
+        $filePath = $request->file('proof_file')->store('payment_proofs', self::PROOF_DISK);
 
         $this->financeService->processPayment(
             (int) $validated['student_profile_id'],
@@ -239,6 +258,52 @@ class FinanceController extends Controller
         );
 
         return back()->with('success', 'Bukti transfer berhasil diunggah dan sedang menunggu verifikasi kasir.');
+    }
+
+    /**
+     * Menyajikan berkas bukti transfer dari disk privat.
+     *
+     * Hanya petugas keuangan dan siswa/orang tua pemilik tagihan yang berhak.
+     */
+    public function proofDocument(Request $request, string $hashId): StreamedResponse
+    {
+        $payment = Payment::with('studentProfile')->whereHashId($hashId)->firstOrFail();
+
+        if (empty($payment->proof_document)) {
+            abort(404, 'Pembayaran ini tidak memiliki berkas bukti transfer.');
+        }
+
+        if (! $this->isFinanceStaff($request) && ! $this->ownsStudentProfile($request, $payment->studentProfile)) {
+            abort(403, 'Anda tidak berhak membuka bukti transfer ini.');
+        }
+
+        $disk = Storage::disk(self::PROOF_DISK);
+
+        if (! $disk->exists($payment->proof_document)) {
+            abort(404, 'Berkas bukti transfer tidak ditemukan di penyimpanan.');
+        }
+
+        $extension = pathinfo($payment->proof_document, PATHINFO_EXTENSION);
+        $downloadName = 'bukti-transfer-'.$payment->payment_number.($extension ? '.'.$extension : '');
+
+        return $disk->response($payment->proof_document, str_replace('/', '-', $downloadName));
+    }
+
+    protected function isFinanceStaff(Request $request): bool
+    {
+        return (bool) $request->user()?->hasAnyRole(['admin', 'kepala_sekolah', 'bendahara']);
+    }
+
+    protected function ownsStudentProfile(Request $request, ?StudentProfile $studentProfile): bool
+    {
+        $user = $request->user();
+
+        if (! $user || ! $studentProfile) {
+            return false;
+        }
+
+        return $studentProfile->user_id === $user->id
+            || $studentProfile->parent_user_id === $user->id;
     }
 
     /**

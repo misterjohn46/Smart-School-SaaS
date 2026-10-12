@@ -21,6 +21,7 @@ class AcademicYear extends Model
         'end_date' => 'date',
     ];
 
+    /** @return HasMany<Classroom, $this> */
     public function classrooms(): HasMany
     {
         return $this->hasMany(Classroom::class);

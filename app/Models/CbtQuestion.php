@@ -20,6 +20,7 @@ class CbtQuestion extends Model
         'score_weight' => 'integer',
     ];
 
+    /** @return BelongsTo<CbtBank, $this> */
     public function bank(): BelongsTo
     {
         return $this->belongsTo(CbtBank::class, 'cbt_bank_id');

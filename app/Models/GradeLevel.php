@@ -19,6 +19,7 @@ class GradeLevel extends Model
         'level_numeric' => 'integer',
     ];
 
+    /** @return HasMany<Classroom, $this> */
     public function classrooms(): HasMany
     {
         return $this->hasMany(Classroom::class);

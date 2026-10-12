@@ -137,6 +137,15 @@ class PaymentResource extends Resource
                         Notification::make()->title('Pembayaran ditolak')->warning()->send();
                     }),
 
+                // Lihat Bukti Transfer (disajikan dari disk privat lewat rute bergerbang)
+                Actions\Action::make('viewProof')
+                    ->label('Bukti Transfer')
+                    ->icon('heroicon-o-paper-clip')
+                    ->color('warning')
+                    ->visible(fn (Payment $record): bool => filled($record->proof_document))
+                    ->url(fn (Payment $record): string => route('finance.proof', $record->hash_id))
+                    ->openUrlInNewTab(),
+
                 // Cetak Kuitansi Resmi
                 Actions\Action::make('print')
                     ->label('Kuitansi')

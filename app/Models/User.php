@@ -91,21 +91,26 @@ class User extends Authenticatable implements FilamentUser
     }
 
     // ─── Relasi Data ──────────────────────────────────────────────
+
+    /** @return HasOne<TeacherProfile, $this> */
     public function teacherProfile(): HasOne
     {
         return $this->hasOne(TeacherProfile::class);
     }
 
+    /** @return HasOne<StudentProfile, $this> */
     public function studentProfile(): HasOne
     {
         return $this->hasOne(StudentProfile::class);
     }
 
+    /** @return HasMany<StudentProfile, $this> */
     public function children(): HasMany
     {
         return $this->hasMany(StudentProfile::class, 'parent_user_id');
     }
 
+    /** @return HasMany<AuditTrail, $this> */
     public function auditTrails(): HasMany
     {
         return $this->hasMany(AuditTrail::class);

@@ -24,26 +24,31 @@ class StudentGrade extends Model
         'is_passed' => 'boolean',
     ];
 
+    /** @return BelongsTo<AcademicYear, $this> */
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /** @return BelongsTo<Classroom, $this> */
     public function classroom(): BelongsTo
     {
         return $this->belongsTo(Classroom::class);
     }
 
+    /** @return BelongsTo<Subject, $this> */
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }
 
+    /** @return BelongsTo<StudentProfile, $this> */
     public function studentProfile(): BelongsTo
     {
         return $this->belongsTo(StudentProfile::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_user_id');

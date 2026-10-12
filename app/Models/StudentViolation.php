@@ -22,26 +22,31 @@ class StudentViolation extends Model
         'parent_notified_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<AcademicYear, $this> */
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /** @return BelongsTo<StudentProfile, $this> */
     public function student(): BelongsTo
     {
         return $this->belongsTo(StudentProfile::class, 'student_id');
     }
 
+    /** @return BelongsTo<ViolationCategory, $this> */
     public function category(): BelongsTo
     {
         return $this->belongsTo(ViolationCategory::class, 'violation_category_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function reporter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reporter_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function handler(): BelongsTo
     {
         return $this->belongsTo(User::class, 'handled_by_user_id');

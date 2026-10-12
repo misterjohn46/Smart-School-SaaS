@@ -22,21 +22,25 @@ class StudentReportRemark extends Model
         'extracurriculars' => 'array',
     ];
 
+    /** @return BelongsTo<AcademicYear, $this> */
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /** @return BelongsTo<Classroom, $this> */
     public function classroom(): BelongsTo
     {
         return $this->belongsTo(Classroom::class);
     }
 
+    /** @return BelongsTo<StudentProfile, $this> */
     public function studentProfile(): BelongsTo
     {
         return $this->belongsTo(StudentProfile::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function homeroomTeacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_user_id');

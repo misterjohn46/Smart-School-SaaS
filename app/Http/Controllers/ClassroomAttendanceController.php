@@ -119,11 +119,14 @@ class ClassroomAttendanceController extends Controller
                 return [
                     'id' => $sp->id,
                     'user_id' => $sp->user_id,
-                    'nis' => $sp->nis ?: ($sp->nisn ?: '-'),
+                    // student_profiles tidak punya kolom `nis` (hanya `nisn`), dan
+                    // User tidak punya accessor `profile_photo_url` - foto siswa
+                    // tersimpan di student_profiles.photo_path.
+                    'nis' => $sp->nisn ?: '-',
                     'nisn' => $sp->nisn ?: '-',
                     'name' => $sp->full_name ?: ($sp->user?->name ?: 'Siswa'),
                     'gender' => $sp->gender ?: 'L',
-                    'avatar' => $sp->user?->profile_photo_url ?? null,
+                    'avatar' => $sp->photo_path ?: null,
                     'status' => $status,
                     'notes' => $notes,
                     'is_recorded' => $isRecorded,

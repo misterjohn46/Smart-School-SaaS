@@ -13,7 +13,6 @@ class Subscription extends Model
 {
     // Tabel ini hanya ada di database central (platform SaaS), bukan di database tenant.
     use CentralConnection;
-
     use HasFactory;
 
     protected $guarded = [];
@@ -25,11 +24,13 @@ class Subscription extends Model
         'cancelled_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Tenant, $this> */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
+    /** @return BelongsTo<Plan, $this> */
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);

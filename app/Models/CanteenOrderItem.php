@@ -20,11 +20,13 @@ class CanteenOrderItem extends Model
         'subtotal' => 'decimal:2',
     ];
 
+    /** @return BelongsTo<CanteenOrder, $this> */
     public function order(): BelongsTo
     {
         return $this->belongsTo(CanteenOrder::class, 'canteen_order_id');
     }
 
+    /** @return BelongsTo<CanteenMenu, $this> */
     public function menu(): BelongsTo
     {
         return $this->belongsTo(CanteenMenu::class, 'canteen_menu_id');

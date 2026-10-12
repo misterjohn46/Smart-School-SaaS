@@ -21,16 +21,19 @@ class CanteenStand extends Model
         'total_revenue' => 'decimal:2',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return HasMany<CanteenMenu, $this> */
     public function menus(): HasMany
     {
         return $this->hasMany(CanteenMenu::class);
     }
 
+    /** @return HasMany<CanteenOrder, $this> */
     public function orders(): HasMany
     {
         return $this->hasMany(CanteenOrder::class);

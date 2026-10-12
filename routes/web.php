@@ -99,6 +99,18 @@ Route::middleware(['auth'])->group(function () {
 
     // Preview KTS milik sendiri
     Route::get('/kts/preview/{hashId?}', [KtsController::class, 'preview'])->name('kts.preview');
+
+    // Unggah bukti transfer bank. Siswa/orang tua hanya untuk tagihan sendiri
+    // (diverifikasi di controller); petugas keuangan boleh atas nama siswa lain.
+    // Pembayaran yang dihasilkan berstatus `pending` sampai kasir memverifikasi.
+    Route::post('/finance/upload-proof', [FinanceController::class, 'uploadProof'])
+        ->middleware('throttle:12,1')
+        ->name('finance.upload-proof');
+
+    // Berkas bukti transfer disimpan di disk privat dan hanya disajikan lewat
+    // rute ini setelah pemeriksaan peran / kepemilikan.
+    Route::get('/finance/proof/{hashId}', [FinanceController::class, 'proofDocument'])
+        ->name('finance.proof');
 });
 
 /*
@@ -236,7 +248,6 @@ Route::middleware(['auth', $roleFinance])->group(function () {
     Route::get('/finance/search-students', [FinanceController::class, 'searchStudents'])->name('finance.search-students');
     Route::post('/finance/pay', [FinanceController::class, 'storePayment'])->name('finance.pay');
     Route::get('/finance/receipt/{hashId}', [FinanceController::class, 'receipt'])->name('finance.receipt');
-    Route::post('/finance/upload-proof', [FinanceController::class, 'uploadProof'])->name('finance.upload-proof');
 
     // Manajemen Tagihan Siswa & Batch Billing SPP
     Route::get('/finance/bills', [FinanceController::class, 'billsIndex'])->name('finance.bills.index');

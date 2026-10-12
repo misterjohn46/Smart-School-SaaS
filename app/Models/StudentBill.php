@@ -22,21 +22,25 @@ class StudentBill extends Model
         'due_date' => 'date',
     ];
 
+    /** @return BelongsTo<StudentProfile, $this> */
     public function studentProfile(): BelongsTo
     {
         return $this->belongsTo(StudentProfile::class);
     }
 
+    /** @return BelongsTo<FeeCategory, $this> */
     public function feeCategory(): BelongsTo
     {
         return $this->belongsTo(FeeCategory::class);
     }
 
+    /** @return BelongsTo<AcademicYear, $this> */
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /** @return BelongsToMany<Payment, $this> */
     public function payments(): BelongsToMany
     {
         return $this->belongsToMany(Payment::class, 'bill_payments')

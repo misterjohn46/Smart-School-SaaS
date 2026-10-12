@@ -22,21 +22,25 @@ class CbtBank extends Model
         'is_active' => 'boolean',
     ];
 
+    /** @return BelongsTo<Subject, $this> */
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_user_id');
     }
 
+    /** @return HasMany<CbtQuestion, $this> */
     public function questions(): HasMany
     {
         return $this->hasMany(CbtQuestion::class);
     }
 
+    /** @return HasMany<CbtExam, $this> */
     public function exams(): HasMany
     {
         return $this->hasMany(CbtExam::class);

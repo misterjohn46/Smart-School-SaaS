@@ -21,6 +21,7 @@ class ViolationCategory extends Model
         'is_active' => 'boolean',
     ];
 
+    /** @return HasMany<StudentViolation, $this> */
     public function studentViolations(): HasMany
     {
         return $this->hasMany(StudentViolation::class);

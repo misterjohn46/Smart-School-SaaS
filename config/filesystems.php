@@ -30,10 +30,30 @@ return [
 
     'disks' => [
 
+        /*
+         | PERHATIAN: 'serve' => true mendaftarkan rute publik GET /storage/{path}
+         | (route name `storage.local`) yang menyajikan SELURUH isi disk ini tanpa
+         | autentikasi. Dimatikan karena aplikasi tidak memakainya dan disk ini
+         | menampung berkas internal.
+         */
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            'serve' => false,
+            'throw' => false,
+            'report' => false,
+        ],
+
+        /*
+         | Disk berkas sensitif (bukti transfer, lampiran izin, dokumen BK).
+         | Berada di luar root disk `local` dan tidak pernah disajikan lewat rute
+         | bawaan framework - akses hanya melalui controller yang memeriksa
+         | peran / kepemilikan, mis. FinanceController::proofDocument().
+         */
+        'secure' => [
+            'driver' => 'local',
+            'root' => storage_path('app/secure'),
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

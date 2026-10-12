@@ -21,11 +21,13 @@ class WalletTransaction extends Model
         'balance_after' => 'decimal:2',
     ];
 
+    /** @return BelongsTo<StudentWallet, $this> */
     public function wallet(): BelongsTo
     {
         return $this->belongsTo(StudentWallet::class, 'student_wallet_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function cashier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'cashier_user_id');

@@ -23,11 +23,13 @@ class CbtSubmission extends Model
         'submitted_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<CbtExam, $this> */
     public function exam(): BelongsTo
     {
         return $this->belongsTo(CbtExam::class, 'cbt_exam_id');
     }
 
+    /** @return BelongsTo<StudentProfile, $this> */
     public function studentProfile(): BelongsTo
     {
         return $this->belongsTo(StudentProfile::class);

@@ -22,11 +22,13 @@ class FeeCategory extends Model
         'is_active' => 'boolean',
     ];
 
+    /** @return BelongsTo<AcademicYear, $this> */
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /** @return HasMany<StudentBill, $this> */
     public function bills(): HasMany
     {
         return $this->hasMany(StudentBill::class);

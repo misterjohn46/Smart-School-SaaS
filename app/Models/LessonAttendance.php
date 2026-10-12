@@ -20,21 +20,25 @@ class LessonAttendance extends Model
         'date' => 'date',
     ];
 
+    /** @return BelongsTo<Classroom, $this> */
     public function classroom(): BelongsTo
     {
         return $this->belongsTo(Classroom::class);
     }
 
+    /** @return BelongsTo<LessonSchedule, $this> */
     public function lessonSchedule(): BelongsTo
     {
         return $this->belongsTo(LessonSchedule::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function studentUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'student_user_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function recordedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recorded_by_user_id');

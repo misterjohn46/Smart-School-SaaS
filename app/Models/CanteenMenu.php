@@ -23,11 +23,13 @@ class CanteenMenu extends Model
         'is_available' => 'boolean',
     ];
 
+    /** @return BelongsTo<CanteenStand, $this> */
     public function stand(): BelongsTo
     {
         return $this->belongsTo(CanteenStand::class, 'canteen_stand_id');
     }
 
+    /** @return HasMany<CanteenOrderItem, $this> */
     public function orderItems(): HasMany
     {
         return $this->hasMany(CanteenOrderItem::class);

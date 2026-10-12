@@ -23,26 +23,32 @@ class LessonSchedule extends Model
     ];
 
     // ─── Relasi Data ──────────────────────────────────────────────
+
+    /** @return BelongsTo<AcademicYear, $this> */
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /** @return BelongsTo<Classroom, $this> */
     public function classroom(): BelongsTo
     {
         return $this->belongsTo(Classroom::class);
     }
 
+    /** @return BelongsTo<Subject, $this> */
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_user_id');
     }
 
+    /** @return HasMany<LessonAttendance, $this> */
     public function attendances(): HasMany
     {
         return $this->hasMany(LessonAttendance::class, 'lesson_schedule_id');

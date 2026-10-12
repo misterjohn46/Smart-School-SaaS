@@ -29,11 +29,13 @@ class StudentWallet extends Model
         'is_active' => 'boolean',
     ];
 
+    /** @return BelongsTo<StudentProfile, $this> */
     public function studentProfile(): BelongsTo
     {
         return $this->belongsTo(StudentProfile::class);
     }
 
+    /** @return HasMany<WalletTransaction, $this> */
     public function transactions(): HasMany
     {
         return $this->hasMany(WalletTransaction::class)->latest();

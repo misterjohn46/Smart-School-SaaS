@@ -19,6 +19,7 @@ class TeacherProfile extends Model
         'face_descriptor' => 'array',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

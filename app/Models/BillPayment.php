@@ -18,11 +18,13 @@ class BillPayment extends Model
         'amount_allocated' => 'decimal:2',
     ];
 
+    /** @return BelongsTo<Payment, $this> */
     public function payment(): BelongsTo
     {
         return $this->belongsTo(Payment::class);
     }
 
+    /** @return BelongsTo<StudentBill, $this> */
     public function studentBill(): BelongsTo
     {
         return $this->belongsTo(StudentBill::class);

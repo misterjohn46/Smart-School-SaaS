@@ -21,16 +21,19 @@ class Attendance extends Model
         'longitude' => 'float',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Classroom, $this> */
     public function classroom(): BelongsTo
     {
         return $this->belongsTo(Classroom::class);
     }
 
+    /** @return BelongsTo<AttendanceDevice, $this> */
     public function device(): BelongsTo
     {
         return $this->belongsTo(AttendanceDevice::class, 'device_id');

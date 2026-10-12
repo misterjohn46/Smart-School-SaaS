@@ -128,6 +128,15 @@ production build. Untuk produksi: `APP_ENV=production`, `APP_DEBUG=false`,
 `SESSION_ENCRYPT=true`, `LOG_LEVEL=warning`, serta atur `CENTRAL_DOMAINS`,
 database, mail, queue, cache, dan domain Sanctum sesuai lingkungan.
 
+## Penyimpanan berkas sensitif
+
+Bukti transfer bank disimpan di disk **`secure`** (`storage/app/secure`), bukan di
+`public` maupun `local`. Alasannya: disk `local` bawaan Laravel memakai
+`'serve' => true` yang mendaftarkan rute publik `GET /storage/{path}` dan menyajikan
+seluruh isi disk tanpa autentikasi. Opsi itu kini dimatikan, dan berkas sensitif
+hanya dapat diakses lewat `GET /finance/proof/{hashId}` yang memeriksa peran
+(`admin`/`kepala_sekolah`/`bendahara`) atau kepemilikan tagihan.
+
 ## Catatan keamanan yang masih terbuka
 
 - **Isolasi tenant** belum aktif (lihat bagian status di atas).
@@ -140,5 +149,10 @@ database, mail, queue, cache, dan domain Sanctum sesuai lingkungan.
   peran, bukan oleh obfuscation.
 - **Login orang tua** memakai NISN + tanggal lahir (entropi rendah). ROADMAP
   merencanakan OTP WhatsApp sebagai faktor kedua.
-- **Bukti transfer** (`FinanceController::uploadProof`) masih disimpan di disk
-  `public` sehingga dapat diakses tanpa autentikasi bila URL-nya diketahui.
+- **Verifikasi email tidak benar-benar aktif.** `App\Models\User` tidak
+  mengimplementasikan kontrak `Illuminate\Contracts\Auth\MustVerifyEmail`, sehingga
+  middleware `verified` pada `/dashboard` meloloskan semua pengguna dan
+  `ProfileController` selalu melaporkan `mustVerifyEmail => false`. Perlu keputusan:
+  implementasikan kontraknya (sekaligus set `email_verified_at` di seeder dan
+  siapkan pengiriman email sungguhan), atau lepas middleware `verified` beserta
+  UI verifikasinya agar tidak menyiratkan proteksi yang tidak ada.

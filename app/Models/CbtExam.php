@@ -25,16 +25,19 @@ class CbtExam extends Model
         'show_results' => 'boolean',
     ];
 
+    /** @return BelongsTo<CbtBank, $this> */
     public function bank(): BelongsTo
     {
         return $this->belongsTo(CbtBank::class, 'cbt_bank_id');
     }
 
+    /** @return BelongsTo<Classroom, $this> */
     public function classroom(): BelongsTo
     {
         return $this->belongsTo(Classroom::class);
     }
 
+    /** @return HasMany<CbtSubmission, $this> */
     public function submissions(): HasMany
     {
         return $this->hasMany(CbtSubmission::class);

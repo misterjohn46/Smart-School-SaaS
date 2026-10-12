@@ -13,7 +13,6 @@ class Plan extends Model
 {
     // Tabel ini hanya ada di database central (platform SaaS), bukan di database tenant.
     use CentralConnection;
-
     use HasFactory;
 
     protected $guarded = [];
@@ -29,11 +28,13 @@ class Plan extends Model
         'max_storage_mb' => 'integer',
     ];
 
+    /** @return HasMany<Subscription, $this> */
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
     }
 
+    /** @return HasMany<Invoice, $this> */
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);

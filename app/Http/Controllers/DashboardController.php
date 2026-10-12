@@ -148,8 +148,12 @@ class DashboardController extends Controller
 
         // 3. Live Activity Feed (Presensi, Pembayaran SPP, Perizinan, Rombel)
         $recentAttendances = Attendance::with(['user', 'classroom'])
+            // Kolom jam masuk pada tabel attendances bernama `time_in`, bukan
+            // `check_in_time`. Dengan nama lama, ORDER BY diam-diam lolos di SQLite
+            // (identifier tak dikenal diperlakukan sebagai literal string) tetapi
+            // gagal di MySQL, dan jam yang tampil selalu jatuh ke nilai dummy.
             ->latest('date')
-            ->latest('check_in_time')
+            ->latest('time_in')
             ->take(6)
             ->get()
             ->map(function ($item) {
@@ -157,7 +161,7 @@ class DashboardController extends Controller
                     'id' => $item->id,
                     'name' => $item->user?->name ?? 'Siswa Madrasah',
                     'classroom' => $item->classroom?->name ?? 'X - RPL 1',
-                    'time' => $item->check_in_time ? substr($item->check_in_time, 0, 5).' WIB' : '06:48 WIB',
+                    'time' => $item->time_in ? substr((string) $item->time_in, 0, 5).' WIB' : '-',
                     'status' => $item->status ?? 'present',
                     'method' => $item->device_id ? 'IoT RFID Gate' : 'GPS Geofence',
                 ];

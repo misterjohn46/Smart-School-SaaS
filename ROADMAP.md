@@ -89,8 +89,12 @@
 - [x] Master Pos Biaya (SPP Bulanan, Uang Gedung, Seragam, Ujian) — `FinanceController` + `FeeCategoryResource`
 - [x] Distribusi Tagihan Massal per Kelas / Angkatan — `generateBatchBills`
 - [x] POS Kasir Pembayaran SPP Sekolah dengan Input Rupiah Dinamis + Terbilang — `FinanceService::terbilang`
-- [ ] Verifikasi Transfer Bank Manual (Approval/Rejection Bukti Bayar) — unggah bukti sudah ada,
-      alur approval/rejection belum. Catatan keamanan: bukti masih disimpan di disk `public`.
+- [x] Verifikasi Transfer Bank Manual (Approval/Rejection Bukti Bayar) — `FinanceService::verifyBankTransfer`
+      dengan aksi Setujui/Tolak serta pratinjau bukti di `PaymentResource`. Unggahan membuat
+      pembayaran berstatus `pending` dan tagihan baru terkredit setelah disetujui kasir.
+  - [x] Bukti transfer disimpan di disk privat `secure` dan disajikan lewat rute bergerbang
+        `finance.proof` (peran keuangan atau pemilik tagihan saja)
+  - [ ] Halaman Vue untuk unggah bukti dari sisi orang tua (endpoint & otorisasi sudah siap)
 - [x] Cetak Kwitansi Transaksi & Riwayat Pembayaran Siswa — `finance.receipt`
 - [ ] Pencatatan Arus Kas (Income & Expense) & Laporan Neraca Keuangan
 - [x] Tabungan Siswa & Dompet Digital (E-Wallet): Setor, Tarik, Mutasi Buku Tabungan
