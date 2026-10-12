@@ -28,8 +28,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/attendance/ping', [IotAttendanceController::class, 'ping']);
     });
 
-    // Protected routes (perlu login)
-    Route::middleware('auth:sanctum')->group(function () {
+    // Protected routes (perlu login + email terverifikasi).
+    // Tautan verifikasi dikirim lewat email saat registrasi dan dibuka di browser;
+    // token yang sudah diterbitkan tetap berlaku setelah verifikasi selesai.
+    Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/user', function (Request $request) {
             return response()->json([

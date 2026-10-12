@@ -9,9 +9,9 @@ use App\Models\Classroom;
 use App\Models\StudentProfile;
 use App\Models\StudentViolation;
 use App\Models\ViolationCategory;
+use App\Rules\TenantUnique;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -342,7 +342,7 @@ class StudentViolationController extends Controller
     public function storeCategory(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'code' => ['required', 'string', 'max:50', 'unique:violation_categories,code'],
+            'code' => ['required', 'string', 'max:50', TenantUnique::make('violation_categories', 'code')],
             'name' => ['required', 'string', 'max:150'],
             'type' => ['required', 'in:pelanggaran,prestasi'],
             'severity' => ['required', 'in:ringan,sedang,berat,sangat_berat,prestasi'],
@@ -367,7 +367,7 @@ class StudentViolationController extends Controller
         $category = ViolationCategory::findOrFail($id);
 
         $validated = $request->validate([
-            'code' => ['required', 'string', 'max:50', Rule::unique('violation_categories', 'code')->ignore($category->id)],
+            'code' => ['required', 'string', 'max:50', TenantUnique::make('violation_categories', 'code', $category->id)],
             'name' => ['required', 'string', 'max:150'],
             'type' => ['required', 'in:pelanggaran,prestasi'],
             'severity' => ['required', 'in:ringan,sedang,berat,sangat_berat,prestasi'],

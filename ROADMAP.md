@@ -36,11 +36,15 @@
   - [x] Tabel `tenants`, `domains` (Telah termigrasi)
   - [x] Tabel `plans`, `subscriptions`, `invoices`, `cbt_nodes` (Termigrasi & Seeder Aktif)
 - [x] Landing Page SaaS & Form Registrasi Sekolah (Onboarding Wizard Interaktif)
-- [x] Provisioning tenant: database dibuat otomatis, satu domain per sekolah, password admin acak
-- [ ] **Isolasi data per tenant (BLOKER SaaS):** migrasi tenant masih kosong dan rute belum
-      memakai `InitializeTenancyByDomain`, sehingga seluruh sekolah berbagi database central.
-      Rincian langkah: `database/migrations/tenant/README.md`
-- [ ] Pemisahan panel Filament central (Super Admin) vs panel tenant (sekolah)
+- [x] Provisioning tenant: satu domain per sekolah, password admin acak
+- [x] **Isolasi data per sekolah (single-database):** kolom `tenant_id` pada 35 tabel,
+      global scope lewat `App\Models\Concerns\BelongsToSchool`, identifikasi tenant dari
+      domain oleh `InitializeTenancyUnlessCentralDomain`, unique komposit per tenant, dan
+      perintah `tenants:adopt-data` untuk data instalasi lama.
+      Diuji di `tests/Feature/TenantDataIsolationTest.php`
+  - Catatan: menyimpang dari rancangan multi-database di `ARCHITECTURE.md`; isolasi kini
+    berada di lapisan aplikasi, sehingga `withoutTenancy()` dan SQL mentah wajib ditinjau
+- [x] Panel Filament tenant-aware (satu panel, lingkup data mengikuti domain)
 - [ ] Manajemen Custom Domain Sekolah (Input Domain, DNS CNAME Verification Tool, & Auto-SSL)
 
 ### [Fase 2] RBAC 11 Role & Master Data Akademik
@@ -49,6 +53,8 @@
   - [x] Admin / Guru / Staf / Vendor: Email/Username + Password
   - [x] Siswa: NISN + Password
   - [x] Orang Tua: NISN + Tanggal Lahir Siswa + Direct Child Verification
+- [x] Verifikasi email ditegakkan (`User implements MustVerifyEmail`): pendaftaran mandiri
+      wajib memverifikasi, akun yang diprovisikan sekolah pra-verifikasi
 - [x] Sistem Proteksi Keamanan:
   - [x] Otorisasi peran per modul pada seluruh rute (`middleware('role:...')`) — matriks di `README.md`
   - [~] Obfuscated Route Hash ID (`hashids/hashids`) pencegah IDOR (`HasObfuscatedId` trait).

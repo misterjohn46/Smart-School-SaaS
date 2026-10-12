@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Http\Middleware\FilamentAuthenticateWithRoleRedirect;
+use App\Http\Middleware\InitializeTenancyUnlessCentralDomain;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -43,6 +44,10 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([])
             ->middleware([
+                // Identifikasi tenant lebih dahulu: panel yang dibuka dari domain
+                // sekolah hanya boleh melihat data sekolah tersebut, sedangkan dari
+                // central domain panel melayani Super Admin platform.
+                InitializeTenancyUnlessCentralDomain::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,

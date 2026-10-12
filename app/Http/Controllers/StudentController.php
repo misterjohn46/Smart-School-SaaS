@@ -8,6 +8,7 @@ use App\Models\Classroom;
 use App\Models\StudentProfile;
 use App\Models\StudentWallet;
 use App\Models\User;
+use App\Rules\TenantUnique;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -83,7 +84,7 @@ class StudentController extends Controller
         $validated = $request->validate([
             'full_name' => ['required', 'string', 'max:150'],
             'email' => ['required', 'email', 'unique:users,email'],
-            'nisn' => ['required', 'string', 'max:20', 'unique:student_profiles,nisn'],
+            'nisn' => ['required', 'string', 'max:20', TenantUnique::make('student_profiles', 'nisn')],
             'classroom_id' => ['required', 'exists:classrooms,id'],
             'gender' => ['required', 'in:L,P'],
             'nik' => ['nullable', 'string', 'max:20'],
@@ -96,12 +97,16 @@ class StudentController extends Controller
         $rawPassword = $validated['password'] ?: 'siswa123';
 
         DB::transaction(function () use ($validated, $rawPassword) {
+            // Akun diprovisikan petugas sekolah (bukan pendaftaran mandiri),
+            // sehingga langsung dianggap terverifikasi. Banyak siswa juga tidak
+            // memiliki akses ke kotak surat email yang didaftarkan sekolah.
             $user = User::create([
                 'name' => $validated['full_name'],
                 'email' => $validated['email'],
                 'phone_number' => $validated['parent_phone_wa'] ?? null,
                 'password' => Hash::make($rawPassword),
                 'is_active' => true,
+                'email_verified_at' => now(),
             ]);
 
             $user->assignRole('siswa');
@@ -151,7 +156,7 @@ class StudentController extends Controller
         $validated = $request->validate([
             'full_name' => ['required', 'string', 'max:150'],
             'email' => ['required', 'email', 'unique:users,email,'.$user->id],
-            'nisn' => ['required', 'string', 'max:20', 'unique:student_profiles,nisn,'.$profile->id],
+            'nisn' => ['required', 'string', 'max:20', TenantUnique::make('student_profiles', 'nisn', $profile->id)],
             'classroom_id' => ['required', 'exists:classrooms,id'],
             'gender' => ['required', 'in:L,P'],
             'nik' => ['nullable', 'string', 'max:20'],

@@ -7,6 +7,7 @@ namespace App\Filament\Resources;
 use App\Filament\Concerns\HasSchoolAccessOnly;
 use App\Filament\Resources\SubjectResource\Pages;
 use App\Models\Subject;
+use App\Rules\TenantUnique;
 use Filament\Actions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -16,6 +17,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rules\Unique;
 use UnitEnum;
 
 class SubjectResource extends Resource
@@ -41,7 +43,7 @@ class SubjectResource extends Resource
                     ->placeholder('Contoh: RPL-01, MAT-01')
                     ->required()
                     ->maxLength(20)
-                    ->unique(ignoreRecord: true),
+                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule): Unique => TenantUnique::constrain($rule)),
                 TextInput::make('name')
                     ->label('Nama Mata Pelajaran')
                     ->placeholder('Contoh: Pemrograman Berorientasi Objek')

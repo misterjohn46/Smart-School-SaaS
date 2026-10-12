@@ -6,12 +6,10 @@ namespace App\Providers;
 
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Stancl\JobPipeline\JobPipeline;
 use Stancl\Tenancy\Events;
-use Stancl\Tenancy\Jobs;
 use Stancl\Tenancy\Listeners;
 use Stancl\Tenancy\Middleware;
 
@@ -25,31 +23,19 @@ class TenancyServiceProvider extends ServiceProvider
         return [
             // Tenant events
             Events\CreatingTenant::class => [],
-            Events\TenantCreated::class => [
-                JobPipeline::make([
-                    Jobs\CreateDatabase::class,
-                    Jobs\MigrateDatabase::class,
-                    // Jobs\SeedDatabase::class,
-
-                    // Your own jobs to prepare the tenant.
-                    // Provision API keys, create S3 buckets, anything you want!
-
-                ])->send(function (Events\TenantCreated $event) {
-                    return $event->tenant;
-                })->shouldBeQueued(false), // `false` by default, but you probably want to make this `true` for production.
-            ],
+            /*
+             | Arsitektur single-database: tidak ada lagi CreateDatabase /
+             | MigrateDatabase / DeleteDatabase. Sekolah baru cukup memiliki baris
+             | di tabel `tenants` dan `domains`; isolasi datanya ditangani kolom
+             | tenant_id + global scope (App\Models\Concerns\BelongsToSchool).
+             */
+            Events\TenantCreated::class => [],
             Events\SavingTenant::class => [],
             Events\TenantSaved::class => [],
             Events\UpdatingTenant::class => [],
             Events\TenantUpdated::class => [],
             Events\DeletingTenant::class => [],
-            Events\TenantDeleted::class => [
-                JobPipeline::make([
-                    Jobs\DeleteDatabase::class,
-                ])->send(function (Events\TenantDeleted $event) {
-                    return $event->tenant;
-                })->shouldBeQueued(false), // `false` by default, but you probably want to make this `true` for production.
-            ],
+            Events\TenantDeleted::class => [],
 
             // Domain events
             Events\CreatingDomain::class => [],
@@ -61,30 +47,8 @@ class TenancyServiceProvider extends ServiceProvider
             Events\DeletingDomain::class => [],
             Events\DomainDeleted::class => [],
 
-            // Database events
-            Events\DatabaseCreated::class => [
-                /**
-                 * Database tenant yang dimigrasi dari direktori kosong tetap "berhasil"
-                 * dibuat namun tanpa satu pun tabel aplikasi. Tanpa peringatan ini
-                 * kegagalan provisioning tersebut sama sekali tidak terlihat.
-                 */
-                function (Events\DatabaseCreated $event): void {
-                    $paths = (array) config('tenancy.migration_parameters.--path', []);
-
-                    $migrationCount = 0;
-                    foreach ($paths as $path) {
-                        $migrationCount += count((array) glob(rtrim((string) $path, '/\\').'/*.php'));
-                    }
-
-                    if ($migrationCount === 0) {
-                        Log::warning('Database tenant dibuat tanpa migrasi apa pun.', [
-                            'tenant_id' => $event->tenant->getTenantKey(),
-                            'migration_paths' => $paths,
-                            'petunjuk' => 'Lihat database/migrations/tenant/README.md',
-                        ]);
-                    }
-                },
-            ],
+            // Database events (tidak terpakai pada arsitektur single-database)
+            Events\DatabaseCreated::class => [],
             Events\DatabaseMigrated::class => [],
             Events\DatabaseSeeded::class => [],
             Events\DatabaseRolledBack::class => [],

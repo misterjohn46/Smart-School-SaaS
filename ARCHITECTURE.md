@@ -15,8 +15,8 @@ titik penting, dan perbedaan itu dicatat di sini agar tidak menyesatkan:
 | Komponen | Status | Catatan |
 |---|---|---|
 | Frontend portal | ⚠️ Berbeda | Rancangan awal menyebut TALL stack (Livewire/Alpine). Implementasi memakai **Inertia + Vue 3**. Livewire hanya hadir sebagai dependensi Filament. |
-| Isolasi database per tenant | ❌ Belum aktif | `stancl/tenancy` terkonfigurasi, tetapi seluruh migrasi operasional masih di database central dan rute belum memakai `InitializeTenancyByDomain`. Lihat `database/migrations/tenant/README.md`. |
-| Panel terpisah central vs tenant | ❌ Belum | Satu panel `/admin` melayani Super Admin SaaS dan sekolah; pemisahan masih berbasis peran, bukan tenant. |
+| Isolasi data antar sekolah | ✅ Aktif, tetapi **single-database** | Rancangan awal memilih multi-database (satu DB per tenant). Implementasi memakai **satu database bersama + kolom `tenant_id` + global scope**. Lihat bagian 2 dan `README.md`. |
+| Panel terpisah central vs tenant | ⚠️ Satu panel, tenant-aware | Panel `/admin` tetap satu, namun kini mengidentifikasi tenant dari domain: dibuka dari domain sekolah hanya menampilkan data sekolah itu, dari central domain melayani Super Admin. |
 | Server CBT terpisah & Exambro | ❌ Belum | Manajemen bank soal, ujian, dan simulasi pengerjaan sudah ada di aplikasi utama; node CBT terpisah, API deploy/pull, dan APK belum dibangun. |
 | Proteksi IDOR via Hash ID | ⚠️ Sebagian | Aktif pada modul KTS dan kuitansi pembayaran. Modul CBT & geofence masih memakai ID integer di URL, dilindungi middleware peran. |
 | Pessimistic locking transaksi finansial | ✅ Ada | `WalletService` memakai `DB::transaction()` + `lockForUpdate()`. |
@@ -74,8 +74,23 @@ Dikelola oleh **Super Admin Platform (Pemilik SaaS)**:
 * `subscriptions` & `invoices`: Riwayat transaksi langganan sekolah terintegrasi payment gateway (Midtrans / Xendit).
 * `cbt_nodes`: IP Server CBT, nama node, kuota concurrent user, API secret key, status koneksi (idle/active/busy).
 
-### B. Tenant Database (`tenant_{uuid}`)
-Satu basis data terpisah untuk masing-masing sekolah, menjamin **100% isolasi data siswa, e-raport, dan dompet digital**:
+### B. Data Sekolah (tenant) — IMPLEMENTASI: single-database
+
+> **Perubahan dari rancangan awal.** Rancangan ini semula menetapkan satu basis
+> data terpisah per sekolah (`tenant_{uuid}`). Implementasi yang dipilih adalah
+> **satu database bersama** dengan kolom `tenant_id` pada seluruh tabel di bawah,
+> ditambah global scope `Stancl\Tenancy\Database\TenantScope` yang aktif begitu
+> tenant teridentifikasi dari domain.
+>
+> Konsekuensi yang perlu disadari: isolasi kini bergantung pada lapisan aplikasi
+> (global scope), bukan pada batas basis data. Query yang sengaja memakai
+> `withoutTenancy()` atau SQL mentah akan melewati batas tersebut, sehingga
+> keduanya wajib ditinjau khusus. Sebagai imbalannya, backup, migrasi, pelaporan
+> lintas sekolah, dan biaya operasional jauh lebih sederhana.
+>
+> Rincian operasional: lihat bagian "Multi-tenancy" di `README.md`.
+
+Tabel-tabel berikut bertenant_id dan terisolasi per sekolah:
 * **Keamanan & Pengguna:**
   * `users`: username, email, password, nisn, pin_hash (6-digit Bcrypt), status, is_locked, lockout_until.
   * `roles`, `permissions`, `model_has_roles`: Implementasi **Spatie RBAC (11 Roles)**.

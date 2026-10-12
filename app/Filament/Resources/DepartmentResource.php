@@ -7,6 +7,7 @@ namespace App\Filament\Resources;
 use App\Filament\Concerns\HasSchoolAccessOnly;
 use App\Filament\Resources\DepartmentResource\Pages;
 use App\Models\Department;
+use App\Rules\TenantUnique;
 use Filament\Actions;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -16,6 +17,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rules\Unique;
 use UnitEnum;
 
 class DepartmentResource extends Resource
@@ -41,7 +43,7 @@ class DepartmentResource extends Resource
                     ->placeholder('Contoh: RPL, TKJ, DKV')
                     ->required()
                     ->maxLength(20)
-                    ->unique(ignoreRecord: true),
+                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule): Unique => TenantUnique::constrain($rule)),
                 TextInput::make('name')
                     ->label('Nama Program Keahlian')
                     ->placeholder('Contoh: Rekayasa Perangkat Lunak')

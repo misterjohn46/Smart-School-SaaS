@@ -11,6 +11,7 @@ use App\Models\GradeLevel;
 use App\Models\Payment;
 use App\Models\StudentBill;
 use App\Models\StudentProfile;
+use App\Rules\TenantUnique;
 use App\Services\FinanceService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -542,7 +543,7 @@ class FinanceController extends Controller
     public function storeFeeCategory(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'code' => ['required', 'string', 'max:50', 'unique:fee_categories,code'],
+            'code' => ['required', 'string', 'max:50', TenantUnique::make('fee_categories', 'code')],
             'name' => ['required', 'string', 'max:100'],
             'default_amount' => ['required', 'numeric', 'min:0'],
             'is_recurring' => ['boolean'],
@@ -563,7 +564,7 @@ class FinanceController extends Controller
         $category = FeeCategory::findOrFail($id);
 
         $validated = $request->validate([
-            'code' => ['required', 'string', 'max:50', 'unique:fee_categories,code,'.$category->id],
+            'code' => ['required', 'string', 'max:50', TenantUnique::make('fee_categories', 'code', $category->id)],
             'name' => ['required', 'string', 'max:100'],
             'default_amount' => ['required', 'numeric', 'min:0'],
             'is_recurring' => ['boolean'],

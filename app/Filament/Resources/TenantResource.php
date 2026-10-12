@@ -18,6 +18,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use UnitEnum;
 
@@ -152,21 +153,46 @@ class TenantResource extends Resource
                     ->modalDescription('Apakah Anda ingin memastikan akun pengguna untuk email ini aktif dengan role admin?')
                     ->action(function (Tenant $record): void {
                         $role = Role::firstOrCreate(['name' => 'admin']);
-                        $user = User::updateOrCreate(
-                            ['email' => $record->admin_email],
-                            [
+
+                        // Pencarian lintas tenant: aksi ini dijalankan Super Admin
+                        // dari central domain untuk akun milik sekolah tertentu.
+                        $user = User::withoutTenancy()
+                            ->where('tenant_id', $record->getTenantKey())
+                            ->where('email', $record->admin_email)
+                            ->first();
+
+                        // Password baru selalu diacak. Sebelumnya aksi ini menyetel
+                        // ulang sandi menjadi literal 'password' untuk setiap sekolah.
+                        $newPassword = Str::password(16, symbols: false);
+
+                        if (! $user) {
+                            $user = new User([
+                                'name' => $record->admin_name ?: 'Admin '.$record->school_name,
+                                'email' => $record->admin_email,
+                                'phone_number' => $record->admin_phone,
+                                'password' => Hash::make($newPassword),
+                                'is_active' => true,
+                            ]);
+                        } else {
+                            $user->fill([
                                 'name' => $record->admin_name ?: 'Admin '.$record->school_name,
                                 'phone_number' => $record->admin_phone,
-                                'password' => Hash::make('password'),
+                                'password' => Hash::make($newPassword),
                                 'is_active' => true,
-                                'email_verified_at' => now(),
-                            ]
-                        );
+                            ]);
+                        }
+
+                        $user->forceFill([
+                            'tenant_id' => $record->getTenantKey(),
+                            'email_verified_at' => $user->email_verified_at ?? now(),
+                        ])->save();
+
                         $user->syncRoles([$role]);
 
                         Notification::make()
-                            ->title('Akun admin berhasil disinkronisasi!')
-                            ->body("Email: {$record->admin_email} | Sandi: password")
+                            ->title('Akun admin berhasil disinkronisasi')
+                            ->body("Email: {$record->admin_email} — sandi baru (tampil sekali): {$newPassword}")
+                            ->persistent()
                             ->success()
                             ->send();
                     }),

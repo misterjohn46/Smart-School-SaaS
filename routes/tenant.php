@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 /*
@@ -11,19 +11,19 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 | Tenant Routes
 |--------------------------------------------------------------------------
 |
-| Here you can register the tenant routes for your application.
-| These routes are loaded by the TenantRouteServiceProvider.
+| Hanya memuat halaman akar domain sekolah. Seluruh rute aplikasi lain berada
+| di routes/web.php dan sudah tenant-aware karena grup middleware `web`
+| memasang App\Http\Middleware\InitializeTenancyUnlessCentralDomain.
 |
-| Feel free to customize them however you want. Good luck!
+| Rute `/` di routes/web.php dibatasi Route::domain(central_domains), sehingga
+| akar domain sekolah ditangani di sini.
 |
 */
 
-Route::middleware([
-    'web',
-    InitializeTenancyByDomain::class,
-    PreventAccessFromCentralDomains::class,
-])->group(function () {
+Route::middleware(['web', PreventAccessFromCentralDomains::class])->group(function () {
     Route::get('/', function () {
-        return 'This is your multi-tenant application. The id of the current tenant is '.tenant('id');
-    });
+        return Auth::check()
+            ? redirect()->route('dashboard')
+            : redirect()->route('login');
+    })->name('tenant.home');
 });

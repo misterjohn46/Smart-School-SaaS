@@ -35,19 +35,24 @@ return [
      *
      * To configure their behavior, see the config keys below.
      */
+    /**
+     * ARSITEKTUR SINGLE-DATABASE.
+     *
+     * DatabaseTenancyBootstrapper TIDAK dipakai: seluruh sekolah berbagi satu
+     * database, dan isolasinya ditangani kolom `tenant_id` + global scope lewat
+     * App\Models\Concerns\BelongsToSchool. Mengaktifkannya kembali akan membuat
+     * aplikasi mencari database `tenant<uuid>` yang tidak pernah dibuat.
+     *
+     * CacheTenancyBootstrapper juga dimatikan karena menerapkan cache tag per
+     * tenant, sedangkan store `database` dan `file` tidak mendukung tagging.
+     * Nyalakan hanya setelah CACHE_STORE diarahkan ke redis/memcached.
+     */
     'bootstrappers' => [
-        DatabaseTenancyBootstrapper::class,
-
-        /**
-         * PENTING: CacheTenancyBootstrapper menerapkan cache tag per tenant.
-         * Store `database` dan `file` TIDAK mendukung tagging, sehingga CACHE_STORE
-         * wajib diarahkan ke redis / memcached / array sebelum tenancy diaktifkan.
-         * Lihat .env.example.
-         */
-        CacheTenancyBootstrapper::class,
+        // Memberi sufiks folder unggahan per sekolah agar berkas tidak tercampur.
         FilesystemTenancyBootstrapper::class,
+
+        // Menyertakan tenant_id pada payload job agar worker memulihkan konteks tenant.
         QueueTenancyBootstrapper::class,
-        // Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper::class, // Note: phpredis is needed
     ],
 
     /**
@@ -202,20 +207,13 @@ return [
      */
     'routes' => true,
 
-    /**
-     * Parameters used by the tenants:migrate command.
+    /*
+     | Perintah tenants:migrate dan tenants:seed TIDAK dipakai pada arsitektur
+     | single-database: seluruh skema berada di database bersama dan dikelola
+     | `php artisan migrate` biasa. Direktori database/migrations/tenant sudah
+     | dihapus karena tidak lagi relevan.
+     |
+     | Untuk mengalihkan data instalasi satu sekolah menjadi milik sebuah tenant,
+     | gunakan: php artisan tenants:adopt-data {tenant-uuid}
      */
-    'migration_parameters' => [
-        '--force' => true, // This needs to be true to run migrations in production.
-        '--path' => [database_path('migrations/tenant')],
-        '--realpath' => true,
-    ],
-
-    /**
-     * Parameters used by the tenants:seed command.
-     */
-    'seeder_parameters' => [
-        '--class' => 'DatabaseSeeder', // root seeder class
-        // '--force' => true, // This needs to be true to seed tenant databases in production
-    ],
 ];

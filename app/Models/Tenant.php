@@ -9,14 +9,19 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
-use Stancl\Tenancy\Contracts\TenantWithDatabase;
-use Stancl\Tenancy\Database\Concerns\HasDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDomains;
 use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
 
-class Tenant extends BaseTenant implements TenantWithDatabase
+/**
+ * Tenant = satu sekolah.
+ *
+ * Arsitektur single-database: tenant TIDAK lagi memiliki database sendiri
+ * (tanpa HasDatabase / TenantWithDatabase). Isolasi data dilakukan kolom
+ * `tenant_id` + global scope lewat App\Models\Concerns\BelongsToSchool.
+ */
+class Tenant extends BaseTenant
 {
-    use HasDatabase, HasDomains;
+    use HasDomains;
 
     protected $guarded = [];
 
@@ -41,17 +46,36 @@ class Tenant extends BaseTenant implements TenantWithDatabase
                 // baru mendapat password literal 'password' yang sama.
                 $initialPassword = Str::password(16, symbols: false);
 
-                $user = User::firstOrCreate(
-                    ['email' => $tenant->admin_email],
-                    [
+                // Pencarian akun TIDAK boleh terkena global scope tenant: akun
+                // dibuat dari konteks central, dan satu alamat email boleh dipakai
+                // di sekolah berbeda.
+                $user = User::withoutTenancy()
+                    ->where('tenant_id', $tenant->getTenantKey())
+                    ->where('email', $tenant->admin_email)
+                    ->first();
+
+                if (! $user) {
+                    $user = new User([
                         'name' => $tenant->admin_name ?: 'Admin '.$tenant->school_name,
+                        'email' => $tenant->admin_email,
                         'phone_number' => $tenant->admin_phone,
                         'password' => Hash::make($initialPassword),
                         'is_active' => true,
-                    ]
-                );
+                    ]);
 
-                if ($user->wasRecentlyCreated) {
+                    // tenant_id sengaja di luar $fillable; diisi eksplisit di sini
+                    // karena provisioning berjalan pada konteks central.
+                    //
+                    // email_verified_at diisi karena password awal akun ini
+                    // dikirimkan lewat respons pendaftaran, bukan lewat email,
+                    // sehingga alamat email belum menjadi jalur kepercayaan.
+                    // Setelah pengiriman email produksi aktif, hapus baris ini agar
+                    // admin sekolah wajib memverifikasi alamatnya.
+                    $user->forceFill([
+                        'tenant_id' => $tenant->getTenantKey(),
+                        'email_verified_at' => now(),
+                    ])->save();
+
                     $tenant->generatedAdminPassword = $initialPassword;
                 }
 

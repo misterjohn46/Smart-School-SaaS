@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use App\Rules\TenantUnique;
 use Filament\Actions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -15,6 +16,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rules\Unique;
 
 class UserResource extends Resource
 {
@@ -37,7 +39,8 @@ class UserResource extends Resource
                 TextInput::make('username')
                     ->label('Username')
                     ->maxLength(50)
-                    ->unique(ignoreRecord: true),
+                    // Username & NISN hanya perlu unik di dalam satu sekolah.
+                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule): Unique => TenantUnique::constrain($rule)),
                 TextInput::make('email')
                     ->label('Alamat Email')
                     ->email()
@@ -48,7 +51,7 @@ class UserResource extends Resource
                 TextInput::make('nisn')
                     ->label('NISN (Khusus Siswa)')
                     ->maxLength(20)
-                    ->unique(ignoreRecord: true),
+                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule): Unique => TenantUnique::constrain($rule)),
                 TextInput::make('phone_number')
                     ->label('No. WhatsApp / HP')
                     ->tel()

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\InitializeTenancyUnlessCentralDomain;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -24,6 +25,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Tenant harus teridentifikasi sebelum autentikasi diselesaikan, karena
+        // model User ikut tenant-scoped. Lihat InitializeTenancyUnlessCentralDomain.
+        $middleware->web(prepend: [
+            InitializeTenancyUnlessCentralDomain::class,
+        ]);
+
+        $middleware->api(prepend: [
+            InitializeTenancyUnlessCentralDomain::class,
+        ]);
+
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,

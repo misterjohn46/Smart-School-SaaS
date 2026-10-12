@@ -15,16 +15,48 @@ tabungan siswa (e-wallet), e-kantin, CBT, dan bimbingan konseling.
 - `spatie/laravel-permission` untuk 16 role
 - SQLite sebagai database development default; MySQL 8 / MariaDB untuk produksi
 
-## Status multi-tenancy (penting)
+## Multi-tenancy: single-database + global scope
 
-`stancl/tenancy` sudah terpasang dan dikonfigurasi, namun **belum menegakkan
-isolasi data antar sekolah**. Seluruh migrasi operasional masih berada di database
-central dan rute aplikasi belum memakai `InitializeTenancyByDomain`, sehingga satu
-instalasi saat ini praktis melayani satu sekolah.
+Seluruh sekolah berbagi **satu database**. Isolasi datanya dilakukan kolom
+`tenant_id` pada 35 tabel operasional ditambah global scope dari
+`App\Models\Concerns\BelongsToSchool` (membungkus `BelongsToTenant` milik
+`stancl/tenancy`).
 
-Langkah yang tersisa beserta dampaknya terdokumentasi di
-[`database/migrations/tenant/README.md`](database/migrations/tenant/README.md).
-Jangan deploy sebagai SaaS multi-sekolah sebelum langkah tersebut selesai.
+Cara kerjanya:
+
+| Konteks | Tenancy | Lingkup data |
+|---|---|---|
+| Central domain (`CENTRAL_DOMAINS`) | tidak diinisialisasi | seluruh platform — landing page, pendaftaran sekolah, panel Super Admin |
+| Domain sekolah (`sekolah-a.platform.id`) | diinisialisasi dari domain | hanya baris milik sekolah tersebut |
+| Perintah artisan, queue worker, test | tidak diinisialisasi | seluruh data (tanpa penyaringan) |
+
+`App\Http\Middleware\InitializeTenancyUnlessCentralDomain` dipasang **di awal**
+grup middleware `web` dan `api` serta pada panel Filament, karena model `User`
+juga tenant-scoped: identifikasi tenant harus terjadi sebelum autentikasi
+diselesaikan. Domain yang tidak terdaftar menghasilkan 404.
+
+Konsekuensi yang perlu diketahui:
+
+- Nilai yang hanya perlu unik di dalam satu sekolah (`username`, `nisn`,
+  kode jurusan/mapel/tarif/pelanggaran, `rfid_uid`, nomor rekening tabungan)
+  memakai unique komposit `(tenant_id, kolom)`. Gunakan `App\Rules\TenantUnique`
+  untuk validasinya — aturan `unique` bawaan Laravel memakai query builder
+  sehingga tidak terkena global scope.
+- **`users.email` tetap unique global** (satu email = satu akun di seluruh
+  platform). Alasannya `password_reset_tokens` berkunci alamat email tanpa
+  `tenant_id`; bila satu email dipakai dua sekolah, token reset bisa saling
+  tertukar.
+- Menembus isolasi secara sengaja dilakukan lewat `Model::withoutTenancy()`.
+  Setiap pemanggilannya adalah titik yang perlu ditinjau.
+- Data instalasi lama bertenant_id `NULL` hanya terlihat dari central domain.
+  Alihkan ke satu sekolah dengan:
+
+  ```bash
+  php artisan tenants:adopt-data {tenant-uuid} --dry-run
+  php artisan tenants:adopt-data {tenant-uuid}
+  ```
+
+Isolasi ini diuji di `tests/Feature/TenantDataIsolationTest.php`.
 
 ## Instalasi
 
@@ -55,6 +87,22 @@ lingkungan lain. Untuk membuat admin tanpa kredensial default:
 
 Sekolah baru yang mendaftar lewat `POST /register-school` mendapat password admin
 acak yang dikembalikan sekali pada respons registrasi (`data.initial_password`).
+
+## Verifikasi email
+
+`App\Models\User` mengimplementasikan `Illuminate\Contracts\Auth\MustVerifyEmail`,
+sehingga middleware `verified` benar-benar berlaku.
+
+| Jalur pembuatan akun | Status awal |
+|---|---|
+| Pendaftaran mandiri `/register` dan `POST /api/v1/register` | **belum terverifikasi** — tautan verifikasi dikirim lewat email |
+| Siswa & guru yang diinput petugas sekolah | pra-verifikasi (banyak siswa tidak memegang email yang didaftarkan sekolah) |
+| Admin sekolah hasil pendaftaran sekolah | pra-verifikasi (lihat catatan di bagian akhir) |
+| Akun seeder pengembangan & `app:create-admin` | pra-verifikasi |
+
+Rute yang menuntut verifikasi: `/dashboard` dan seluruh endpoint API terproteksi
+(`auth:sanctum` + `verified`). Diuji di
+`tests/Feature/EmailVerificationEnforcementTest.php`.
 
 ## Matriks peran per modul
 
@@ -149,10 +197,10 @@ hanya dapat diakses lewat `GET /finance/proof/{hashId}` yang memeriksa peran
   peran, bukan oleh obfuscation.
 - **Login orang tua** memakai NISN + tanggal lahir (entropi rendah). ROADMAP
   merencanakan OTP WhatsApp sebagai faktor kedua.
-- **Verifikasi email tidak benar-benar aktif.** `App\Models\User` tidak
-  mengimplementasikan kontrak `Illuminate\Contracts\Auth\MustVerifyEmail`, sehingga
-  middleware `verified` pada `/dashboard` meloloskan semua pengguna dan
-  `ProfileController` selalu melaporkan `mustVerifyEmail => false`. Perlu keputusan:
-  implementasikan kontraknya (sekaligus set `email_verified_at` di seeder dan
-  siapkan pengiriman email sungguhan), atau lepas middleware `verified` beserta
-  UI verifikasinya agar tidak menyiratkan proteksi yang tidak ada.
+- **Pengiriman email belum dikonfigurasi** (`MAIL_MAILER=log`). Verifikasi email
+  sudah ditegakkan, jadi atur mailer sungguhan sebelum produksi — tanpa itu
+  pendaftar mandiri tidak akan menerima tautan verifikasinya.
+- **Admin sekolah hasil pendaftaran sengaja dibuat pra-verifikasi** karena
+  password awalnya dikirim lewat respons pendaftaran, bukan email. Setelah mailer
+  produksi aktif, hapus pengisian `email_verified_at` di `App\Models\Tenant::booted()`
+  agar mereka juga wajib memverifikasi alamat email.

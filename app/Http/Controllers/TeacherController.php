@@ -78,12 +78,16 @@ class TeacherController extends Controller
         $rawPassword = $validated['password'] ?: 'guru123';
 
         DB::transaction(function () use ($validated, $rawPassword) {
+            // Akun diprovisikan petugas sekolah (bukan pendaftaran mandiri),
+            // sehingga langsung dianggap terverifikasi. Pendaftaran mandiri lewat
+            // /register tetap wajib memverifikasi email.
             $user = User::create([
                 'name' => $validated['full_name'],
                 'email' => $validated['email'],
                 'phone_number' => $validated['phone_wa'] ?? null,
                 'password' => Hash::make($rawPassword),
                 'is_active' => true,
+                'email_verified_at' => now(),
             ]);
 
             $user->assignRole('guru');

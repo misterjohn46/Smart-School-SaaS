@@ -98,6 +98,7 @@ class AcademicMasterSeeder extends Seeder
                 'name' => 'Super Administrator SaaS',
                 'username' => 'superadmin',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
                 'is_active' => true,
             ]
         );
@@ -111,6 +112,7 @@ class AcademicMasterSeeder extends Seeder
                 'username' => 'admin.sekolah',
                 'phone_number' => '081234567800',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
                 'is_active' => true,
             ]
         );
@@ -124,6 +126,7 @@ class AcademicMasterSeeder extends Seeder
                 'username' => 'kepsek',
                 'phone_number' => '081234567809',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
                 'is_active' => true,
             ]
         );
@@ -137,6 +140,7 @@ class AcademicMasterSeeder extends Seeder
                 'username' => 'ahmad.fauzi',
                 'phone_number' => '081234567801',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
                 'is_active' => true,
             ]
         );
@@ -163,6 +167,7 @@ class AcademicMasterSeeder extends Seeder
                 'username' => 'sri.wahyuni',
                 'phone_number' => '081234567802',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
                 'is_active' => true,
             ]
         );
@@ -189,6 +194,7 @@ class AcademicMasterSeeder extends Seeder
                 'username' => 'gurubk',
                 'phone_number' => '081234567803',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
                 'is_active' => true,
             ]
         );
@@ -202,6 +208,7 @@ class AcademicMasterSeeder extends Seeder
                 'username' => 'bendahara',
                 'phone_number' => '081234567804',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
                 'is_active' => true,
             ]
         );
@@ -215,6 +222,7 @@ class AcademicMasterSeeder extends Seeder
                 'username' => 'stafftu',
                 'phone_number' => '081234567805',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
                 'is_active' => true,
             ]
         );
@@ -228,6 +236,7 @@ class AcademicMasterSeeder extends Seeder
                 'username' => 'perpus',
                 'phone_number' => '081234567806',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
                 'is_active' => true,
             ]
         );
@@ -241,6 +250,7 @@ class AcademicMasterSeeder extends Seeder
                 'username' => 'kantin',
                 'phone_number' => '081234567807',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
                 'is_active' => true,
             ]
         );
@@ -254,6 +264,7 @@ class AcademicMasterSeeder extends Seeder
                 'username' => 'orangtua1',
                 'phone_number' => '081234567890',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
                 'is_active' => true,
             ]
         );
@@ -321,6 +332,7 @@ class AcademicMasterSeeder extends Seeder
                 'username' => 'siswa1',
                 'nisn' => '0051234567',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
                 'is_active' => true,
             ]
         );
@@ -352,6 +364,7 @@ class AcademicMasterSeeder extends Seeder
                 'username' => 'siswa2',
                 'nisn' => '0059876543',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
                 'is_active' => true,
             ]
         );

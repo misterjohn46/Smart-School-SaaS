@@ -6,9 +6,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Classroom;
 use App\Models\Department;
+use App\Rules\TenantUnique;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -74,7 +74,7 @@ class DepartmentController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'code' => ['required', 'string', 'max:20', 'unique:departments,code'],
+            'code' => ['required', 'string', 'max:20', TenantUnique::make('departments', 'code')],
             'name' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'is_active' => ['nullable', 'boolean'],
@@ -96,7 +96,7 @@ class DepartmentController extends Controller
         $department = Department::findOrFail($id);
 
         $validated = $request->validate([
-            'code' => ['required', 'string', 'max:20', Rule::unique('departments', 'code')->ignore($department->id)],
+            'code' => ['required', 'string', 'max:20', TenantUnique::make('departments', 'code', $department->id)],
             'name' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'is_active' => ['nullable', 'boolean'],

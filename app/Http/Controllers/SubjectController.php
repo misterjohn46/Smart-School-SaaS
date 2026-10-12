@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Subject;
+use App\Rules\TenantUnique;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -66,7 +66,7 @@ class SubjectController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'code' => ['required', 'string', 'max:20', 'unique:subjects,code'],
+            'code' => ['required', 'string', 'max:20', TenantUnique::make('subjects', 'code')],
             'name' => ['required', 'string', 'max:100'],
             'kkm' => ['required', 'integer', 'min:0', 'max:100'],
             'type' => ['required', 'in:umum,kejuruan,mulok'],
@@ -90,7 +90,7 @@ class SubjectController extends Controller
         $subject = Subject::findOrFail($id);
 
         $validated = $request->validate([
-            'code' => ['required', 'string', 'max:20', Rule::unique('subjects', 'code')->ignore($subject->id)],
+            'code' => ['required', 'string', 'max:20', TenantUnique::make('subjects', 'code', $subject->id)],
             'name' => ['required', 'string', 'max:100'],
             'kkm' => ['required', 'integer', 'min:0', 'max:100'],
             'type' => ['required', 'in:umum,kejuruan,mulok'],
