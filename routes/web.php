@@ -52,9 +52,11 @@ $roleCounseling = 'role:admin|kepala_sekolah|guru_bk';
 $roleCounselingInput = 'role:admin|kepala_sekolah|guru_bk|guru';
 $roleCanteenVendor = 'role:admin|kepala_sekolah|kantin|vendor_kantin|kasir_kantin';
 
-foreach (config('tenancy.central_domains', ['localhost', '127.0.0.1']) as $domain) {
-    Route::domain($domain)->group(function () {
-        Route::get('/', function () {
+$centralDomains = (array) config('tenancy.central_domains', ['localhost', '127.0.0.1']);
+
+foreach ($centralDomains as $index => $domain) {
+    Route::domain($domain)->group(function () use ($index) {
+        $landingRoute = Route::get('/', function () {
             return Inertia::render('LandingPage', [
                 'canLogin' => Route::has('login'),
                 'canRegister' => Route::has('register'),
@@ -64,9 +66,13 @@ foreach (config('tenancy.central_domains', ['localhost', '127.0.0.1']) as $domai
             ]);
         });
 
-        Route::post('/register-school', [SchoolRegistrationController::class, 'store'])
-            ->middleware('throttle:6,1')
-            ->name('school.register');
+        $registerRoute = Route::post('/register-school', [SchoolRegistrationController::class, 'store'])
+            ->middleware('throttle:6,1');
+
+        if ($index === 0) {
+            $landingRoute->name('landing');
+            $registerRoute->name('school.register');
+        }
     });
 }
 

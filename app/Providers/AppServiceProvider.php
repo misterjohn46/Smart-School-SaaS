@@ -15,7 +15,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Netralkan override db:seed dari Stancl Tenancy agar perintah db:seed standar Laravel berjalan normal
+        $this->app->bind(\Stancl\Tenancy\Commands\Seed::class, function ($app) {
+            return new \Illuminate\Database\Console\Seeds\SeedCommand($app['db']);
+        });
     }
 
     /**
@@ -46,5 +49,12 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Vite::prefetch(concurrency: 3);
+
+        // Pulihkan perintah db:seed asli Laravel dari override Stancl Tenancy
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \Illuminate\Database\Console\Seeds\SeedCommand::class,
+            ]);
+        }
     }
 }
