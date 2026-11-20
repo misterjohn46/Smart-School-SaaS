@@ -111,7 +111,7 @@ class DashboardController extends Controller
 
         // Transaksi Kantin & Dompet
         $todayCanteenTurnover = (float) CanteenOrder::whereDate('created_at', today())
-            ->where('status', 'completed')
+            ->where('order_status', 'completed')
             ->sum('total_amount');
 
         $totalWalletBalance = (float) StudentWallet::sum('balance');
