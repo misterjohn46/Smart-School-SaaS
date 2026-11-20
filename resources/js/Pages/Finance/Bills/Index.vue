@@ -5,6 +5,10 @@ import Sidebar from '@/Components/Sidebar.vue';
 
 const props = defineProps({
     bills: Object,
+    pendingPayments: {
+        type: Array,
+        default: () => [],
+    },
     classrooms: Array,
     gradeLevels: Array,
     feeCategories: Array,
@@ -14,12 +18,14 @@ const props = defineProps({
 });
 
 const page = usePage();
+const activeTab = ref('bills');
 
 // Navigasi Terpadu Administrator Sekolah
 const adminMenus = [
     { isHeader: true, label: 'Operasional Sekolah' },
     { label: 'Command Center', route: 'dashboard', icon: 'home' },
     { label: 'Jurnal Mengajar', route: 'academic.journals.index', icon: 'document' },
+    { label: 'Materi & Tugas (LMS)', route: 'academic.learning.index', icon: 'book-open' },
     { label: 'Buku Nilai Siswa', route: 'academic.grades.index', icon: 'chart' },
     { label: 'Tagihan & SPP Massal', route: 'finance.bills.index', icon: 'credit-card' },
     { label: 'POS Kasir SPP', route: 'finance.pos', icon: 'credit-card' },
@@ -134,6 +140,27 @@ const deleteBill = (item) => {
             preserveScroll: true,
         });
     }
+};
+
+const verifyBankTransferPayment = (paymentItem, isApproved) => {
+    let rejectionReason = null;
+    if (!isApproved) {
+        rejectionReason = prompt(`Masukkan alasan penolakan bukti transfer ${paymentItem.payment_number} (${paymentItem.student_name}):`, 'Nominal atau bukti transfer tidak sesuai');
+        if (rejectionReason === null) return;
+    } else {
+        if (!confirm(`Verifikasi dan nyatakan LUNAS pembayaran transfer ${paymentItem.payment_number} sebesar ${formatRupiah(paymentItem.amount)} untuk ${paymentItem.student_name}?`)) {
+            return;
+        }
+    }
+
+    router.post(
+        route('finance.payments.verify', paymentItem.id),
+        {
+            approved: isApproved,
+            rejection_reason: rejectionReason,
+        },
+        { preserveScroll: true }
+    );
 };
 
 // Debounce Filter
@@ -301,8 +328,126 @@ const formatRupiah = (val) => {
                     </div>
                 </div>
 
+                <!-- Tab Switcher: Daftar Tagihan vs Verifikasi Bukti Transfer -->
+                <div class="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-3">
+                    <button
+                        type="button"
+                        @click="activeTab = 'bills'"
+                        :class="[
+                            'px-4 py-2 rounded-xl text-xs font-bold transition',
+                            activeTab === 'bills'
+                                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/25'
+                                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                        ]"
+                    >
+                        📄 Daftar Tagihan Siswa ({{ stats.total_bills }})
+                    </button>
+
+                    <button
+                        type="button"
+                        @click="activeTab = 'pending_payments'"
+                        :class="[
+                            'px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2',
+                            activeTab === 'pending_payments'
+                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25'
+                                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                        ]"
+                    >
+                        <span>🏦 Verifikasi Bukti Transfer Bank</span>
+                        <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-black"
+                            :class="pendingPayments.length > 0 ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-400'"
+                        >
+                            {{ pendingPayments.length }} Menunggu
+                        </span>
+                    </button>
+                </div>
+
+                <!-- ==================== TAB VERIFIKASI BUKTI TRANSFER BANK ==================== -->
+                <div v-if="activeTab === 'pending_payments'" class="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden shadow-sm">
+                    <div class="px-6 py-4 border-b border-slate-800 bg-slate-950/50 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-white">Antrean Verifikasi Bukti Transfer Bank Siswa / Orang Tua</h3>
+                            <p class="text-xs text-slate-400">Periksa kesesuaian mutasi rekening dan berkas bukti transfer sebelum menyatakan lunas</p>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-300">
+                            <thead class="bg-slate-950/80 text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                                <tr>
+                                    <th class="px-6 py-4">No. Pembayaran & Tanggal</th>
+                                    <th class="px-6 py-4">Siswa & Rombel</th>
+                                    <th class="px-6 py-4">Alokasi Tagihan</th>
+                                    <th class="px-6 py-4">Nominal & Ref</th>
+                                    <th class="px-6 py-4 text-center">Bukti Transfer</th>
+                                    <th class="px-6 py-4 text-right">Aksi Bendahara</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60">
+                                <tr v-for="pmt in pendingPayments" :key="pmt.id" class="hover:bg-slate-800/30 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="font-mono text-xs font-bold text-indigo-400">{{ pmt.payment_number }}</div>
+                                        <div class="text-xs text-slate-400 mt-0.5">{{ pmt.payment_date_formatted }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="font-semibold text-white">{{ pmt.student_name }}</div>
+                                        <div class="text-xs text-slate-400 mt-0.5">
+                                            NISN: {{ pmt.student_nisn }} • <span class="text-indigo-400">{{ pmt.classroom_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div v-for="(t, idx) in pmt.bills_titles" :key="idx" class="text-xs font-medium text-slate-200">
+                                            • {{ t }}
+                                        </div>
+                                        <div v-if="pmt.notes" class="text-[11px] text-slate-400 italic mt-0.5">"{{ pmt.notes }}"</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="font-bold text-emerald-400 font-mono">{{ formatRupiah(pmt.amount) }}</div>
+                                        <div class="text-[11px] text-slate-400 font-mono">Ref: {{ pmt.reference_number }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                                        <a
+                                            v-if="pmt.has_proof && pmt.proof_url"
+                                            :href="pmt.proof_url"
+                                            target="_blank"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 text-xs font-semibold transition"
+                                        >
+                                            <span>📎 Lihat Bukti</span>
+                                        </a>
+                                        <span v-else class="text-xs text-slate-500">-</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                                        <div class="inline-flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                @click="verifyBankTransferPayment(pmt, true)"
+                                                class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow transition"
+                                            >
+                                                ✓ Verifikasi Lunas
+                                            </button>
+                                            <button
+                                                type="button"
+                                                @click="verifyBankTransferPayment(pmt, false)"
+                                                class="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-bold transition"
+                                            >
+                                                ✕ Tolak
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr v-if="pendingPayments.length === 0">
+                                    <td colspan="6" class="px-6 py-12 text-center text-slate-500">
+                                        Tidak ada antrean bukti transfer bank yang menunggu verifikasi saat ini.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- Kontrol Filter & Generator Tagihan -->
-                <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
+                <div v-show="activeTab === 'bills'" class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
                     <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
                         <!-- Input Pencarian -->
                         <div class="relative w-full sm:w-60">
@@ -375,7 +520,7 @@ const formatRupiah = (val) => {
                 </div>
 
                 <!-- Tabel Tagihan Siswa -->
-                <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden shadow-sm">
+                <div v-show="activeTab === 'bills'" class="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden shadow-sm">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm text-slate-300">
                             <thead class="bg-slate-950/80 text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">

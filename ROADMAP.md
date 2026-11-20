@@ -25,7 +25,7 @@
 - [x] **7. Staf Sekolah:** Tenaga kependidikan non-guru, presensi harian GPS.
 - [x] **8. Siswa:** Portal Mobile-First, KTS digital, e-kantin, dompet. *(LMS, tugas, kuis belum)*
 - [x] **9. Orang Tua:** Portal monitoring (NISN + Tgl Lahir). *(OTP WhatsApp sebagai faktor kedua belum)*
-- [ ] **10. Calon Siswa (PPDB):** Pendaftaran online multi-step, cetak bukti daftar, dan pengumuman seleksi.
+- [x] **10. Calon Siswa (PPDB):** Pendaftaran online multi-step, cetak bukti daftar, dan pengumuman seleksi.
 - [ ] **11. Vendor & Kasir Kantin:** Kasir POS stand sudah ada; stok menu dikelola dari panel admin. *(portal vendur mandiri & penarikan saldo belum)*
 
 ---
@@ -178,7 +178,12 @@
 - [ ] Modul BK: Sesi Konseling (Individu, Kelompok, Karir) & Asesmen Minat Bakat
 - [x] Portal Orang Tua: Dashboard Monitoring (Presensi, Nilai, SPP/Tunggakan, Jadwal)
       — `PortalController::parent` + `Portal/ParentDashboard.vue`
-- [ ] Penerimaan Murid Baru (SPMB / PPDB Online) Multi-Step & Konversi Otomatis Akun Siswa
+- [x] Penerimaan Murid Baru (SPMB / PPDB Online) Multi-Step & Konversi Otomatis Akun Siswa
+      — `PpdbController`: portal publik info & gelombang (`/ppdb`), pendaftaran multi-step
+      5 langkah (`/ppdb/daftar`), cetak kartu bukti pendaftaran siap PDF/print (`/ppdb/bukti/{id}`),
+      portal cek hasil seleksi mandiri (`/ppdb/cek-status`), panel verifikasi berkas & putusan
+      seleksi panitia (`/academic/ppdb`), konversi otomatis akun siswa baru (`User` role siswa,
+      `StudentProfile`, & `StudentWallet`), konversi massal ke rombel, dan ekspor CSV.
 - [ ] Perpustakaan Digital: Katalog Buku Fisik, Sirkulasi Tap RFID & Built-in Mozilla PDF.js Reader
 - [~] Manajemen Akademik: Jadwal Pelajaran KBM, Kurikulum & Ekstrakurikuler
   - [x] Jadwal Pelajaran KBM (`LessonSchedule`, `ScheduleController`, `LessonScheduleResource`)
@@ -191,10 +196,10 @@
   - [ ] Notifikasi WhatsApp Otomatis ke Guru / Kepala Sekolah yang Dituju saat tamu tiba
   - [ ] Cetak Guest Pass / QR Code Tiket Tamu & Scan Check-Out saat pulang
   - [ ] Rekapitulasi & Ekspor Laporan Kunjungan Tamu (Excel & PDF)
-- [ ] **Manajemen Rapat, Notulen & Berita Acara (BAP) Digital:**
-  - [ ] Penjadwalan Rapat (Dewan Guru, Staf, Wali Murid, Komite) & Broadcast Undangan WhatsApp
-  - [ ] Presensi Kehadiran & Tanda Tangan Digital Guru di Layar HP/Tablet (Canvas Signature Pad)
-  - [ ] Pencatatan Notulen Rapat, Resume Keputusan & Tindak Lanjut (*Action Items / PIC*)
-  - [ ] Generator Berita Acara Rapat (BAP) Format PDF Resmi (Kop Surat, Lampiran Daftar Hadir Bertanda Tangan, Pengesahan Kepsek)
-  - [ ] Unggah Dokumentasi Foto Kegiatan Rapat & Lampiran Berkas Materi (PDF/PPT)
+- [x] **Manajemen Rapat, Notulen & Berita Acara (BAP) Digital:**
+  - [x] Penjadwalan Rapat (Dewan Guru, Staf, Wali Murid, Komite) & Broadcast Undangan WhatsApp (`/academic/meetings`)
+  - [x] Presensi Kehadiran & Tanda Tangan Digital Guru di Layar HP/Tablet (Canvas Signature Pad)
+  - [x] Pencatatan Notulen Rapat, Resume Keputusan & Tindak Lanjut (*Action Items / PIC*)
+  - [x] Generator Berita Acara Rapat (BAP) Format PDF Resmi (Kop Surat, Lampiran Daftar Hadir Bertanda Tangan, Pengesahan Kepsek)
+  - [x] Unggah Dokumentasi Foto Kegiatan Rapat & Lampiran Berkas Materi (PDF/PPT)
 - [ ] Pengaturan Sistem, Database Backup Otomatis & Web Installer Setup Wizard

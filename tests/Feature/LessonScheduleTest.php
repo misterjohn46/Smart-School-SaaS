@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Filament\Resources\LessonScheduleResource;
 use App\Models\AcademicYear;
 use App\Models\Classroom;
 use App\Models\Department;
@@ -91,16 +90,23 @@ class LessonScheduleTest extends TestCase
         ]);
     }
 
-    public function test_school_admin_can_access_lesson_schedules_in_filament(): void
+    public function test_school_admin_can_access_lesson_schedules(): void
     {
         $this->actingAs($this->schoolAdmin);
-        $this->assertTrue(LessonScheduleResource::canAccess());
+        $this->get('/academic/schedules')->assertOk();
     }
 
-    public function test_super_admin_cannot_access_lesson_schedules_in_filament(): void
+    public function test_teacher_can_access_lesson_schedules(): void
     {
-        $this->actingAs($this->superAdmin);
-        $this->assertFalse(LessonScheduleResource::canAccess());
+        $this->actingAs($this->teacher);
+        $response = $this->get('/academic/schedules');
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Academic/Schedules')
+            ->where('canManage', false)
+            ->has('schedules')
+            ->has('classrooms')
+        );
     }
 
     public function test_lesson_schedule_can_be_created_and_queried(): void
@@ -216,5 +222,120 @@ class LessonScheduleTest extends TestCase
         $this->assertDatabaseMissing('lesson_schedules', [
             'id' => $schedule->id,
         ]);
+    }
+
+    public function test_teacher_teaching_journal_dropdown_only_shows_scheduled_classes_and_subjects(): void
+    {
+        $otherClassroom = Classroom::create([
+            'name' => 'XII - TKJ 2',
+            'academic_year_id' => $this->academicYear->id,
+            'department_id' => $this->classroom->department_id,
+            'grade_level_id' => $this->classroom->grade_level_id,
+        ]);
+
+        $otherSubject = Subject::create([
+            'code' => 'BIO-01',
+            'name' => 'Biologi Terapan',
+            'kkm' => 75,
+            'type' => 'umum',
+            'is_active' => true,
+        ]);
+
+        LessonSchedule::create([
+            'academic_year_id' => $this->academicYear->id,
+            'classroom_id' => $this->classroom->id,
+            'subject_id' => $this->subject->id,
+            'teacher_user_id' => $this->teacher->id,
+            'day_of_week' => 'senin',
+            'start_time' => '07:15',
+            'end_time' => '08:45',
+            'is_active' => true,
+            'order' => 1,
+        ]);
+
+        $response = $this->actingAs($this->teacher)->get(route('academic.journals.index'));
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Academic/Journals/Index')
+            ->has('classrooms', 1)
+            ->where('classrooms.0.id', $this->classroom->id)
+            ->has('subjects', 1)
+            ->where('subjects.0.id', $this->subject->id)
+            ->where('teachingAssignments.'.$this->classroom->id, [$this->subject->id])
+        );
+    }
+
+    public function test_teacher_learning_dropdown_only_shows_scheduled_classes_and_subjects(): void
+    {
+        $otherClassroom = Classroom::create([
+            'name' => 'XI - RPL 2',
+            'academic_year_id' => $this->academicYear->id,
+            'department_id' => $this->classroom->department_id,
+            'grade_level_id' => $this->classroom->grade_level_id,
+        ]);
+
+        $otherSubject = Subject::create([
+            'code' => 'KIM-01',
+            'name' => 'Kimia Industri',
+            'kkm' => 75,
+            'type' => 'umum',
+            'is_active' => true,
+        ]);
+
+        LessonSchedule::create([
+            'academic_year_id' => $this->academicYear->id,
+            'classroom_id' => $this->classroom->id,
+            'subject_id' => $this->subject->id,
+            'teacher_user_id' => $this->teacher->id,
+            'day_of_week' => 'senin',
+            'start_time' => '07:15',
+            'end_time' => '08:45',
+            'is_active' => true,
+            'order' => 1,
+        ]);
+
+        $response = $this->actingAs($this->teacher)->get(route('academic.learning.index'));
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Academic/Learning/Index')
+            ->has('classrooms', 1)
+            ->where('classrooms.0.id', $this->classroom->id)
+            ->has('subjects', 1)
+            ->where('subjects.0.id', $this->subject->id)
+            ->where('teachingAssignments.'.$this->classroom->id, [$this->subject->id])
+        );
+    }
+
+    public function test_teacher_cbt_bank_dropdown_only_shows_scheduled_subjects(): void
+    {
+        $otherSubject = Subject::create([
+            'code' => 'FIS-01',
+            'name' => 'Fisika Terapan',
+            'kkm' => 75,
+            'type' => 'umum',
+            'is_active' => true,
+        ]);
+
+        LessonSchedule::create([
+            'academic_year_id' => $this->academicYear->id,
+            'classroom_id' => $this->classroom->id,
+            'subject_id' => $this->subject->id,
+            'teacher_user_id' => $this->teacher->id,
+            'day_of_week' => 'senin',
+            'start_time' => '07:15',
+            'end_time' => '08:45',
+            'is_active' => true,
+            'order' => 1,
+        ]);
+
+        $response = $this->actingAs($this->teacher)->get(route('academic.cbt.index'));
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Academic/Cbt/Index')
+            ->has('subjects', 1)
+            ->where('subjects.0.id', $this->subject->id)
+            ->has('classrooms', 1)
+            ->where('classrooms.0.id', $this->classroom->id)
+        );
     }
 }

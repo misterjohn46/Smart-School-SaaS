@@ -32,7 +32,7 @@ final class TenantUnique
     }
 
     /**
-     * Pembatas tenant untuk dipakai pada `modifyRuleUsing` milik Filament.
+     * Pembatas tenant untuk validasi keunikan data per sekolah.
      */
     public static function constrain(Unique $rule): Unique
     {

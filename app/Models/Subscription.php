@@ -17,12 +17,15 @@ class Subscription extends Model
 
     protected $guarded = [];
 
-    protected $casts = [
-        'trial_ends_at' => 'datetime',
-        'starts_at' => 'datetime',
-        'ends_at' => 'datetime',
-        'cancelled_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'trial_ends_at' => 'datetime',
+            'starts_at' => 'datetime',
+            'ends_at' => 'datetime',
+            'cancelled_at' => 'datetime',
+        ];
+    }
 
     /** @return BelongsTo<Tenant, $this> */
     public function tenant(): BelongsTo
@@ -38,10 +41,12 @@ class Subscription extends Model
 
     public function isValid(): bool
     {
-        if ($this->status === 'trial' && $this->trial_ends_at && $this->trial_ends_at->isFuture()) {
+        $trialEnds = $this->trial_ends_at ? \Illuminate\Support\Carbon::parse($this->trial_ends_at) : null;
+        if ($this->status === 'trial' && $trialEnds && $trialEnds->isFuture()) {
             return true;
         }
 
-        return $this->status === 'active' && ($this->ends_at === null || $this->ends_at->isFuture());
+        $endsAt = $this->ends_at ? \Illuminate\Support\Carbon::parse($this->ends_at) : null;
+        return $this->status === 'active' && ($endsAt === null || $endsAt->isFuture());
     }
 }

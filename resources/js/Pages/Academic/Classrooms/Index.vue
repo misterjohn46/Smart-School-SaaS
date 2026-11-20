@@ -46,10 +46,55 @@ const gradeLevelId = ref(props.filters.grade_level_id || '');
 const departmentId = ref(props.filters.department_id || '');
 const academicYearId = ref(props.filters.academic_year_id || '');
 
-// Modal State
+// Pengelompokan Tingkat Kelas Berdasarkan Jenjang Sekolah (SMP, SMA/SMK, SD)
+const groupedGradeLevels = computed(() => {
+    const sds = props.gradeLevels.filter(g => g.level_numeric >= 1 && g.level_numeric <= 6);
+    const smps = props.gradeLevels.filter(g => g.level_numeric >= 7 && g.level_numeric <= 9);
+    const smas = props.gradeLevels.filter(g => g.level_numeric >= 10 && g.level_numeric <= 12);
+    const others = props.gradeLevels.filter(g => g.level_numeric < 1 || g.level_numeric > 12);
+
+    return [
+        { label: 'Sekolah Menengah Pertama (SMP / MTs)', items: smps },
+        { label: 'Sekolah Menengah Atas / Kejuruan (SMA / SMK / MA)', items: smas },
+        { label: 'Sekolah Dasar (SD / MI)', items: sds },
+        ...(others.length ? [{ label: 'Tingkat Khusus Lainnya', items: others }] : []),
+    ].filter(group => group.items.length > 0);
+});
+
+// Modal State Rombel
 const isModalOpen = ref(false);
 const isEditing = ref(false);
 const editingId = ref(null);
+
+// Modal State Kelola Jenjang Tingkat
+const isGradeLevelModalOpen = ref(false);
+const gradeLevelForm = useForm({
+    name: '',
+    level_numeric: '',
+});
+
+const submitGradeLevel = () => {
+    gradeLevelForm.post(route('academic.grade-levels.store'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            gradeLevelForm.reset();
+        },
+    });
+};
+
+const applyPreset = (presetKey) => {
+    router.post(route('academic.grade-levels.preset'), { preset: presetKey }, {
+        preserveScroll: true,
+    });
+};
+
+const deleteGradeLevel = (level) => {
+    if (confirm(`Hapus tingkat "${level.name}"?`)) {
+        router.delete(route('academic.grade-levels.destroy', level.id), {
+            preserveScroll: true,
+        });
+    }
+};
 
 const form = useForm({
     name: '',
@@ -284,9 +329,11 @@ const deleteClassroom = (item) => {
                             class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-indigo-500 transition-all"
                         >
                             <option value="">Semua Tingkat</option>
-                            <option v-for="level in gradeLevels" :key="level.id" :value="level.id">
-                                {{ level.name }}
-                            </option>
+                            <optgroup v-for="group in groupedGradeLevels" :key="group.label" :label="group.label">
+                                <option v-for="level in group.items" :key="level.id" :value="level.id">
+                                    {{ level.name }} (Kelas {{ level.level_numeric }})
+                                </option>
+                            </optgroup>
                         </select>
 
                         <!-- Filter Jurusan -->
@@ -312,16 +359,29 @@ const deleteClassroom = (item) => {
                         </select>
                     </div>
 
-                    <!-- Tombol Tambah Rombel Baru -->
-                    <button
-                        @click="openCreateModal"
-                        class="w-full md:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition-all shrink-0"
-                    >
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        <span>Tambah Kelas Baru</span>
-                    </button>
+                    <!-- Tombol Aksi -->
+                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0">
+                        <button
+                            @click="isGradeLevelModalOpen = true"
+                            class="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl font-semibold text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition shadow-sm"
+                            title="Konfigurasi jenjang sekolah (SMP, SMA, SD)"
+                        >
+                            <svg class="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            <span>Kelola Jenjang Tingkat</span>
+                        </button>
+
+                        <button
+                            @click="openCreateModal"
+                            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition-all"
+                        >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>Tambah Kelas Baru</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Tabel Data Rombel -->
@@ -550,10 +610,12 @@ const deleteClassroom = (item) => {
                             class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
                             required
                         >
-                            <option value="" disabled>Pilih Tingkat</option>
-                            <option v-for="level in gradeLevels" :key="level.id" :value="level.id">
-                                {{ level.name }}
-                            </option>
+                            <option value="" disabled>-- Pilih Tingkat Kelas --</option>
+                            <optgroup v-for="group in groupedGradeLevels" :key="group.label" :label="group.label">
+                                <option v-for="level in group.items" :key="level.id" :value="level.id">
+                                    {{ level.name }} (Kelas {{ level.level_numeric }})
+                                </option>
+                            </optgroup>
                         </select>
                         <div v-if="form.errors.grade_level_id" class="text-xs text-rose-400 mt-1">{{ form.errors.grade_level_id }}</div>
                     </div>
@@ -627,6 +689,155 @@ const deleteClassroom = (item) => {
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal Kelola Tingkat Kelas (Jenjang SMP / SMA / SD) -->
+    <div
+        v-if="isGradeLevelModalOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in"
+    >
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <!-- Header Modal -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-white">Kelola Jenjang & Tingkat Kelas</h3>
+                        <p class="text-xs text-slate-400">Atur tingkat untuk SMP (7, 8, 9), SMA/SMK (10, 11, 12), atau SD (1 s/d 6)</p>
+                    </div>
+                </div>
+                <button
+                    @click="isGradeLevelModalOpen = false"
+                    class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                >
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- 1. Tombol Preset Cepat -->
+            <div class="mt-4 p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-2">
+                <span class="text-xs font-bold text-slate-300 block">⚡ Terapkan Preset Jenjang Cepat:</span>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <button
+                        @click="applyPreset('smp')"
+                        type="button"
+                        class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-indigo-600/30 text-slate-200 hover:text-indigo-300 border border-slate-700 hover:border-indigo-500/40 text-xs font-semibold transition text-center"
+                    >
+                        🏫 Preset SMP (7, 8, 9)
+                    </button>
+                    <button
+                        @click="applyPreset('sma')"
+                        type="button"
+                        class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-indigo-600/30 text-slate-200 hover:text-indigo-300 border border-slate-700 hover:border-indigo-500/40 text-xs font-semibold transition text-center"
+                    >
+                        🎓 Preset SMA/SMK (10, 11, 12)
+                    </button>
+                    <button
+                        @click="applyPreset('sd')"
+                        type="button"
+                        class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-indigo-600/30 text-slate-200 hover:text-indigo-300 border border-slate-700 hover:border-indigo-500/40 text-xs font-semibold transition text-center"
+                    >
+                        🎒 Preset SD (1 s/d 6)
+                    </button>
+                    <button
+                        @click="applyPreset('all')"
+                        type="button"
+                        class="px-3 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 text-xs font-bold transition text-center"
+                    >
+                        🌐 Terapkan Semua (1-12)
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. Form Tambah Tingkat Kustom -->
+            <form @submit.prevent="submitGradeLevel" class="mt-4 p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-3">
+                <span class="text-xs font-bold text-slate-300 block">+ Tambah Tingkat Kustom Baru:</span>
+                <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                    <div class="sm:col-span-3">
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Nama Tingkat (Label)</label>
+                        <input
+                            v-model="gradeLevelForm.name"
+                            type="text"
+                            placeholder="Contoh: Tingkat VII atau Kelas 7"
+                            required
+                            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                        />
+                    </div>
+                    <div class="sm:col-span-1">
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Angka Level</label>
+                        <input
+                            v-model.number="gradeLevelForm.level_numeric"
+                            type="number"
+                            min="1"
+                            max="20"
+                            placeholder="7"
+                            required
+                            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                        />
+                    </div>
+                    <div class="sm:col-span-1 flex items-end">
+                        <button
+                            type="submit"
+                            :disabled="gradeLevelForm.processing"
+                            class="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition disabled:opacity-50"
+                        >
+                            {{ gradeLevelForm.processing ? '...' : '+ Tambah' }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- 3. Daftar Tingkat Aktif -->
+            <div class="mt-4 space-y-2">
+                <span class="text-xs font-bold text-slate-300 block">Daftar Tingkat Terdaftar di Sistem:</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div
+                        v-for="level in gradeLevels"
+                        :key="level.id"
+                        class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between gap-2"
+                    >
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-mono font-bold text-xs flex items-center justify-center">
+                                {{ level.level_numeric }}
+                            </span>
+                            <div>
+                                <span class="text-xs font-bold text-white block">{{ level.name }}</span>
+                                <span class="text-[10px] text-slate-400">
+                                    {{ level.level_numeric >= 7 && level.level_numeric <= 9 ? 'SMP / MTs' : (level.level_numeric >= 10 ? 'SMA / SMK' : 'SD / MI') }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <button
+                            @click="deleteGradeLevel(level)"
+                            class="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/30 transition text-xs"
+                            title="Hapus tingkat ini"
+                        >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-6 pt-4 border-t border-slate-800 flex justify-end">
+                <button
+                    @click="isGradeLevelModalOpen = false"
+                    type="button"
+                    class="px-5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white transition"
+                >
+                    Tutup
+                </button>
+            </div>
         </div>
     </div>
 </template>

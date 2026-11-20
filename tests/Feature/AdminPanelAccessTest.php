@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Filament\Panel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Role;
@@ -13,37 +12,49 @@ class AdminPanelAccessTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_admin_role_can_access_the_admin_panel(): void
-    {
-        $admin = User::factory()->create();
-        Role::create(['name' => 'admin']);
-        $admin->assignRole('admin');
-
-        $this->assertTrue($admin->canAccessPanel(Panel::make()));
-    }
-
-    public function test_super_admin_can_access_the_admin_panel(): void
+    public function test_super_admin_can_access_central_tenants_and_plans(): void
     {
         $superAdmin = User::factory()->create();
-        Role::create(['name' => 'super_admin']);
+        Role::firstOrCreate(['name' => 'super_admin']);
         $superAdmin->assignRole('super_admin');
 
-        $this->assertTrue($superAdmin->canAccessPanel(Panel::make()));
+        $this->actingAs($superAdmin);
+
+        $responseTenants = $this->get(route('central.tenants.index'));
+        $responseTenants->assertOk();
+
+        $responsePlans = $this->get(route('central.plans.index'));
+        $responsePlans->assertOk();
     }
 
-    public function test_non_admin_role_cannot_access_the_admin_panel(): void
+    public function test_school_admin_cannot_access_central_tenants_module(): void
+    {
+        $admin = User::factory()->create();
+        Role::firstOrCreate(['name' => 'admin']);
+        $admin->assignRole('admin');
+
+        $this->actingAs($admin);
+
+        $response = $this->get(route('central.tenants.index'));
+        $response->assertForbidden();
+    }
+
+    public function test_teacher_cannot_access_central_tenants_module(): void
     {
         $user = User::factory()->create();
-        Role::create(['name' => 'user']);
-        $user->assignRole('user');
+        Role::firstOrCreate(['name' => 'guru']);
+        $user->assignRole('guru');
 
-        $this->assertFalse($user->canAccessPanel(Panel::make()));
+        $this->actingAs($user);
+
+        $response = $this->get(route('central.tenants.index'));
+        $response->assertForbidden();
     }
 
     public function test_admin_cannot_delete_their_own_account(): void
     {
         $admin = User::factory()->create();
-        Role::create(['name' => 'admin']);
+        Role::firstOrCreate(['name' => 'admin']);
         $admin->assignRole('admin');
 
         $this->assertFalse(Gate::forUser($admin)->allows('delete', $admin));
@@ -53,7 +64,7 @@ class AdminPanelAccessTest extends TestCase
     {
         $admin = User::factory()->create();
         $otherUser = User::factory()->create();
-        Role::create(['name' => 'admin']);
+        Role::firstOrCreate(['name' => 'admin']);
         $admin->assignRole('admin');
 
         $this->assertTrue(Gate::forUser($admin)->allows('delete', $otherUser));

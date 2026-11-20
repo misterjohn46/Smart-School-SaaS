@@ -180,4 +180,92 @@ class ClassroomController extends Controller
 
         return back()->with('status', "Kelas {$name} berhasil dihapus!");
     }
+
+    /**
+     * Tambah Tingkat Kelas Baru (Custom)
+     */
+    public function storeGradeLevel(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:50'],
+            'level_numeric' => ['required', 'integer', 'min:1', 'max:20'],
+        ]);
+
+        GradeLevel::create($validated);
+
+        return back()->with('status', "Tingkat {$validated['name']} berhasil ditambahkan!");
+    }
+
+    /**
+     * Terapkan Preset Tingkat (SMP, SMA/SMK, SD, Semua)
+     */
+    public function applyGradeLevelPreset(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'preset' => ['required', 'string', 'in:smp,sma,sd,all'],
+        ]);
+
+        $presets = [
+            'smp' => [
+                ['name' => 'Tingkat VII', 'level_numeric' => 7],
+                ['name' => 'Tingkat VIII', 'level_numeric' => 8],
+                ['name' => 'Tingkat IX', 'level_numeric' => 9],
+            ],
+            'sma' => [
+                ['name' => 'Tingkat X', 'level_numeric' => 10],
+                ['name' => 'Tingkat XI', 'level_numeric' => 11],
+                ['name' => 'Tingkat XII', 'level_numeric' => 12],
+            ],
+            'sd' => [
+                ['name' => 'Tingkat I', 'level_numeric' => 1],
+                ['name' => 'Tingkat II', 'level_numeric' => 2],
+                ['name' => 'Tingkat III', 'level_numeric' => 3],
+                ['name' => 'Tingkat IV', 'level_numeric' => 4],
+                ['name' => 'Tingkat V', 'level_numeric' => 5],
+                ['name' => 'Tingkat VI', 'level_numeric' => 6],
+            ],
+            'all' => [
+                ['name' => 'Tingkat I', 'level_numeric' => 1],
+                ['name' => 'Tingkat II', 'level_numeric' => 2],
+                ['name' => 'Tingkat III', 'level_numeric' => 3],
+                ['name' => 'Tingkat IV', 'level_numeric' => 4],
+                ['name' => 'Tingkat V', 'level_numeric' => 5],
+                ['name' => 'Tingkat VI', 'level_numeric' => 6],
+                ['name' => 'Tingkat VII', 'level_numeric' => 7],
+                ['name' => 'Tingkat VIII', 'level_numeric' => 8],
+                ['name' => 'Tingkat IX', 'level_numeric' => 9],
+                ['name' => 'Tingkat X', 'level_numeric' => 10],
+                ['name' => 'Tingkat XI', 'level_numeric' => 11],
+                ['name' => 'Tingkat XII', 'level_numeric' => 12],
+            ],
+        ];
+
+        foreach ($presets[$validated['preset']] as $lvl) {
+            GradeLevel::firstOrCreate(
+                ['level_numeric' => $lvl['level_numeric']],
+                ['name' => $lvl['name']]
+            );
+        }
+
+        return back()->with('status', 'Preset tingkat kelas berhasil diterapkan!');
+    }
+
+    /**
+     * Hapus Tingkat Kelas
+     */
+    public function destroyGradeLevel(int|string $id): RedirectResponse
+    {
+        $gradeLevel = GradeLevel::findOrFail($id);
+
+        if ($gradeLevel->classrooms()->exists()) {
+            return back()->withErrors([
+                'error' => "Tingkat {$gradeLevel->name} tidak dapat dihapus karena masih digunakan oleh rombel/kelas aktif.",
+            ]);
+        }
+
+        $name = $gradeLevel->name;
+        $gradeLevel->delete();
+
+        return back()->with('status', "Tingkat {$name} berhasil dihapus!");
+    }
 }

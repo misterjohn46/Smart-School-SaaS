@@ -19,6 +19,17 @@ class ScheduleController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $request->user();
+        $isTeacher = $user && $user->hasRole(RoleName::Teacher->value);
+        $canManage = $user ? $user->hasAnyRole([
+            RoleName::Admin->value,
+            RoleName::Headmaster->value,
+            RoleName::Operator->value,
+            RoleName::SuperAdmin->value,
+        ]) : false;
+
+        $viewMode = $request->input('view_mode', ($isTeacher && ! $canManage) ? 'my_schedule' : 'classroom');
+
         $activeYear = AcademicYear::where('is_active', true)->first();
         $classrooms = Classroom::with('department')->orderBy('name')->get();
 
@@ -33,7 +44,9 @@ class ScheduleController extends Controller
             $query->where('academic_year_id', $activeYear->id);
         }
 
-        if ($selectedClassroomId) {
+        if ($viewMode === 'my_schedule' && $user) {
+            $query->where('teacher_user_id', $user->id);
+        } elseif ($selectedClassroomId) {
             $query->where('classroom_id', $selectedClassroomId);
         }
 
@@ -44,7 +57,7 @@ class ScheduleController extends Controller
         $groupedSchedules = [];
 
         foreach ($days as $day) {
-            $groupedSchedules[$day] = $schedules->where('day_of_week', $day)->map(function ($item) {
+            $groupedSchedules[$day] = $schedules->where('day_of_week', $day)->map(function ($item) use ($user) {
                 return [
                     'id' => $item->id,
                     'time' => $item->time_slot,
@@ -57,6 +70,7 @@ class ScheduleController extends Controller
                     'room' => $item->room ?: 'Ruang Kelas',
                     'classroom' => $item->classroom?->name ?? '-',
                     'order' => $item->order,
+                    'is_my_subject' => $user ? ($item->teacher_user_id === $user->id) : false,
                 ];
             })->values()->toArray();
         }
@@ -64,7 +78,9 @@ class ScheduleController extends Controller
         // Jika belum ada jadwal tersimpan di database, berikan fallback mockup rapi
         $totalFound = $schedules->count();
         if ($totalFound === 0) {
-            $groupedSchedules = $this->getMockupSchedules();
+            $groupedSchedules = ($viewMode === 'my_schedule')
+                ? $this->getMyScheduleMockup($user?->name ?? 'Bpk. Ahmad Fauzi, S.Pd')
+                : $this->getMockupSchedules();
         }
 
         $selectedClass = $classrooms->firstWhere('id', $selectedClassroomId);
@@ -73,6 +89,10 @@ class ScheduleController extends Controller
         $teachers = User::role(RoleName::Teacher->value)->orderBy('name')->get(['id', 'name']);
 
         return Inertia::render('Academic/Schedules', [
+            'viewMode' => $viewMode,
+            'canManage' => $canManage,
+            'isTeacher' => $isTeacher,
+            'teacherName' => $user?->name ?? 'Guru Pengajar',
             'classrooms' => $classrooms->map(fn ($c) => [
                 'id' => $c->id,
                 'name' => $c->name,
@@ -166,6 +186,33 @@ class ScheduleController extends Controller
             'sabtu' => [
                 ['id' => 12, 'time' => '07:30 - 10:30', 'start_time' => '07:30', 'end_time' => '10:30', 'subject' => 'Kegiatan Ekstrakurikuler Wajib & Minat Bakat', 'subject_code' => 'EKS', 'subject_type' => 'mulok', 'teacher' => 'Instruktur Ekstrakurikuler', 'room' => 'Gedung Serbaguna', 'classroom' => 'X - RPL 1', 'order' => 1],
             ],
+        ];
+    }
+
+    /**
+     * Fallback jadwal mengajar personal khusus guru pengajar
+     */
+    protected function getMyScheduleMockup(string $teacherName): array
+    {
+        return [
+            'senin' => [
+                ['id' => 101, 'time' => '07:15 - 08:45', 'start_time' => '07:15', 'end_time' => '08:45', 'subject' => 'Pemrograman Web & Mobile Devices', 'subject_code' => 'RPL-01', 'subject_type' => 'kejuruan', 'teacher' => $teacherName, 'room' => 'Lab Komputer RPL 1', 'classroom' => 'X - RPL 1', 'order' => 1, 'is_my_subject' => true],
+                ['id' => 102, 'time' => '09:00 - 10:30', 'start_time' => '09:00', 'end_time' => '10:30', 'subject' => 'Basis Data Relasional & SQL', 'subject_code' => 'RPL-02', 'subject_type' => 'kejuruan', 'teacher' => $teacherName, 'room' => 'Lab Komputer RPL 2', 'classroom' => 'XI - RPL 1', 'order' => 2, 'is_my_subject' => true],
+                ['id' => 103, 'time' => '10:45 - 12:15', 'start_time' => '10:45', 'end_time' => '12:15', 'subject' => 'Pemrograman Berorientasi Objek', 'subject_code' => 'RPL-03', 'subject_type' => 'kejuruan', 'teacher' => $teacherName, 'room' => 'Lab Software Engineering', 'classroom' => 'XII - RPL 1', 'order' => 3, 'is_my_subject' => true],
+            ],
+            'selasa' => [
+                ['id' => 104, 'time' => '08:15 - 10:45', 'start_time' => '08:15', 'end_time' => '10:45', 'subject' => 'Pemrograman Web Frontend Framework (Vue/React)', 'subject_code' => 'RPL-04', 'subject_type' => 'kejuruan', 'teacher' => $teacherName, 'room' => 'Lab Komputer RPL 1', 'classroom' => 'XI - RPL 2', 'order' => 2, 'is_my_subject' => true],
+            ],
+            'rabu' => [
+                ['id' => 105, 'time' => '07:15 - 09:30', 'start_time' => '07:15', 'end_time' => '09:30', 'subject' => 'Pemodelan Perangkat Lunak (UML & Agile)', 'subject_code' => 'RPL-05', 'subject_type' => 'kejuruan', 'teacher' => $teacherName, 'room' => 'Lab Software 1', 'classroom' => 'X - RPL 1', 'order' => 1, 'is_my_subject' => true],
+            ],
+            'kamis' => [
+                ['id' => 106, 'time' => '09:00 - 11:30', 'start_time' => '09:00', 'end_time' => '11:30', 'subject' => 'Pengembangan Aplikasi Mobile (Flutter/Android)', 'subject_code' => 'RPL-06', 'subject_type' => 'kejuruan', 'teacher' => $teacherName, 'room' => 'Lab Multimedia', 'classroom' => 'XII - RPL 2', 'order' => 2, 'is_my_subject' => true],
+            ],
+            'jumat' => [
+                ['id' => 107, 'time' => '08:00 - 10:30', 'start_time' => '08:00', 'end_time' => '10:30', 'subject' => 'Algoritma & Struktur Data Dasar', 'subject_code' => 'RPL-07', 'subject_type' => 'kejuruan', 'teacher' => $teacherName, 'room' => 'Lab Komputer RPL 2', 'classroom' => 'X - RPL 2', 'order' => 2, 'is_my_subject' => true],
+            ],
+            'sabtu' => [],
         ];
     }
 }

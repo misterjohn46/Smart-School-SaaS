@@ -8,21 +8,11 @@ import { Link, usePage } from '@inertiajs/vue3';
 const props = defineProps({
     menus: {
         type: Array,
-        default: () => [
-            { label: 'Dashboard Guru', route: 'dashboard', icon: 'home' },
-            { label: 'Jadwal Mengajar', route: 'academic.schedules', icon: 'calendar' },
-            { label: 'Jurnal Mengajar', route: 'academic.journals.index', icon: 'document' },
-            { label: 'Presensi Kelas', route: 'attendance.classroom.index', icon: 'clipboard' },
-            { label: 'Tata Tertib & BK', route: 'counseling.violations.index', icon: 'clipboard-check' },
-            { label: 'CBT Ujian Online', route: 'academic.cbt.index', icon: 'desktop' },
-            { label: 'Penilaian Siswa', route: 'academic.grades.index', icon: 'chart' },
-            { label: 'Buku Rapor & Leger', route: 'academic.reports.index', icon: 'document' },
-            { label: 'Radius GPS & Shift', route: 'attendance.settings.index', icon: 'location' },
-        ],
+        default: null,
     },
     sectionTitle: {
         type: String,
-        default: 'Navigasi Sistem',
+        default: '',
     },
 });
 
@@ -34,6 +24,78 @@ const closeMobile = () => {
 };
 
 const page = usePage();
+
+// Menu khusus Guru Pengajar (10 Menu Terpadu, Tanpa Rapat & BAP Digital)
+const teacherMenus = [
+    { label: 'Dashboard Guru', route: 'dashboard', icon: 'home' },
+    { label: 'Jadwal Mengajar', route: 'academic.schedules', icon: 'calendar' },
+    { label: 'Presensi Kelas', route: 'attendance.classroom.index', icon: 'clipboard' },
+    { label: 'Jurnal Mengajar', route: 'academic.journals.index', icon: 'document' },
+    { label: 'Materi & LMS', route: 'academic.learning.index', icon: 'book-open' },
+    { label: 'Penilaian Siswa', route: 'academic.grades.index', icon: 'chart' },
+    { label: 'Buku Rapor & Leger', route: 'academic.reports.index', icon: 'document' },
+    { label: 'CBT Ujian Online', route: 'academic.cbt.index', icon: 'desktop' },
+    { label: 'Verifikasi E-Leave', route: 'attendance.leave.index', icon: 'clipboard-check' },
+    { label: 'Tata Tertib Siswa', route: 'counseling.violations.index', icon: 'clipboard-check' },
+];
+
+// Menu Administrator Sekolah & Staf TU
+const adminDefaultMenus = [
+    { isHeader: true, label: 'Operasional Sekolah' },
+    { label: 'Command Center', route: 'dashboard', icon: 'home' },
+    { label: 'Buku Nilai Siswa', route: 'academic.grades.index', icon: 'chart' },
+    { label: 'Buku Rapor & Leger', route: 'academic.reports.index', icon: 'document' },
+    { label: 'Tagihan & SPP Massal', route: 'finance.bills.index', icon: 'credit-card' },
+    { label: 'Presensi Kelas', route: 'attendance.classroom.index', icon: 'clipboard' },
+    { label: 'Jadwal Pelajaran', route: 'academic.schedules', icon: 'calendar' },
+    { label: 'POS Kasir SPP', route: 'finance.pos', icon: 'credit-card' },
+    { label: 'Cetak Massal KTS', route: 'kts.batch', icon: 'id-card' },
+    { label: 'Presensi GPS & AI', route: 'attendance.gps.index', icon: 'location' },
+    { label: 'Verifikasi E-Leave', route: 'attendance.leave.index', icon: 'clipboard-check' },
+    { label: 'Dompet Digital Siswa', route: 'wallet.index', icon: 'wallet' },
+    { label: 'E-Kantin & Stand', route: 'canteen.index', icon: 'shopping-bag' },
+    { label: 'PPDB Murid Baru', route: 'academic.ppdb.index', icon: 'users' },
+    { label: 'Rapat & BAP Digital', route: 'academic.meetings.index', icon: 'document' },
+    { isHeader: true, label: 'Master Data Akademik' },
+    { label: 'Data Siswa & Rombel', route: 'academic.students.index', icon: 'users' },
+    { label: 'Data Guru & PTK', route: 'academic.teachers.index', icon: 'academic-cap' },
+    { label: 'Rombel (Kelas)', route: 'academic.classrooms.index', icon: 'rectangle-stack' },
+    { label: 'Mata Pelajaran', route: 'academic.subjects.index', icon: 'book-open' },
+    { label: 'Tahun Ajaran & Semester', route: 'academic.academic-years.index', icon: 'calendar' },
+    { label: 'Program Keahlian', route: 'academic.departments.index', icon: 'academic-cap' },
+];
+
+const isTeacher = computed(() => {
+    const user = page.props.auth?.user;
+    if (!user) return false;
+    const roles = user.roles || [];
+    const isSchoolAdmin = roles.some(r => [
+        'admin', 'super_admin', 'operator', 'kepala_sekolah', 'bendahara', 'staff'
+    ].includes(r));
+
+    if (isSchoolAdmin) return false;
+
+    return !!(user.isTeacher || roles.includes('guru') || page.props.isTeacher);
+});
+
+const effectiveMenus = computed(() => {
+    // KETIKA USER ADALAH GURU: SELALU TAMPILKAN MENU GURU!
+    // Ini mengunci menu agar tidak pernah berubah menjadi menu admin saat guru berpindah halaman.
+    if (isTeacher.value) {
+        return teacherMenus;
+    }
+    if (props.menus && props.menus.length > 0) {
+        return props.menus;
+    }
+    return adminDefaultMenus;
+});
+
+const effectiveSectionTitle = computed(() => {
+    if (isTeacher.value) {
+        return 'Navigasi Guru';
+    }
+    return props.sectionTitle || 'Operasional Sekolah';
+});
 
 const isActive = (menu) => {
     if (menu.route && typeof route === 'function') {
@@ -113,11 +175,11 @@ const iconPaths = {
         <!-- ===== MENU NAVIGASI ===== -->
         <nav class="flex flex-1 flex-col overflow-y-auto px-3 py-4 space-y-1">
             <div class="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                {{ sectionTitle }}
+                {{ effectiveSectionTitle }}
             </div>
 
             <ul class="space-y-1">
-                <li v-for="(menu, idx) in menus" :key="idx">
+                <li v-for="(menu, idx) in effectiveMenus" :key="idx">
                     <!-- Header Seksi Kategori -->
                     <div
                         v-if="menu.isHeader"

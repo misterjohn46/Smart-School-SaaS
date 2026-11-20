@@ -19,8 +19,11 @@ class CbtSubmission extends Model
 
     protected $casts = [
         'answers' => 'array',
+        'doubtful_answers' => 'array',
+        'essay_scores' => 'array',
         'total_score' => 'float',
         'is_passed' => 'boolean',
+        'violations_count' => 'integer',
         'started_at' => 'datetime',
         'submitted_at' => 'datetime',
     ];

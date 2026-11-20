@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { Head, Link, useForm, router, usePage } from '@inertiajs/vue3';
 import Sidebar from '@/Components/Sidebar.vue';
 
@@ -12,6 +12,10 @@ const props = defineProps({
     academicYears: Array,
     activeYear: Object,
     isTeacherOnly: Boolean,
+    teachingAssignments: {
+        type: Object,
+        default: () => ({}),
+    },
     filters: Object,
     stats: Object,
 });
@@ -112,6 +116,29 @@ const form = useForm({
     attendance_absent: 0,
     status: 'terlaksana',
     substitute_teacher_name: '',
+});
+
+// Filter Mata Pelajaran Sesuai Kelas yang Diajar Guru
+const availableSubjects = computed(() => {
+    if (!props.isTeacherOnly || !form.classroom_id || !props.teachingAssignments) {
+        return props.subjects;
+    }
+    const allowedSubjectIds = props.teachingAssignments[form.classroom_id];
+    if (!allowedSubjectIds || allowedSubjectIds.length === 0) {
+        return props.subjects;
+    }
+    return props.subjects.filter(s => allowedSubjectIds.includes(s.id));
+});
+
+// Otomatis sinkronkan / pilih mapel ketika kelas dipilih
+watch(() => form.classroom_id, (newClassId) => {
+    if (!newClassId || !props.isTeacherOnly || !props.teachingAssignments) return;
+    const allowed = props.teachingAssignments[newClassId] || [];
+    if (allowed.length === 1) {
+        form.subject_id = allowed[0];
+    } else if (allowed.length > 0 && !allowed.includes(form.subject_id)) {
+        form.subject_id = allowed[0];
+    }
 });
 
 const openCreateModal = () => {
@@ -780,7 +807,7 @@ const getStatusBadge = (status) => {
                             required
                             class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
                         >
-                            <option value="" disabled>Pilih Kelas</option>
+                            <option value="" disabled>{{ classrooms.length === 0 ? 'Belum ada rombel yang diampu' : 'Pilih Kelas' }}</option>
                             <option v-for="c in classrooms" :key="c.id" :value="c.id">{{ c.name }}</option>
                         </select>
                         <div v-if="form.errors.classroom_id" class="text-rose-400 text-[11px] mt-1">{{ form.errors.classroom_id }}</div>
@@ -793,8 +820,8 @@ const getStatusBadge = (status) => {
                             required
                             class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
                         >
-                            <option value="" disabled>Pilih Mata Pelajaran</option>
-                            <option v-for="s in subjects" :key="s.id" :value="s.id">{{ s.name }} ({{ s.code }})</option>
+                            <option value="" disabled>{{ availableSubjects.length === 0 ? 'Belum ada mapel yang diampu' : 'Pilih Mata Pelajaran' }}</option>
+                            <option v-for="s in availableSubjects" :key="s.id" :value="s.id">{{ s.name }} ({{ s.code }})</option>
                         </select>
                         <div v-if="form.errors.subject_id" class="text-rose-400 text-[11px] mt-1">{{ form.errors.subject_id }}</div>
                     </div>

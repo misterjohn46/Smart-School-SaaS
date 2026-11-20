@@ -23,7 +23,7 @@ class TeachingJournalController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $isTeacherOnly = $user->hasRole('guru') && ! $user->hasRole('admin');
+        $isTeacherOnly = $user->hasRole('guru') && ! $user->hasAnyRole(['admin', 'super_admin', 'operator', 'kepala_sekolah']);
 
         $teacherId = $request->input('teacher_user_id');
         if ($isTeacherOnly) {
@@ -149,8 +149,28 @@ class TeachingJournalController extends Controller
             'special_status' => TeachingJournal::whereIn('status', ['pengganti', 'daring', 'tugas_mandiri'])->count(),
         ];
 
-        $classrooms = Classroom::with('department')->orderBy('name')->get(['id', 'name', 'department_id']);
-        $subjects = Subject::where('is_active', true)->orderBy('name')->get(['id', 'name', 'code', 'kkm']);
+        $classroomsQuery = Classroom::with('department')->orderBy('name');
+        $subjectsQuery = Subject::where('is_active', true)->orderBy('name');
+        $teachingAssignments = [];
+
+        if ($isTeacherOnly) {
+            $schedules = LessonSchedule::where('teacher_user_id', $user->id)
+                ->where('is_active', true)
+                ->get(['classroom_id', 'subject_id']);
+
+            $taughtClassroomIds = $schedules->pluck('classroom_id')->unique()->values();
+            $taughtSubjectIds = $schedules->pluck('subject_id')->unique()->values();
+
+            $teachingAssignments = $schedules->groupBy('classroom_id')
+                ->map(fn ($g) => $g->pluck('subject_id')->unique()->values()->all())
+                ->all();
+
+            $classroomsQuery->whereIn('id', $taughtClassroomIds);
+            $subjectsQuery->whereIn('id', $taughtSubjectIds);
+        }
+
+        $classrooms = $classroomsQuery->get(['id', 'name', 'department_id']);
+        $subjects = $subjectsQuery->get(['id', 'name', 'code', 'kkm']);
         $teachers = User::whereHas('roles', fn ($q) => $q->where('name', 'guru'))
             ->orWhereHas('teacherProfile')
             ->with('teacherProfile')
@@ -170,6 +190,7 @@ class TeachingJournalController extends Controller
             'classrooms' => $classrooms,
             'subjects' => $subjects,
             'teachers' => $teachers,
+            'teachingAssignments' => $teachingAssignments,
             'academicYears' => $academicYears,
             'activeYear' => $activeYear,
             'isTeacherOnly' => $isTeacherOnly,

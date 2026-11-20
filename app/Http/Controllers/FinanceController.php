@@ -385,6 +385,32 @@ class FinanceController extends Controller
             ->selectRaw('SUM(amount - paid_amount) as remaining')
             ->value('remaining') ?? 0.0;
 
+        $pendingPayments = Payment::with([
+            'studentProfile.classroom',
+            'billPayments.studentBill',
+            'user',
+        ])
+            ->where('status', 'pending')
+            ->latest('id')
+            ->get()
+            ->map(function (Payment $p) {
+                return [
+                    'id' => $p->id,
+                    'hash_id' => $p->hash_id,
+                    'payment_number' => $p->payment_number,
+                    'student_name' => $p->studentProfile?->full_name ?? '-',
+                    'student_nisn' => $p->studentProfile?->nisn ?? '-',
+                    'classroom_name' => $p->studentProfile?->classroom?->name ?? 'Tanpa Rombel',
+                    'amount' => (float) $p->amount,
+                    'reference_number' => $p->reference_number ?? '-',
+                    'payment_date_formatted' => $p->payment_date?->format('d M Y, H:i') ?? '-',
+                    'notes' => $p->notes,
+                    'has_proof' => ! empty($p->proof_document),
+                    'proof_url' => ! empty($p->proof_document) ? route('finance.proof', $p->hash_id) : null,
+                    'bills_titles' => $p->billPayments->map(fn ($bp) => $bp->studentBill?->title)->filter()->values()->all(),
+                ];
+            });
+
         $stats = [
             'total_billed' => (float) StudentBill::sum('amount'),
             'total_collected' => (float) StudentBill::sum('paid_amount'),
@@ -392,6 +418,7 @@ class FinanceController extends Controller
             'unpaid_count' => StudentBill::where('status', 'unpaid')->count(),
             'paid_count' => StudentBill::where('status', 'paid')->count(),
             'total_bills' => StudentBill::count(),
+            'pending_payments_count' => $pendingPayments->count(),
         ];
 
         $classrooms = Classroom::with('department')->orderBy('name')->get(['id', 'name', 'department_id']);
@@ -401,6 +428,7 @@ class FinanceController extends Controller
 
         return Inertia::render('Finance/Bills/Index', [
             'bills' => $bills,
+            'pendingPayments' => $pendingPayments,
             'classrooms' => $classrooms,
             'gradeLevels' => $gradeLevels,
             'feeCategories' => $feeCategories,
@@ -594,5 +622,33 @@ class FinanceController extends Controller
         $category->delete();
 
         return back()->with('status', "Pos biaya {$name} berhasil dihapus!");
+    }
+
+    /**
+     * Verifikasi atau Tolak Pembayaran Transfer Bank (Pending Payments) di SPA
+     */
+    public function verifyPayment(Request $request, int|string $id): RedirectResponse
+    {
+        $validated = $request->validate([
+            'approved' => ['required', 'boolean'],
+            'rejection_reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        try {
+            $payment = $this->financeService->verifyBankTransfer(
+                (int) $id,
+                (bool) $validated['approved'],
+                (int) $request->user()->id,
+                $validated['rejection_reason'] ?? null
+            );
+
+            $statusText = $validated['approved']
+                ? "Pembayaran {$payment->payment_number} berhasil diverifikasi dan saldo tagihan siswa telah diperbarui."
+                : "Pembayaran {$payment->payment_number} telah ditolak.";
+
+            return back()->with('status', $statusText);
+        } catch (Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
     }
 }

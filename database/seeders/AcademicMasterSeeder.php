@@ -85,7 +85,16 @@ class AcademicMasterSeeder extends Seeder
             ]
         );
 
-        // 4. Tingkat Kelas (Grade Levels)
+        // 4. Tingkat Kelas (Grade Levels - SD, SMP, SMA/SMK)
+        GradeLevel::firstOrCreate(['level_numeric' => 1], ['name' => 'Tingkat I']);
+        GradeLevel::firstOrCreate(['level_numeric' => 2], ['name' => 'Tingkat II']);
+        GradeLevel::firstOrCreate(['level_numeric' => 3], ['name' => 'Tingkat III']);
+        GradeLevel::firstOrCreate(['level_numeric' => 4], ['name' => 'Tingkat IV']);
+        GradeLevel::firstOrCreate(['level_numeric' => 5], ['name' => 'Tingkat V']);
+        GradeLevel::firstOrCreate(['level_numeric' => 6], ['name' => 'Tingkat VI']);
+        GradeLevel::firstOrCreate(['level_numeric' => 7], ['name' => 'Tingkat VII']);
+        GradeLevel::firstOrCreate(['level_numeric' => 8], ['name' => 'Tingkat VIII']);
+        GradeLevel::firstOrCreate(['level_numeric' => 9], ['name' => 'Tingkat IX']);
         $grade10 = GradeLevel::firstOrCreate(['level_numeric' => 10], ['name' => 'Tingkat X']);
         $grade11 = GradeLevel::firstOrCreate(['level_numeric' => 11], ['name' => 'Tingkat XI']);
         $grade12 = GradeLevel::firstOrCreate(['level_numeric' => 12], ['name' => 'Tingkat XII']);

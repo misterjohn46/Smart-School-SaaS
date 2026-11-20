@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, useForm, router } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 
 const props = defineProps({
@@ -19,6 +19,11 @@ const activeTab = ref('exams'); // 'exams' | 'banks' | 'submissions'
 // Filter state
 const selectedBankFilter = ref('all');
 const selectedExamFilter = ref('all');
+
+const formatQuestionText = (text) => {
+    if (!text) return '';
+    return String(text).replace(/https?:\/\/[^\/]+\/storage\//g, '/storage/');
+};
 
 // Modals
 const isExamModalOpen = ref(false);
@@ -42,6 +47,13 @@ const isSimulatorModalOpen = ref(false);
 const simulatorExam = ref(null);
 const simulatorStudentId = ref('');
 const simulatorAnswers = ref({});
+
+// Modal Impor Soal CSV
+const isImportModalOpen = ref(false);
+const selectedBankForImport = ref(null);
+const importForm = useForm({
+    file: null,
+});
 
 // Form Bank Soal
 const bankForm = useForm({
@@ -172,6 +184,23 @@ const deleteBank = (bank) => {
         const id = bank.hashid || bank.id;
         router.delete(route('academic.cbt.banks.destroy', id));
     }
+};
+
+const openImportModal = (bank) => {
+    selectedBankForImport.value = bank;
+    importForm.reset();
+    isImportModalOpen.value = true;
+};
+
+const submitImport = () => {
+    if (!selectedBankForImport.value || !importForm.file) return;
+    const bankId = selectedBankForImport.value.hashid || selectedBankForImport.value.id;
+    importForm.post(route('academic.cbt.banks.import-questions', bankId), {
+        onSuccess: () => {
+            isImportModalOpen.value = false;
+            importForm.reset();
+        },
+    });
 };
 
 // Question Helpers
@@ -537,7 +566,22 @@ const copyToClipboard = (text) => {
                                 <p class="text-xs text-slate-400">{{ bank.description || 'Tidak ada catatan deskripsi' }}</p>
                             </div>
 
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <a
+                                    :href="route('academic.cbt.banks.export-template', bank.hashid || bank.id)"
+                                    download
+                                    class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors"
+                                    title="Unduh Format CSV Soal"
+                                >
+                                    <span>📥</span> Template CSV
+                                </a>
+                                <button
+                                    @click="openImportModal(bank)"
+                                    class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors"
+                                    title="Impor Soal Massal dari CSV"
+                                >
+                                    <span>📤</span> Impor CSV
+                                </button>
                                 <button
                                     @click="openCreateQuestionModal(bank)"
                                     class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1"
@@ -572,7 +616,7 @@ const copyToClipboard = (text) => {
                                             {{ qIdx + 1 }}
                                         </span>
                                         <div>
-                                            <p class="font-medium text-slate-800 leading-relaxed">{{ q.question_text }}</p>
+                                            <div class="font-medium text-slate-800 leading-relaxed" v-html="formatQuestionText(q.question_text)"></div>
                                             <span class="text-[10px] text-slate-400">Tipe: {{ q.question_type }} | Bobot: {{ q.score_weight }} poin</span>
                                         </div>
                                     </div>
@@ -593,7 +637,7 @@ const copyToClipboard = (text) => {
                                         :key="opt.key"
                                         :class="[
                                             'p-2 rounded-lg border text-xs flex items-center gap-2',
-                                            opt.key === q.correct_answer
+                                            (q.correct_answer || '').split(',').map(s => s.trim().toUpperCase()).includes(opt.key)
                                                 ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold'
                                                 : 'bg-white border-slate-200 text-slate-600'
                                         ]"
@@ -601,13 +645,13 @@ const copyToClipboard = (text) => {
                                         <span
                                             :class="[
                                                 'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black',
-                                                opt.key === q.correct_answer ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
+                                                (q.correct_answer || '').split(',').map(s => s.trim().toUpperCase()).includes(opt.key) ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
                                             ]"
                                         >
                                             {{ opt.key }}
                                         </span>
-                                        <span>{{ opt.text }}</span>
-                                        <span v-if="opt.key === q.correct_answer" class="ml-auto text-[10px] text-emerald-700 font-bold">✓ Kunci</span>
+                                        <span v-html="opt.text"></span>
+                                        <span v-if="(q.correct_answer || '').split(',').map(s => s.trim().toUpperCase()).includes(opt.key)" class="ml-auto text-[10px] text-emerald-700 font-bold">✓ Kunci</span>
                                     </div>
                                 </div>
                             </div>
@@ -646,6 +690,8 @@ const copyToClipboard = (text) => {
                                     <th class="px-6 py-3">Waktu Submit</th>
                                     <th class="px-6 py-3 text-center">Skor Nilai</th>
                                     <th class="px-6 py-3 text-center">Status KKM</th>
+                                    <th class="px-6 py-3 text-center">Pelanggaran</th>
+                                    <th class="px-6 py-3 text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
@@ -668,19 +714,38 @@ const copyToClipboard = (text) => {
                                     <td class="px-6 py-3.5 text-center">
                                         <span
                                             :class="[
-                                                'px-3 py-1 rounded-full text-xs font-bold',
-                                                sub.is_passed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-                                            ]"
-                                        >
-                                            {{ sub.is_passed ? '✓ TUNTAS' : '✗ REMEDIAL' }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr v-if="filteredSubmissions.length === 0">
-                                    <td colspan="5" class="text-center py-8 text-slate-400 text-xs">
-                                        Belum ada nilai siswa yang tercatat.
-                                    </td>
-                                </tr>
+                                                 'px-3 py-1 rounded-full text-xs font-bold inline-block',
+                                                 sub.is_passed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                                             ]"
+                                         >
+                                             {{ sub.is_passed ? '✓ TUNTAS' : '✗ REMEDIAL' }}
+                                         </span>
+                                     </td>
+                                     <td class="px-6 py-3.5 text-center">
+                                         <span
+                                             v-if="(sub.violations_count || 0) > 0"
+                                             class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200 inline-flex items-center gap-1"
+                                         >
+                                             ⚠️ {{ sub.violations_count }}x
+                                         </span>
+                                         <span v-else class="text-emerald-600 text-xs font-medium">
+                                             ✓ Aman
+                                         </span>
+                                     </td>
+                                     <td class="px-6 py-3.5 text-right">
+                                         <Link
+                                             :href="route('academic.cbt.submissions.show', sub.hashid || sub.id)"
+                                             class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-colors shadow-2xs"
+                                         >
+                                             <span>📝</span> Koreksi / Review
+                                         </Link>
+                                     </td>
+                                 </tr>
+                                 <tr v-if="filteredSubmissions.length === 0">
+                                     <td colspan="7" class="text-center py-8 text-slate-400 text-xs">
+                                         Belum ada nilai siswa yang tercatat.
+                                     </td>
+                                 </tr>
                             </tbody>
                         </table>
                     </div>
@@ -798,6 +863,7 @@ const copyToClipboard = (text) => {
                             class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
                             required
                         >
+                            <option v-if="subjects.length === 0" value="" disabled>-- Anda belum memiliki jadwal mengajar mata pelajaran aktif --</option>
                             <option v-for="s in subjects" :key="s.id" :value="s.id">{{ s.name }} ({{ s.code }})</option>
                         </select>
                     </div>
@@ -1010,7 +1076,7 @@ const copyToClipboard = (text) => {
                             <span class="w-6 h-6 rounded-full bg-slate-800 text-white font-bold flex items-center justify-center text-xs shrink-0">
                                 {{ idx + 1 }}
                             </span>
-                            <p class="font-bold text-slate-800 text-sm leading-relaxed">{{ q.question_text }}</p>
+                            <div class="font-bold text-slate-800 text-sm leading-relaxed" v-html="formatQuestionText(q.question_text)"></div>
                         </div>
 
                         <div v-if="q.options" class="space-y-2 pl-8">
@@ -1050,6 +1116,66 @@ const copyToClipboard = (text) => {
                         <span>✓</span> Selesaikan & Kirim Ujian
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- MODAL IMPOR SOAL WORD (.DOCX) & CSV -->
+        <div v-if="isImportModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+            <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base">
+                            Impor Soal: {{ selectedBankForImport?.title }}
+                        </h3>
+                        <p class="text-[11px] text-slate-500">Mendukung berkas Microsoft Word (.docx) lengkap dengan gambar & opsi ganda kompleks</p>
+                    </div>
+                    <button @click="isImportModalOpen = false" class="text-slate-400 hover:text-slate-600">✕</button>
+                </div>
+
+                <div class="bg-indigo-50/80 border border-indigo-100 p-3.5 rounded-2xl text-xs text-indigo-900 space-y-2.5">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="font-bold flex items-center gap-1.5">
+                            📄 Unduh Template Siap Pakai:
+                        </span>
+                        <a
+                            :href="route('academic.cbt.template-docx')"
+                            target="_blank"
+                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] shadow-sm transition"
+                        >
+                            <span>📥</span> Template Word (.docx)
+                        </a>
+                    </div>
+                    <p class="text-[11px] text-slate-600 leading-relaxed">
+                        <strong>Aturan Pengetikan Word:</strong> Tulis nomor soal (1., 2.), opsi (A., B., C., D.), dan kunci (<em>Kunci: B</em> atau untuk kompleks <em>Kunci: A, C</em>). Gambar disisipkan langsung di Word via <em>Insert &gt; Picture</em>.
+                    </p>
+                </div>
+
+                <form @submit.prevent="submitImport" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Berkas Word (.docx) atau CSV</label>
+                        <input
+                            type="file"
+                            accept=".docx,.doc,.csv,text/csv,text/plain"
+                            required
+                            @change="(e) => importForm.file = e.target.files[0]"
+                            class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                        />
+                        <div v-if="importForm.errors.file" class="text-rose-500 text-xs mt-1">{{ importForm.errors.file }}</div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                        <button type="button" @click="isImportModalOpen = false" class="px-4 py-2 border rounded-xl text-xs font-semibold">
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="importForm.processing || !importForm.file"
+                            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5"
+                        >
+                            <span>📤</span> {{ importForm.processing ? 'Mengunggah & Memproses...' : 'Unggah & Impor Soal' }}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </AuthenticatedLayout>

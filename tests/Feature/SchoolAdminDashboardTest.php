@@ -65,27 +65,15 @@ class SchoolAdminDashboardTest extends TestCase
         $this->parent->assignRole('orang_tua');
     }
 
-    public function test_super_admin_is_redirected_to_filament_admin_panel_after_login(): void
+    public function test_super_admin_is_redirected_to_central_tenants_page_after_login(): void
     {
-        // 1. Permintaan web standar diarahkan ke /admin
         $response = $this->post('/login', [
             'email' => 'superadmin@platform.id',
             'password' => 'password',
         ]);
 
         $this->assertAuthenticatedAs($this->superAdmin);
-        $response->assertRedirect('/admin');
-
-        // Logout terlebih dahulu agar request kedua tidak dicegat middleware guest
-        $this->post('/logout');
-
-        // 2. Permintaan via Inertia (X-Inertia) mengembalikan status 409 dengan header X-Inertia-Location
-        $inertiaResponse = $this->withHeaders(['X-Inertia' => 'true'])->post('/login', [
-            'email' => 'superadmin@platform.id',
-            'password' => 'password',
-        ]);
-        $inertiaResponse->assertStatus(409);
-        $inertiaResponse->assertHeader('X-Inertia-Location', '/admin');
+        $response->assertRedirect(route('central.tenants.index', absolute: false));
     }
 
     public function test_school_admin_is_redirected_to_vue_dashboard_after_login(): void

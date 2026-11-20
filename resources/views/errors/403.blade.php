@@ -24,18 +24,22 @@
             Otorisasi Akses (Kode: 403)
         </span>
 
-        <h1 class="text-2xl font-bold text-slate-900 mb-2">Halaman Ini Dikhususkan untuk Super Administrator</h1>
+        <h1 class="text-2xl font-bold text-slate-900 mb-2">Akses Dibatasi</h1>
 
         <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-            Anda sedang masuk dengan akun <span class="font-semibold text-slate-900">Administrator Sekolah</span>. Halaman yang Anda tuju (seperti daftar tenant SaaS) hanya dapat diakses oleh <span class="font-semibold text-slate-900">Admin Platform SaaS</span>.
+            @if(auth()->check())
+                Akun Anda (<strong>{{ auth()->user()->name }}</strong>) tidak memiliki izin otorisasi untuk mengakses halaman atau fitur ini. Silakan kembali ke dashboard utama Anda.
+            @else
+                Halaman atau aksi yang Anda tuju memerlukan izin khusus. Silakan masuk terlebih dahulu dengan akun yang memiliki hak akses terkait.
+            @endif
         </p>
 
         <div class="flex flex-col gap-3">
-            <a href="/admin" class="w-full inline-flex justify-center items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm transition-all shadow-md shadow-indigo-600/20">
+            <a href="/dashboard" class="w-full inline-flex justify-center items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm transition-all shadow-md shadow-indigo-600/20">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                 </svg>
-                Buka Dasbor Administrasi Sekolah
+                Kembali ke Dashboard Utama
             </a>
 
             <form action="/logout" method="POST">

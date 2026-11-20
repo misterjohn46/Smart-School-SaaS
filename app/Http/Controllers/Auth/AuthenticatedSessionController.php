@@ -38,9 +38,16 @@ class AuthenticatedSessionController extends Controller
 
         $user = $request->user();
 
-        // 1. Super Admin Platform -> Panel Manajemen SaaS Filament (Hard Redirect)
+        // Bersihkan url.intended jika mengarah ke /central namun user bukan super_admin
+        // agar tidak memicu 403 Unauthorized setelah login.
+        $intended = $request->session()->get('url.intended');
+        if ($intended && str_contains($intended, '/central') && ! ($user && $user->hasRole(RoleName::SuperAdmin->value))) {
+            $request->session()->forget('url.intended');
+        }
+
+        // 1. Super Admin Platform -> Panel Manajemen SaaS Central di Vue 3 SPA
         if ($user && $user->hasRole(RoleName::SuperAdmin->value)) {
-            return Inertia::location('/admin');
+            return redirect()->intended(route('central.tenants.index', absolute: false));
         }
 
         // 2. Siswa -> Portal Siswa Mobile-First
@@ -68,6 +75,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('login');
     }
 }

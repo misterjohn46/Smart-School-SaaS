@@ -1,9 +1,25 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 
 const props = defineProps({
+    viewMode: {
+        type: String,
+        default: 'my_schedule',
+    },
+    canManage: {
+        type: Boolean,
+        default: false,
+    },
+    isTeacher: {
+        type: Boolean,
+        default: false,
+    },
+    teacherName: {
+        type: String,
+        default: 'Guru Pengajar',
+    },
     classrooms: Array,
     selectedClassroomId: [Number, String],
     selectedClassroom: Object,
@@ -40,6 +56,19 @@ const adminMenus = [
     { label: 'Mata Pelajaran', route: 'academic.subjects.index', icon: 'book-open' },
 ];
 
+const teacherMenus = [
+    { label: 'Dashboard Guru', route: 'dashboard', icon: 'home' },
+    { label: 'Jadwal Mengajar', route: 'academic.schedules', icon: 'calendar' },
+    { label: 'Presensi Kelas', route: 'attendance.classroom.index', icon: 'clipboard' },
+    { label: 'Jurnal Mengajar', route: 'academic.journals.index', icon: 'document' },
+    { label: 'Materi & LMS', route: 'academic.learning.index', icon: 'book-open' },
+    { label: 'Penilaian Siswa', route: 'academic.grades.index', icon: 'chart' },
+    { label: 'Buku Rapor & Leger', route: 'academic.reports.index', icon: 'document' },
+    { label: 'CBT Ujian Online', route: 'academic.cbt.index', icon: 'desktop' },
+    { label: 'Verifikasi E-Leave', route: 'attendance.leave.index', icon: 'clipboard-check' },
+    { label: 'Tata Tertib Siswa', route: 'counseling.violations.index', icon: 'clipboard-check' },
+];
+
 const daysConfig = [
     { key: 'senin', label: 'Senin', iconBg: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300' },
     { key: 'selasa', label: 'Selasa', iconBg: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' },
@@ -58,8 +87,20 @@ const presetTimeSlots = [
     { label: 'Jam 5', start: '14:30', end: '16:00', order: 5 },
 ];
 
+const currentViewMode = ref(props.viewMode || 'my_schedule');
 const selectedDayTab = ref('senin');
 const showModal = ref(false);
+
+const switchViewMode = (mode) => {
+    currentViewMode.value = mode;
+    router.get(route('academic.schedules'), {
+        view_mode: mode,
+        classroom_id: props.selectedClassroomId,
+    }, {
+        preserveState: true,
+        replace: true,
+    });
+};
 
 const form = useForm({
     classroom_id: props.selectedClassroomId,
@@ -78,7 +119,10 @@ watch(() => props.selectedClassroomId, (newVal) => {
 
 const onClassChange = (e) => {
     const classId = e.target.value;
-    router.get(route('academic.schedules'), { classroom_id: classId }, {
+    router.get(route('academic.schedules'), {
+        view_mode: 'classroom',
+        classroom_id: classId,
+    }, {
         preserveState: true,
         preserveScroll: true,
     });
@@ -133,37 +177,40 @@ const printTimetable = () => {
 </script>
 
 <template>
-    <Head title="Jadwal Pelajaran & Mengajar Terpadu" />
+    <Head :title="currentViewMode === 'my_schedule' ? 'Jadwal Mengajar Saya - SIAKAD' : 'Jadwal Pelajaran Rombel - SIAKAD'" />
 
-    <AuthenticatedLayout :menus="adminMenus" section-title="Operasional Sekolah">
+    <AuthenticatedLayout :menus="canManage ? adminMenus : teacherMenus" :section-title="canManage ? 'Operasional Sekolah' : 'Navigasi Guru'">
         <div class="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto print:p-0">
 
-            <!-- 1. Header & Filter Bar -->
+            <!-- 1. Header & Mode Switcher -->
             <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-slate-800 shadow-2xl p-6 sm:p-8 text-white print:hidden">
                 <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                     <div>
                         <div class="flex flex-wrap items-center gap-2 mb-2">
                             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
-                                📅 Timetable Scheduler
+                                {{ currentViewMode === 'my_schedule' ? '👨‍🏫 Agenda Mengajar Pribadi' : '🏫 Master Jadwal Rombel' }}
                             </span>
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-medium bg-slate-800 text-slate-300 border border-slate-700">
                                 TA {{ academicYear }}
                             </span>
                             <span v-if="isMockup" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                                Mode Simulasi (Klik "+" untuk menginput data asli)
+                                {{ canManage ? 'Mode Simulasi (Klik "+" untuk menginput data asli)' : 'Jadwal Aktif Semester Ganjil' }}
                             </span>
                         </div>
                         <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                            Jadwal Pelajaran & Mengajar
+                            {{ currentViewMode === 'my_schedule' ? 'Jadwal Mengajar Saya' : 'Jadwal Pelajaran Kelas' }}
                         </h1>
                         <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
-                            Kelola jadwal pelajaran langsung di sini. Tambahkan slot jam baru dengan tombol plus (+) tanpa memuat ulang halaman.
+                            {{ currentViewMode === 'my_schedule' 
+                                ? `Selamat datang, ${teacherName}. Berikut adalah alokasi jam tatap muka Anda di setiap rombel kelas.` 
+                                : 'Master alokasi jam belajar dan jadwal mata pelajaran seluruh rombongan belajar sekolah.' }}
                         </p>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="flex flex-wrap items-center gap-3 shrink-0">
                         <button
+                            v-if="canManage"
                             @click="openModalForDay(selectedDayTab)"
                             class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/25 transition transform active:scale-95"
                         >
@@ -184,10 +231,45 @@ const printTimetable = () => {
                         </button>
                     </div>
                 </div>
+
+                <!-- View Mode Tabs Switcher -->
+                <div class="mt-6 pt-5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
+                    <div class="inline-flex p-1 rounded-2xl bg-slate-950/80 border border-slate-800">
+                        <button
+                            @click="switchViewMode('my_schedule')"
+                            :class="currentViewMode === 'my_schedule' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            Jadwal Mengajar Saya
+                        </button>
+                        <button
+                            @click="switchViewMode('classroom')"
+                            :class="currentViewMode === 'classroom' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Jadwal Per Rombel / Kelas
+                        </button>
+                    </div>
+
+                    <div class="text-xs text-slate-300 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full" :class="canManage ? 'bg-amber-400' : 'bg-emerald-400'"></span>
+                        <span v-if="canManage" class="text-slate-400">Pencatat Jadwal: <strong class="text-amber-300">Admin TU / Kurikulum</strong></span>
+                        <span v-else class="text-slate-400">Pencatat Jadwal: <strong class="text-emerald-300">Admin TU</strong> • Status Anda: <strong class="text-white">Guru Pengajar</strong></span>
+                    </div>
+                </div>
             </div>
 
-            <!-- 2. Class Selector Bar -->
-            <div class="rounded-2xl bg-white dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700/80 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 print:hidden">
+            <!-- 2. Class Selector Bar (Shown in classroom mode) -->
+            <div
+                v-if="currentViewMode === 'classroom'"
+                class="rounded-2xl bg-white dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700/80 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 print:hidden"
+            >
                 <div class="flex items-center gap-3">
                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap">
                         Pilih Rombel / Kelas:
@@ -225,10 +307,43 @@ const printTimetable = () => {
                 </div>
             </div>
 
+            <!-- Banner info when in my_schedule mode -->
+            <div
+                v-else
+                class="rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-indigo-950 dark:text-indigo-200 print:hidden"
+            >
+                <div class="flex items-center gap-3">
+                    <span class="p-2 rounded-xl bg-indigo-600 text-white font-black text-xs">👨‍🏫</span>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-900 dark:text-white">Alokasi Jam Mengajar Pribadi</h4>
+                        <p class="text-[11px] text-slate-600 dark:text-slate-300">
+                            Menampilkan seluruh jam mengajar Anda di berbagai kelas. Untuk melihat jadwal mata pelajaran lain di kelas binaan, pilih tab <strong>"Jadwal Per Rombel / Kelas"</strong> di atas.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Mobile Day Tabs in my_schedule mode -->
+                <div class="flex sm:hidden overflow-x-auto gap-1 pb-1">
+                    <button
+                        v-for="d in daysConfig"
+                        :key="d.key"
+                        @click="selectedDayTab = d.key"
+                        class="px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap"
+                        :class="selectedDayTab === d.key
+                            ? 'bg-indigo-600 text-white shadow-sm'
+                            : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300'"
+                    >
+                        {{ d.label }}
+                    </button>
+                </div>
+            </div>
+
             <!-- Print Header -->
             <div class="hidden print:block text-center mb-6">
-                <h2 class="text-xl font-bold text-black uppercase">Jadwal Pelajaran Mingguan</h2>
-                <p class="text-sm text-gray-700">Kelas: {{ selectedClassroom ? selectedClassroom.name : '' }} • Tahun Ajaran {{ academicYear }}</p>
+                <h2 class="text-xl font-bold text-black uppercase">
+                    {{ currentViewMode === 'my_schedule' ? `Jadwal Mengajar Guru: ${teacherName}` : `Jadwal Pelajaran Kelas: ${selectedClassroom ? selectedClassroom.name : ''}` }}
+                </h2>
+                <p class="text-sm text-gray-700">SMK Informatika • Tahun Ajaran {{ academicYear }}</p>
             </div>
 
             <!-- 3. Desktop Weekly Matrix (6 Kolom: Senin - Sabtu) -->
@@ -249,8 +364,9 @@ const printTimetable = () => {
                             </span>
                         </div>
 
-                        <!-- Plus Button in Header -->
+                        <!-- Plus Button in Header (Admin/TU only) -->
                         <button
+                            v-if="canManage"
                             @click="openModalForDay(day.key)"
                             class="p-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950 dark:hover:bg-indigo-900 text-indigo-600 dark:text-indigo-300 transition print:hidden"
                             title="Tambah jadwal di hari ini"
@@ -267,7 +383,12 @@ const printTimetable = () => {
                             <div
                                 v-for="(item, idx) in schedules[day.key] || []"
                                 :key="idx"
-                                class="relative group p-3 rounded-xl border border-gray-200/70 dark:border-slate-700/60 bg-gray-50/50 dark:bg-slate-900/50 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 transition hover:shadow-sm"
+                                class="relative group p-3 rounded-xl border transition hover:shadow-sm"
+                                :class="[
+                                    item.is_my_subject
+                                        ? 'border-indigo-400 dark:border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/30 ring-1 ring-indigo-400/30'
+                                        : 'border-gray-200/70 dark:border-slate-700/60 bg-gray-50/50 dark:bg-slate-900/50'
+                                ]"
                             >
                                 <!-- Time Slot & Code -->
                                 <div class="flex items-center justify-between gap-1 mb-1.5">
@@ -275,6 +396,12 @@ const printTimetable = () => {
                                         {{ item.time }}
                                     </span>
                                     <div class="flex items-center gap-1">
+                                        <span
+                                            v-if="item.is_my_subject && currentViewMode === 'classroom'"
+                                            class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/50"
+                                        >
+                                            Jam Anda
+                                        </span>
                                         <span
                                             class="text-[9px] font-black uppercase px-1.5 py-0.2 rounded"
                                             :class="{
@@ -286,9 +413,9 @@ const printTimetable = () => {
                                             {{ item.subject_code }}
                                         </span>
 
-                                        <!-- Delete Action Button (visible on hover) -->
+                                        <!-- Delete Action Button (Admin/TU only) -->
                                         <button
-                                            v-if="item.id && !isMockup"
+                                            v-if="canManage && item.id && !isMockup"
                                             @click="deleteSchedule(item.id, item.subject)"
                                             class="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-rose-100 text-rose-500 transition print:hidden"
                                             title="Hapus jadwal ini"
@@ -300,13 +427,20 @@ const printTimetable = () => {
                                     </div>
                                 </div>
 
+                                <!-- Target Classroom Badge (Shown prominently in personal timetable) -->
+                                <div v-if="currentViewMode === 'my_schedule' || item.classroom" class="mb-1">
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 text-[10px] font-extrabold">
+                                        🏫 {{ item.classroom }}
+                                    </span>
+                                </div>
+
                                 <!-- Subject Name -->
                                 <h4 class="text-xs font-bold text-gray-900 dark:text-white leading-snug">
                                     {{ item.subject }}
                                 </h4>
 
-                                <!-- Teacher -->
-                                <p class="text-[11px] text-gray-600 dark:text-gray-300 mt-1 flex items-center gap-1.5">
+                                <!-- Teacher (Shown in classroom mode) -->
+                                <p v-if="currentViewMode !== 'my_schedule'" class="text-[11px] text-gray-600 dark:text-gray-300 mt-1 flex items-center gap-1.5">
                                     <svg class="w-3 h-3 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
@@ -326,8 +460,9 @@ const printTimetable = () => {
                             </div>
                         </div>
 
-                        <!-- Plus Add Button at Bottom of Column -->
+                        <!-- Plus Add Button at Bottom of Column (Admin/TU only) -->
                         <button
+                            v-if="canManage"
                             @click="openModalForDay(day.key)"
                             class="w-full mt-3 py-2.5 px-3 rounded-xl border border-dashed border-gray-300 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-300 text-xs font-bold flex items-center justify-center gap-1.5 transition bg-white/40 dark:bg-slate-800/40 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 print:hidden"
                         >
@@ -350,6 +485,7 @@ const printTimetable = () => {
                         </h3>
 
                         <button
+                            v-if="canManage"
                             @click="openModalForDay(selectedDayTab)"
                             class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold flex items-center gap-1 shadow"
                         >
@@ -371,7 +507,7 @@ const printTimetable = () => {
                                     {{ item.subject_type }}
                                 </span>
                                 <button
-                                    v-if="item.id && !isMockup"
+                                    v-if="canManage && item.id && !isMockup"
                                     @click="deleteSchedule(item.id, item.subject)"
                                     class="text-rose-500 p-1"
                                 >

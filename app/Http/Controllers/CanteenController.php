@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\CanteenMenu;
 use App\Models\CanteenOrder;
 use App\Models\CanteenStand;
 use App\Models\StudentProfile;
@@ -11,6 +12,7 @@ use App\Services\CanteenService;
 use App\Services\WalletService;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,11 +25,12 @@ class CanteenController extends Controller
     ) {}
 
     /**
-     * Marketplace Jajanan E-Kantin Siswa & Guru.
+     * Marketplace Jajanan E-Kantin Siswa & Guru + Manajemen Stand & Menu (Admin/Vendor).
      */
     public function index(Request $request): Response
     {
         $user = $request->user();
+        $canManage = (bool) $user?->hasAnyRole(['admin', 'kepala_sekolah', 'kantin', 'vendor_kantin', 'kasir_kantin']);
 
         $student = StudentProfile::with('wallet')
             ->where('user_id', $user->id)
@@ -61,8 +64,57 @@ class CanteenController extends Controller
                 ];
             });
 
+        $allStands = [];
+        $canteenStats = [
+            'total_stands' => 0,
+            'active_stands' => 0,
+            'total_menus' => 0,
+            'total_revenue' => 0.0,
+        ];
+
+        if ($canManage) {
+            $allStands = CanteenStand::with(['user', 'menus' => function ($q) {
+                $q->orderBy('name');
+            }])
+                ->withCount('orders')
+                ->orderBy('stand_number')
+                ->get()
+                ->map(fn (CanteenStand $s) => [
+                    'id' => $s->id,
+                    'name' => $s->name,
+                    'stand_number' => $s->stand_number,
+                    'phone' => $s->phone,
+                    'description' => $s->description,
+                    'is_active' => (bool) $s->is_active,
+                    'total_revenue' => (float) $s->total_revenue,
+                    'orders_count' => $s->orders_count,
+                    'vendor_name' => $s->user?->name ?? 'Pengelola Stand',
+                    'menus' => $s->menus->map(fn (CanteenMenu $m) => [
+                        'id' => $m->id,
+                        'canteen_stand_id' => $m->canteen_stand_id,
+                        'name' => $m->name,
+                        'category' => $m->category,
+                        'price' => (float) $m->price,
+                        'cost_price' => (float) $m->cost_price,
+                        'stock' => (int) $m->stock,
+                        'is_available' => (bool) $m->is_available,
+                        'description' => $m->description,
+                    ]),
+                ]);
+
+            $canteenStats = [
+                'total_stands' => CanteenStand::count(),
+                'active_stands' => CanteenStand::where('is_active', true)->count(),
+                'total_menus' => CanteenMenu::count(),
+                'total_revenue' => (float) CanteenStand::sum('total_revenue'),
+            ];
+        }
+
         return Inertia::render('Canteen/Index', [
             'stands' => $stands,
+            'canManage' => $canManage,
+            'allStands' => $allStands,
+            'canteenStats' => $canteenStats,
             'student' => $student ? [
                 'id' => $student->id,
                 'name' => $student->full_name,
@@ -215,5 +267,152 @@ class CanteenController extends Controller
                 'message' => $e->getMessage(),
             ], 422);
         }
+    }
+
+    /**
+     * Tambah Stand Kantin Baru
+     */
+    public function storeStand(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'stand_number' => ['required', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'description' => ['nullable', 'string', 'max:500'],
+            'is_active' => ['boolean'],
+        ]);
+
+        CanteenStand::create([
+            'user_id' => $request->user()->id,
+            'name' => $validated['name'],
+            'stand_number' => $validated['stand_number'],
+            'phone' => $validated['phone'] ?? null,
+            'description' => $validated['description'] ?? null,
+            'is_active' => $validated['is_active'] ?? true,
+        ]);
+
+        return back()->with('status', "Stand kantin '{$validated['name']}' berhasil ditambahkan.");
+    }
+
+    /**
+     * Perbarui Stand Kantin
+     */
+    public function updateStand(Request $request, int|string $id): RedirectResponse
+    {
+        $stand = CanteenStand::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'stand_number' => ['required', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'description' => ['nullable', 'string', 'max:500'],
+            'is_active' => ['boolean'],
+        ]);
+
+        $stand->update($validated);
+
+        return back()->with('status', "Stand kantin '{$stand->name}' berhasil diperbarui.");
+    }
+
+    /**
+     * Hapus Stand Kantin
+     */
+    public function destroyStand(int|string $id): RedirectResponse
+    {
+        $stand = CanteenStand::withCount('orders')->findOrFail($id);
+
+        if ($stand->orders_count > 0) {
+            return back()->withErrors([
+                'error' => "Stand '{$stand->name}' tidak dapat dihapus karena sudah memiliki {$stand->orders_count} riwayat transaksi.",
+            ]);
+        }
+
+        $name = $stand->name;
+        $stand->delete();
+
+        return back()->with('status', "Stand kantin '{$name}' berhasil dihapus.");
+    }
+
+    /**
+     * Tambah Menu Makanan/Minuman Baru ke Stand Kantin
+     */
+    public function storeMenu(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'canteen_stand_id' => ['required', 'integer', 'exists:canteen_stands,id'],
+            'name' => ['required', 'string', 'max:100'],
+            'category' => ['required', 'in:food,drink,snack,dessert'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'cost_price' => ['nullable', 'numeric', 'min:0'],
+            'stock' => ['required', 'integer', 'min:0'],
+            'is_available' => ['boolean'],
+            'description' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $stand = CanteenStand::findOrFail($validated['canteen_stand_id']);
+
+        CanteenMenu::create([
+            'canteen_stand_id' => $stand->id,
+            'name' => $validated['name'],
+            'category' => $validated['category'],
+            'price' => $validated['price'],
+            'cost_price' => $validated['cost_price'] ?? 0,
+            'stock' => $validated['stock'],
+            'is_available' => $validated['is_available'] ?? true,
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        return back()->with('status', "Menu '{$validated['name']}' berhasil ditambahkan ke {$stand->name}.");
+    }
+
+    /**
+     * Perbarui Menu Makanan/Minuman Kantin
+     */
+    public function updateMenu(Request $request, int|string $id): RedirectResponse
+    {
+        $menu = CanteenMenu::findOrFail($id);
+
+        $validated = $request->validate([
+            'canteen_stand_id' => ['required', 'integer', 'exists:canteen_stands,id'],
+            'name' => ['required', 'string', 'max:100'],
+            'category' => ['required', 'in:food,drink,snack,dessert'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'cost_price' => ['nullable', 'numeric', 'min:0'],
+            'stock' => ['required', 'integer', 'min:0'],
+            'is_available' => ['boolean'],
+            'description' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $menu->update([
+            'canteen_stand_id' => $validated['canteen_stand_id'],
+            'name' => $validated['name'],
+            'category' => $validated['category'],
+            'price' => $validated['price'],
+            'cost_price' => $validated['cost_price'] ?? 0,
+            'stock' => $validated['stock'],
+            'is_available' => $validated['is_available'] ?? true,
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        return back()->with('status', "Menu '{$menu->name}' berhasil diperbarui.");
+    }
+
+    /**
+     * Hapus Menu Makanan/Minuman Kantin
+     */
+    public function destroyMenu(int|string $id): RedirectResponse
+    {
+        $menu = CanteenMenu::withCount('orderItems')->findOrFail($id);
+
+        if ($menu->order_items_count > 0) {
+            return back()->withErrors([
+                'error' => "Menu '{$menu->name}' tidak dapat dihapus karena sudah tercatat dalam {$menu->order_items_count} item pesanan. Nonaktifkan ketersediaan menu sebagai gantinya.",
+            ]);
+        }
+
+        $name = $menu->name;
+        $menu->delete();
+
+        return back()->with('status', "Menu '{$name}' berhasil dihapus.");
     }
 }

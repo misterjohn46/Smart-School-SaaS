@@ -37,6 +37,13 @@ class Tenant extends BaseTenant
      */
     public ?string $generatedAdminPassword = null;
 
+    protected function casts(): array
+    {
+        return [
+            'trial_ends_at' => 'datetime',
+        ];
+    }
+
     protected static function booted(): void
     {
         static::created(function (Tenant $tenant) {

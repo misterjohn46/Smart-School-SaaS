@@ -8,8 +8,6 @@ use App\Enums\RoleName;
 use App\Models\Concerns\BelongsToSchool;
 use App\Traits\HasObfuscatedId;
 use Database\Factories\UserFactory;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -38,7 +36,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class User extends Authenticatable implements FilamentUser, MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail
 {
     use BelongsToSchool;
 
@@ -70,18 +68,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'remember_token',
         'pin_hash',
     ];
-
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return $this->hasAnyRole([
-            RoleName::SuperAdmin->value,
-            RoleName::Admin->value,
-            RoleName::Headmaster->value,
-            RoleName::Treasurer->value,
-            RoleName::Staff->value,
-            RoleName::Operator->value,
-        ]);
-    }
 
     protected function casts(): array
     {
@@ -123,11 +109,13 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     // ─── Keamanan Akun & Proteksi Brute-force ──────────────────────
     public function isLockedOut(): bool
     {
-        if ($this->is_locked && $this->lockout_until && $this->lockout_until->isFuture()) {
+        $lockoutUntil = $this->lockout_until ? \Illuminate\Support\Carbon::parse($this->lockout_until) : null;
+
+        if ($this->is_locked && $lockoutUntil && $lockoutUntil->isFuture()) {
             return true;
         }
 
-        if ($this->is_locked && $this->lockout_until && $this->lockout_until->isPast()) {
+        if ($this->is_locked && $lockoutUntil && $lockoutUntil->isPast()) {
             $this->unlockAccount();
 
             return false;

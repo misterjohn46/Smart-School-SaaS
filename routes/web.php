@@ -6,7 +6,9 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AttendanceSettingController;
 use App\Http\Controllers\CanteenController;
 use App\Http\Controllers\CbtController;
+use App\Http\Controllers\Central\PlanManagementController;
 use App\Http\Controllers\Central\SchoolRegistrationController;
+use App\Http\Controllers\Central\TenantManagementController;
 use App\Http\Controllers\ClassroomAttendanceController;
 use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\DashboardController;
@@ -14,6 +16,9 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\KtsController;
+use App\Http\Controllers\LearningController;
+use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\PpdbController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScheduleController;
@@ -45,7 +50,7 @@ $roleFinance = 'role:admin|kepala_sekolah|bendahara';
 $roleCashier = 'role:admin|bendahara';
 $roleCounseling = 'role:admin|kepala_sekolah|guru_bk';
 $roleCounselingInput = 'role:admin|kepala_sekolah|guru_bk|guru';
-$roleCanteenVendor = 'role:admin|kantin|vendor_kantin|kasir_kantin';
+$roleCanteenVendor = 'role:admin|kepala_sekolah|kantin|vendor_kantin|kasir_kantin';
 
 foreach (config('tenancy.central_domains', ['localhost', '127.0.0.1']) as $domain) {
     Route::domain($domain)->group(function () {
@@ -65,6 +70,15 @@ foreach (config('tenancy.central_domains', ['localhost', '127.0.0.1']) as $domai
     });
 }
 
+/*
+| PPDB Penerimaan Peserta Didik Baru (Portal Publik Calon Siswa & Wali Murid)
+*/
+Route::get('/ppdb', [PpdbController::class, 'publicIndex'])->name('ppdb.public.index');
+Route::get('/ppdb/daftar', [PpdbController::class, 'publicRegister'])->name('ppdb.public.register');
+Route::post('/ppdb/daftar', [PpdbController::class, 'publicStore'])->name('ppdb.public.store');
+Route::get('/ppdb/bukti/{registrationNumber}', [PpdbController::class, 'publicProof'])->name('ppdb.public.proof');
+Route::get('/ppdb/cek-status', [PpdbController::class, 'publicCheck'])->name('ppdb.public.check');
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
@@ -76,6 +90,10 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 Route::middleware(['auth'])->group(function () {
     Route::get('/portal/siswa', [PortalController::class, 'student'])->name('portal.student');
     Route::get('/portal/orangtua', [PortalController::class, 'parent'])->name('portal.parent');
+
+    // E-Learning (Materi & Tugas Harian) & Papan Pengumuman Sekolah
+    Route::get('/academic/learning', [LearningController::class, 'index'])->name('academic.learning.index');
+    Route::post('/academic/learning/materials/{id}/submit', [LearningController::class, 'submitAssignment'])->name('academic.learning.materials.submit');
 
     // Presensi mandiri GPS Geofencing & AI Face (mencatat untuk diri sendiri)
     Route::get('/attendance/gps-face', [AttendanceController::class, 'gpsFace'])->name('attendance.gps.index');
@@ -99,6 +117,15 @@ Route::middleware(['auth'])->group(function () {
 
     // Preview KTS milik sendiri
     Route::get('/kts/preview/{hashId?}', [KtsController::class, 'preview'])->name('kts.preview');
+
+    // CBT Ujian Mandiri Siswa (Portal & Arena Ujian)
+    Route::get('/portal/cbt', [CbtController::class, 'studentIndex'])->name('portal.cbt.index');
+    Route::post('/portal/cbt/{id}/start', [CbtController::class, 'startExam'])->name('portal.cbt.start');
+    Route::get('/portal/cbt/{id}/arena', [CbtController::class, 'examArena'])->name('portal.cbt.arena');
+    Route::post('/portal/cbt/{id}/autosave', [CbtController::class, 'autosaveAnswer'])->name('portal.cbt.autosave');
+    Route::post('/portal/cbt/{id}/violation', [CbtController::class, 'recordViolation'])->name('portal.cbt.violation');
+    Route::post('/portal/cbt/{id}/finish', [CbtController::class, 'finishExam'])->name('portal.cbt.finish');
+    Route::get('/portal/cbt/{id}/result', [CbtController::class, 'examResult'])->name('portal.cbt.result');
 
     // Unggah bukti transfer bank. Siswa/orang tua hanya untuk tagihan sendiri
     // (diverifikasi di controller); petugas keuangan boleh atas nama siswa lain.
@@ -150,6 +177,9 @@ Route::middleware(['auth', $roleAcademicAdmin])->group(function () {
     Route::post('/academic/classrooms', [ClassroomController::class, 'store'])->name('academic.classrooms.store');
     Route::put('/academic/classrooms/{id}', [ClassroomController::class, 'update'])->name('academic.classrooms.update');
     Route::delete('/academic/classrooms/{id}', [ClassroomController::class, 'destroy'])->name('academic.classrooms.destroy');
+    Route::post('/academic/grade-levels', [ClassroomController::class, 'storeGradeLevel'])->name('academic.grade-levels.store');
+    Route::post('/academic/grade-levels/preset', [ClassroomController::class, 'applyGradeLevelPreset'])->name('academic.grade-levels.preset');
+    Route::delete('/academic/grade-levels/{id}', [ClassroomController::class, 'destroyGradeLevel'])->name('academic.grade-levels.destroy');
 
     // Master Data Mata Pelajaran (Mapel)
     Route::get('/academic/subjects', [SubjectController::class, 'index'])->name('academic.subjects.index');
@@ -158,8 +188,7 @@ Route::middleware(['auth', $roleAcademicAdmin])->group(function () {
     Route::delete('/academic/subjects/{id}', [SubjectController::class, 'destroy'])->name('academic.subjects.destroy');
     Route::post('/academic/subjects/{id}/toggle', [SubjectController::class, 'toggleStatus'])->name('academic.subjects.toggle');
 
-    // Modul Jadwal Pelajaran & Mengajar (Timetable)
-    Route::get('/academic/schedules', [ScheduleController::class, 'index'])->name('academic.schedules');
+    // Modul Pengaturan Jadwal Pelajaran (Admin, Kepala Sekolah, Operator)
     Route::post('/academic/schedules', [ScheduleController::class, 'store'])->name('academic.schedules.store');
     Route::delete('/academic/schedules/{id}', [ScheduleController::class, 'destroy'])->name('academic.schedules.destroy');
 
@@ -180,6 +209,21 @@ Route::middleware(['auth', $roleAcademicAdmin])->group(function () {
 | Kegiatan belajar mengajar - Guru beserta Admin TU, Kepala Sekolah, Operator.
 */
 Route::middleware(['auth', $roleAcademicStaff])->group(function () {
+    // Jadwal Pelajaran & Mengajar (Bisa Diakses Guru & Staf Akademik)
+    Route::get('/academic/schedules', [ScheduleController::class, 'index'])->name('academic.schedules');
+
+    // Verifikasi & Persetujuan Izin / Sakit (E-Leave Approval)
+    Route::post('/attendance/leave/{id}/review', [AttendanceController::class, 'reviewLeave'])->name('attendance.leave.review');
+
+    // Manajemen E-Learning (Materi & Tugas Harian) & Pengumuman Sekolah
+    Route::post('/academic/learning/materials', [LearningController::class, 'storeMaterial'])->name('academic.learning.materials.store');
+    Route::put('/academic/learning/materials/{id}', [LearningController::class, 'updateMaterial'])->name('academic.learning.materials.update');
+    Route::delete('/academic/learning/materials/{id}', [LearningController::class, 'destroyMaterial'])->name('academic.learning.materials.destroy');
+    Route::post('/academic/learning/submissions/{id}/grade', [LearningController::class, 'gradeSubmission'])->name('academic.learning.submissions.grade');
+    Route::post('/academic/learning/announcements', [LearningController::class, 'storeAnnouncement'])->name('academic.learning.announcements.store');
+    Route::put('/academic/learning/announcements/{id}', [LearningController::class, 'updateAnnouncement'])->name('academic.learning.announcements.update');
+    Route::delete('/academic/learning/announcements/{id}', [LearningController::class, 'destroyAnnouncement'])->name('academic.learning.announcements.destroy');
+
     // Buku Nilai Guru & Penilaian Siswa (Gradebook)
     Route::get('/academic/grades', [GradeController::class, 'index'])->name('academic.grades.index');
     Route::post('/academic/grades/batch', [GradeController::class, 'batchStoreOrUpdate'])->name('academic.grades.batch');
@@ -207,6 +251,36 @@ Route::middleware(['auth', $roleAcademicStaff])->group(function () {
     Route::post('/academic/cbt/exams/{id}/regenerate-token', [CbtController::class, 'regenerateToken'])->name('academic.cbt.exams.regenerate-token');
     Route::post('/academic/cbt/exams/{id}/push-grades', [CbtController::class, 'pushGradesToGradebook'])->name('academic.cbt.exams.push-grades');
     Route::post('/academic/cbt/exams/{id}/submit-simulation', [CbtController::class, 'submitSimulation'])->name('academic.cbt.exams.submit-simulation');
+    Route::get('/academic/cbt/submissions/{id}', [CbtController::class, 'showSubmission'])->name('academic.cbt.submissions.show');
+    Route::post('/academic/cbt/submissions/{id}/grade-essay', [CbtController::class, 'gradeEssay'])->name('academic.cbt.submissions.grade-essay');
+    Route::get('/academic/cbt/template-docx', [CbtController::class, 'downloadDocxTemplate'])->name('academic.cbt.template-docx');
+    Route::get('/academic/cbt/banks/{id}/export-template', [CbtController::class, 'exportBankTemplate'])->name('academic.cbt.banks.export-template');
+    Route::post('/academic/cbt/banks/{id}/import-questions', [CbtController::class, 'importQuestions'])->name('academic.cbt.banks.import-questions');
+
+    // PPDB Penerimaan Peserta Didik Baru (Manajemen & Konversi Siswa Resmi)
+    Route::get('/academic/ppdb', [PpdbController::class, 'adminIndex'])->name('academic.ppdb.index');
+    Route::post('/academic/ppdb/batches', [PpdbController::class, 'storeBatch'])->name('academic.ppdb.batches.store');
+    Route::put('/academic/ppdb/batches/{id}', [PpdbController::class, 'updateBatch'])->name('academic.ppdb.batches.update');
+    Route::delete('/academic/ppdb/batches/{id}', [PpdbController::class, 'destroyBatch'])->name('academic.ppdb.batches.destroy');
+    Route::post('/academic/ppdb/registrations/{id}/verify', [PpdbController::class, 'verifyRegistration'])->name('academic.ppdb.registrations.verify');
+    Route::post('/academic/ppdb/registrations/{id}/selection', [PpdbController::class, 'decideSelection'])->name('academic.ppdb.registrations.selection');
+    Route::post('/academic/ppdb/registrations/{id}/enroll', [PpdbController::class, 'enrollStudent'])->name('academic.ppdb.registrations.enroll');
+    Route::post('/academic/ppdb/registrations/batch-enroll', [PpdbController::class, 'batchEnrollStudents'])->name('academic.ppdb.registrations.batch-enroll');
+    Route::get('/academic/ppdb/export', [PpdbController::class, 'exportRegistrations'])->name('academic.ppdb.export');
+
+    // Manajemen Rapat, Notulen & BAP Digital
+    Route::get('/academic/meetings', [MeetingController::class, 'index'])->name('academic.meetings.index');
+    Route::post('/academic/meetings', [MeetingController::class, 'store'])->name('academic.meetings.store');
+    Route::get('/academic/meetings/{id}', [MeetingController::class, 'show'])->name('academic.meetings.show');
+    Route::put('/academic/meetings/{id}', [MeetingController::class, 'update'])->name('academic.meetings.update');
+    Route::put('/academic/meetings/{id}/notes', [MeetingController::class, 'updateNotes'])->name('academic.meetings.notes');
+    Route::post('/academic/meetings/{id}/sign', [MeetingController::class, 'signAttendance'])->name('academic.meetings.sign');
+    Route::post('/academic/meetings/{id}/participants', [MeetingController::class, 'addParticipant'])->name('academic.meetings.participants.store');
+    Route::post('/academic/meetings/{id}/photos', [MeetingController::class, 'uploadPhoto'])->name('academic.meetings.photos.store');
+    Route::post('/academic/meetings/{id}/attachments', [MeetingController::class, 'uploadAttachment'])->name('academic.meetings.attachments.store');
+    Route::get('/academic/meetings/{id}/bap-pdf', [MeetingController::class, 'generateBapPdf'])->name('academic.meetings.bap-pdf');
+    Route::get('/academic/meetings/{id}/wa-text', [MeetingController::class, 'whatsappShareText'])->name('academic.meetings.wa-text');
+    Route::delete('/academic/meetings/{id}', [MeetingController::class, 'destroy'])->name('academic.meetings.destroy');
 });
 
 /*
@@ -251,10 +325,11 @@ Route::middleware(['auth', $roleFinance])->group(function () {
     Route::post('/finance/pay', [FinanceController::class, 'storePayment'])->name('finance.pay');
     Route::get('/finance/receipt/{hashId}', [FinanceController::class, 'receipt'])->name('finance.receipt');
 
-    // Manajemen Tagihan Siswa & Batch Billing SPP
+    // Manajemen Tagihan Siswa, Batch Billing SPP & Verifikasi Bukti Transfer Bank
     Route::get('/finance/bills', [FinanceController::class, 'billsIndex'])->name('finance.bills.index');
     Route::post('/finance/bills/batch', [FinanceController::class, 'generateBatchBills'])->name('finance.bills.batch');
     Route::delete('/finance/bills/{id}', [FinanceController::class, 'destroyBill'])->name('finance.bills.destroy');
+    Route::post('/finance/payments/{id}/verify', [FinanceController::class, 'verifyPayment'])->name('finance.payments.verify');
 
     // Master Pos Tarif & Kategori Biaya
     Route::get('/finance/fee-categories', [FinanceController::class, 'feeCategoriesIndex'])->name('finance.fee-categories.index');
@@ -274,17 +349,38 @@ Route::middleware(['auth', $roleCashier])->group(function () {
 });
 
 /*
-| E-Kantin sisi vendor / kasir stand.
+| E-Kantin sisi vendor / kasir stand / admin.
 */
 Route::middleware(['auth', $roleCanteenVendor])->group(function () {
     Route::get('/canteen/stand/{standId}/pos', [CanteenController::class, 'standPos'])->name('canteen.stand.pos');
     Route::post('/canteen/orders/{orderId}/status', [CanteenController::class, 'updateStatus'])->name('canteen.order.status');
+
+    // Manajemen Stand & Menu E-Kantin di SPA
+    Route::post('/canteen/stands', [CanteenController::class, 'storeStand'])->name('canteen.stands.store');
+    Route::put('/canteen/stands/{id}', [CanteenController::class, 'updateStand'])->name('canteen.stands.update');
+    Route::delete('/canteen/stands/{id}', [CanteenController::class, 'destroyStand'])->name('canteen.stands.destroy');
+    Route::post('/canteen/menus', [CanteenController::class, 'storeMenu'])->name('canteen.menus.store');
+    Route::put('/canteen/menus/{id}', [CanteenController::class, 'updateMenu'])->name('canteen.menus.update');
+    Route::delete('/canteen/menus/{id}', [CanteenController::class, 'destroyMenu'])->name('canteen.menus.destroy');
 });
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware(['auth', 'role:super_admin'])->prefix('central')->name('central.')->group(function () {
+    Route::get('/tenants', [TenantManagementController::class, 'index'])->name('tenants.index');
+    Route::post('/tenants', [TenantManagementController::class, 'store'])->name('tenants.store');
+    Route::put('/tenants/{id}', [TenantManagementController::class, 'update'])->name('tenants.update');
+    Route::delete('/tenants/{id}', [TenantManagementController::class, 'destroy'])->name('tenants.destroy');
+    Route::post('/tenants/{id}/sync-admin', [TenantManagementController::class, 'syncAdmin'])->name('tenants.sync-admin');
+
+    Route::get('/plans', [PlanManagementController::class, 'index'])->name('plans.index');
+    Route::post('/plans', [PlanManagementController::class, 'store'])->name('plans.store');
+    Route::put('/plans/{id}', [PlanManagementController::class, 'update'])->name('plans.update');
+    Route::delete('/plans/{id}', [PlanManagementController::class, 'destroy'])->name('plans.destroy');
 });
 
 require __DIR__.'/auth.php';

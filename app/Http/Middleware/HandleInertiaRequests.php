@@ -30,10 +30,27 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        $isSchoolAdmin = $user ? $user->hasAnyRole([
+            \App\Enums\RoleName::Admin->value,
+            \App\Enums\RoleName::Headmaster->value,
+            \App\Enums\RoleName::Operator->value,
+            \App\Enums\RoleName::SuperAdmin->value,
+            \App\Enums\RoleName::Treasurer->value,
+            \App\Enums\RoleName::Staff->value,
+        ]) : false;
+
+        $isTeacher = $user ? (! $isSchoolAdmin && $user->hasRole(\App\Enums\RoleName::Teacher->value)) : false;
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user ? array_merge($user->toArray(), [
+                    'roles' => $user->getRoleNames()->toArray(),
+                    'isTeacher' => $isTeacher,
+                    'isAdmin' => $isSchoolAdmin,
+                    'isStudent' => $user->hasRole(\App\Enums\RoleName::Student->value),
+                ]) : null,
             ],
             'ziggy' => fn () => [
                 ...(new Ziggy)->toArray(),

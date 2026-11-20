@@ -131,6 +131,38 @@ const activeNav = ref('home');
                 </div>
             </div>
 
+            <!-- 2b. Menu Cepat Layanan Mandiri Siswa -->
+            <div class="grid grid-cols-4 gap-2.5">
+                <Link
+                    :href="route('academic.learning.index')"
+                    class="rounded-2xl bg-slate-800/70 hover:bg-indigo-600/20 border border-slate-700/60 hover:border-indigo-500/40 p-3 flex flex-col items-center text-center gap-1.5 transition"
+                >
+                    <span class="text-lg">📚</span>
+                    <span class="text-[11px] font-bold text-slate-200 leading-tight">Materi & Tugas</span>
+                </Link>
+                <Link
+                    :href="route('canteen.index')"
+                    class="rounded-2xl bg-slate-800/70 hover:bg-emerald-600/20 border border-slate-700/60 hover:border-emerald-500/40 p-3 flex flex-col items-center text-center gap-1.5 transition"
+                >
+                    <span class="text-lg">🍔</span>
+                    <span class="text-[11px] font-bold text-slate-200 leading-tight">E-Kantin</span>
+                </Link>
+                <Link
+                    :href="route('wallet.index')"
+                    class="rounded-2xl bg-slate-800/70 hover:bg-amber-600/20 border border-slate-700/60 hover:border-amber-500/40 p-3 flex flex-col items-center text-center gap-1.5 transition"
+                >
+                    <span class="text-lg">💳</span>
+                    <span class="text-[11px] font-bold text-slate-200 leading-tight">Dompet KTS</span>
+                </Link>
+                <Link
+                    :href="route('attendance.leave.index')"
+                    class="rounded-2xl bg-slate-800/70 hover:bg-rose-600/20 border border-slate-700/60 hover:border-rose-500/40 p-3 flex flex-col items-center text-center gap-1.5 transition"
+                >
+                    <span class="text-lg">📝</span>
+                    <span class="text-[11px] font-bold text-slate-200 leading-tight">Izin / Sakit</span>
+                </Link>
+            </div>
+
             <!-- 3. CBT Ujian Aktif Banner (Semi-Offline ANBK & Exambro APK) -->
             <div v-if="cbtExam.is_active" class="rounded-2xl bg-gradient-to-r from-rose-900/80 via-purple-900/70 to-slate-800 p-4 border border-rose-500/30 relative overflow-hidden">
                 <div class="flex items-start gap-3">
@@ -153,12 +185,15 @@ const activeNav = ref('home');
                             <div class="text-xs font-mono font-bold text-amber-300">
                                 TOKEN: {{ cbtExam.token }}
                             </div>
-                            <button class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition shadow-lg flex items-center gap-1.5">
+                            <Link
+                                :href="route('portal.cbt.index')"
+                                class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition shadow-lg flex items-center gap-1.5"
+                            >
                                 <span>Buka Ujian</span>
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                 </svg>
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -229,16 +264,15 @@ const activeNav = ref('home');
                     <span class="text-[10px] font-medium mt-1">Jadwal</span>
                 </button>
 
-                <button
-                    type="button"
-                    @click="activeNav = 'cbt'"
-                    :class="['flex flex-col items-center py-1 px-3 rounded-lg transition', activeNav === 'cbt' ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200']"
+                <Link
+                    :href="route('portal.cbt.index')"
+                    class="flex flex-col items-center py-1 px-3 rounded-lg text-slate-400 hover:text-indigo-400 transition"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                     </svg>
                     <span class="text-[10px] font-medium mt-1">CBT Ujian</span>
-                </button>
+                </Link>
 
                 <button
                     type="button"

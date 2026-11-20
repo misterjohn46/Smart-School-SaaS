@@ -16,10 +16,13 @@ const menus = [
     { label: 'Dashboard Guru', route: 'dashboard', icon: 'home' },
     { label: 'Jadwal Mengajar', route: 'academic.schedules', icon: 'calendar' },
     { label: 'Presensi Kelas', route: 'attendance.classroom.index', icon: 'clipboard' },
-    { label: 'Materi & LMS', route: 'dashboard', icon: 'book' },
-    { label: 'Penilaian Siswa', route: 'dashboard', icon: 'chart' },
-    { label: 'CBT Ujian Online', route: 'dashboard', icon: 'desktop' },
-    { label: 'Buku Tamu & Rapat', route: 'dashboard', icon: 'document' },
+    { label: 'Jurnal Mengajar', route: 'academic.journals.index', icon: 'document' },
+    { label: 'Materi & LMS', route: 'academic.learning.index', icon: 'book-open' },
+    { label: 'Penilaian Siswa', route: 'academic.grades.index', icon: 'chart' },
+    { label: 'Buku Rapor & Leger', route: 'academic.reports.index', icon: 'document' },
+    { label: 'CBT Ujian Online', route: 'academic.cbt.index', icon: 'desktop' },
+    { label: 'Verifikasi E-Leave', route: 'attendance.leave.index', icon: 'clipboard-check' },
+    { label: 'Tata Tertib Siswa', route: 'counseling.violations.index', icon: 'clipboard-check' },
 ];
 
 const selectedTab = ref('schedule');
@@ -56,12 +59,15 @@ const selectedTab = ref('schedule');
 
                     <!-- Quick Action Chips -->
                     <div class="flex flex-wrap gap-2">
-                        <button class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold backdrop-blur-md transition border border-white/20">
+                        <Link
+                            :href="route('academic.learning.index')"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold backdrop-blur-md transition border border-white/20"
+                        >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
                             Buat Materi LMS
-                        </button>
+                        </Link>
                         <Link
                             :href="route('attendance.classroom.index')"
                             class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-lg transition"
@@ -253,34 +259,44 @@ const selectedTab = ref('schedule');
                         </div>
 
                         <div class="mt-3">
-                            <button class="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold text-xs transition text-center">
+                            <Link
+                                :href="route('academic.cbt.index')"
+                                class="block w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold text-xs transition text-center"
+                            >
                                 Kelola Bank Soal & Jadwal CBT →
-                            </button>
+                            </Link>
                         </div>
                     </div>
 
-                    <!-- Notulen & Berita Acara Rapat Guru (Paperless) -->
+                    <!-- Modul Ajar & E-Learning Siswa -->
                     <div class="rounded-2xl bg-white p-5 shadow-sm border border-gray-200/80 dark:bg-gray-800 dark:border-gray-700/80">
                         <div class="flex items-center justify-between mb-3">
                             <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                Notulen & Berita Acara Rapat
+                                Materi & E-Learning Siswa
                             </h3>
-                            <span class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">Paperless BAP</span>
+                            <span class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">Tugas Terkumpul</span>
                         </div>
 
                         <div class="space-y-3">
-                            <div
-                                v-for="(meeting, mIdx) in meetings"
-                                :key="mIdx"
-                                class="p-3 rounded-xl bg-gray-50 dark:bg-gray-900/40 border border-gray-200/60 dark:border-gray-700/60"
-                            >
-                                <div class="text-xs font-bold text-gray-900 dark:text-white leading-snug">{{ meeting.title }}</div>
-                                <div class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">{{ meeting.date }} • {{ meeting.leader }}</div>
+                            <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-900/40 border border-gray-200/60 dark:border-gray-700/60">
+                                <div class="text-xs font-bold text-gray-900 dark:text-white leading-snug">Modul Pemrograman Web & Mobile Devices</div>
+                                <div class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">Kelas X - RPL 1 • 36 Siswa Terdaftar</div>
                                 <div class="mt-2 flex items-center justify-between pt-1.5 border-t border-gray-200/40 dark:border-gray-700/40 text-[10px]">
-                                    <span class="text-amber-600 dark:text-amber-400 font-semibold">{{ meeting.status }}</span>
-                                    <span class="text-indigo-600 dark:text-indigo-400 font-bold cursor-pointer">Buka Dokumen</span>
+                                    <span class="text-emerald-600 dark:text-emerald-400 font-semibold">12 Tugas Menunggu Penilaian</span>
+                                    <Link :href="route('academic.learning.index')" class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
+                                        Buka LMS
+                                    </Link>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <Link
+                                :href="route('academic.learning.index')"
+                                class="block w-full py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 font-semibold text-xs transition text-center"
+                            >
+                                Kelola Seluruh Materi & Tugas LMS →
+                            </Link>
                         </div>
                     </div>
                 </div>
