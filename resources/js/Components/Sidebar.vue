@@ -152,22 +152,22 @@ const iconPaths = {
     <aside
         :class="[
             'fixed inset-y-0 left-0 z-50 flex w-64 flex-col',
-            'bg-slate-900 text-slate-100',
-            'border-r border-slate-800',
+            'bg-white text-slate-700',
+            'border-r border-slate-200',
             'transform transition-transform duration-300 ease-in-out',
             mobileOpen ? 'translate-x-0' : '-translate-x-full',
             'lg:translate-x-0',
         ]"
     >
         <!-- ===== BRAND / LOGO SEKOLAH ===== -->
-        <div class="flex h-16 shrink-0 items-center gap-3 border-b border-slate-800 px-5 bg-slate-950/60">
+        <div class="flex h-16 shrink-0 items-center gap-3 border-b border-slate-100 px-5 bg-white">
             <Link :href="route('dashboard')" class="flex items-center gap-3" @click="closeMobile">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-amber-500 flex items-center justify-center font-black text-white shadow-md shadow-indigo-500/20">
+                <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-white shadow-sm">
                     S
                 </div>
                 <div>
-                    <span class="text-sm font-bold text-white tracking-wide block leading-tight">SIAKAD & LMS</span>
-                    <span class="text-[10px] text-slate-400 font-medium tracking-wider uppercase block">SMK INFORMATIKA</span>
+                    <span class="text-sm font-bold text-slate-900 tracking-wide block leading-tight">SIAKAD & LMS</span>
+                    <span class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase block">SMK INFORMATIKA</span>
                 </div>
             </Link>
         </div>
@@ -183,7 +183,7 @@ const iconPaths = {
                     <!-- Header Seksi Kategori -->
                     <div
                         v-if="menu.isHeader"
-                        class="pt-3 pb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-t border-slate-800/60 mt-2 first:mt-0 first:border-0 first:pt-0"
+                        class="pt-3 pb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-t border-slate-100 mt-2 first:mt-0 first:border-0 first:pt-0"
                     >
                         {{ menu.label }}
                     </div>
@@ -197,13 +197,13 @@ const iconPaths = {
                         :class="[
                             'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all duration-200',
                             isActive(menu)
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                                : 'text-slate-300 hover:bg-slate-800/80 hover:text-white',
+                                ? 'bg-indigo-50 text-indigo-700 font-bold border border-indigo-100'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
                         ]"
                     >
                         <svg
                             class="h-4 w-4 shrink-0 transition-colors"
-                            :class="isActive(menu) ? 'text-white' : 'text-slate-400 group-hover:text-indigo-400'"
+                            :class="isActive(menu) ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600'"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -217,7 +217,7 @@ const iconPaths = {
                             />
                         </svg>
                         <span class="flex-1 truncate">{{ menu.label }}</span>
-                        <span v-if="menu.badge" class="px-1.5 py-0.5 text-[9px] rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+                        <span v-if="menu.badge" class="px-1.5 py-0.5 text-[9px] rounded-md bg-amber-50 text-amber-700 border border-amber-200 font-bold">
                             {{ menu.badge }}
                         </span>
                     </a>
@@ -230,14 +230,14 @@ const iconPaths = {
                         :class="[
                             'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all duration-200',
                             isActive(menu)
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                                : 'text-slate-300 hover:bg-slate-800/80 hover:text-white',
+                                ? 'bg-indigo-50 text-indigo-700 font-bold border border-indigo-100'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
                         ]"
                     >
                         <!-- Icon -->
                         <svg
                             class="h-4 w-4 shrink-0 transition-colors"
-                            :class="isActive(menu) ? 'text-white' : 'text-slate-400 group-hover:text-indigo-400'"
+                            :class="isActive(menu) ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600'"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -255,25 +255,25 @@ const iconPaths = {
 
                         <span
                             v-if="isActive(menu)"
-                            class="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-sm"
+                            class="w-1.5 h-1.5 rounded-full bg-indigo-600"
                         ></span>
                     </Link>
                 </li>
             </ul>
 
             <!-- ===== BOTTOM SECTION: User Info + Logout ===== -->
-            <div class="mt-auto pt-4 border-t border-slate-800/80">
+            <div class="mt-auto pt-4 border-t border-slate-100">
                 <!-- User Profile Card -->
-                <div class="mb-3 rounded-xl bg-slate-800/60 p-3 border border-slate-700/50">
+                <div class="mb-3 rounded-xl bg-slate-50 p-3 border border-slate-200">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
                             {{ $page.props.auth.user.name.charAt(0) }}
                         </div>
                         <div class="overflow-hidden flex-1">
-                            <p class="truncate text-xs font-bold text-white">
+                            <p class="truncate text-xs font-bold text-slate-900">
                                 {{ $page.props.auth.user.name }}
                             </p>
-                            <p class="truncate text-[10px] text-slate-400">
+                            <p class="truncate text-[10px] text-slate-500">
                                 {{ $page.props.auth.user.email }}
                             </p>
                         </div>
@@ -286,9 +286,9 @@ const iconPaths = {
                         <Link
                             :href="route('profile.edit')"
                             @click="closeMobile"
-                            class="group flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                            class="group flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
                         >
-                            <svg class="h-4 w-4 shrink-0 text-slate-400 group-hover:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="h-4 w-4 shrink-0 text-slate-400 group-hover:text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="iconPaths.cog" />
                             </svg>
                             Pengaturan Profil
@@ -300,9 +300,9 @@ const iconPaths = {
                             method="post"
                             as="button"
                             @click="closeMobile"
-                            class="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium text-rose-400 transition hover:bg-rose-950/40 hover:text-rose-300"
+                            class="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium text-rose-600 transition hover:bg-rose-50 hover:text-rose-700"
                         >
-                            <svg class="h-4 w-4 shrink-0 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="h-4 w-4 shrink-0 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="iconPaths.logout" />
                             </svg>
                             Keluar dari Akun
@@ -315,11 +315,11 @@ const iconPaths = {
 
     <!-- ===== MOBILE HEADER BAR ===== -->
     <header
-        class="fixed top-0 left-0 right-0 z-30 flex h-14 items-center justify-between border-b border-slate-800 bg-slate-900 px-4 lg:hidden"
+        class="fixed top-0 left-0 right-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 lg:hidden shadow-sm"
     >
         <button
             @click="mobileOpen = !mobileOpen"
-            class="inline-flex items-center justify-center rounded-lg p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+            class="inline-flex items-center justify-center rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
         >
             <svg v-if="!mobileOpen" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -329,7 +329,7 @@ const iconPaths = {
             </svg>
         </button>
 
-        <span class="text-sm font-bold text-white">SIAKAD & LMS Terpadu</span>
+        <span class="text-sm font-bold text-slate-900">SIAKAD & LMS Terpadu</span>
 
         <div class="w-8"></div>
     </header>

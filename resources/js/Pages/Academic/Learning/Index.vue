@@ -323,32 +323,32 @@ const deleteAnnouncement = (ann) => {
 <template>
     <Head title="E-Learning (Materi & Tugas) & Pengumuman Sekolah" />
 
-    <div class="min-h-screen bg-slate-950 font-sans text-slate-100 flex">
+    <div class="min-h-screen bg-slate-50 font-sans text-slate-800 flex">
         <Sidebar v-if="canManage" :menus="adminMenus" sectionTitle="Operasional Sekolah" />
 
         <div :class="['flex-1 flex flex-col min-w-0', canManage ? 'lg:pl-64' : '']">
             <!-- Header Bar -->
-            <header class="h-16 border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-30 px-6 flex items-center justify-between gap-4">
+            <header class="h-16 border-b border-slate-200 bg-white sticky top-0 z-30 px-6 flex items-center justify-between gap-4 shadow-sm">
                 <div class="flex items-center gap-3">
                     <Link
                         v-if="!canManage"
                         :href="route('portal.student')"
-                        class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
+                        class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition"
                     >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                     </Link>
-                    <div class="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                    <div class="p-2 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
                     </div>
                     <div>
-                        <h1 class="font-bold text-base sm:text-lg text-white leading-tight">
+                        <h1 class="font-bold text-base sm:text-lg text-slate-900 leading-tight">
                             E-Learning (Materi & Tugas Harian) & Pengumuman
                         </h1>
-                        <p class="text-xs text-slate-400 hidden sm:block">
+                        <p class="text-xs text-slate-500 hidden sm:block">
                             Distribusi modul ajar digital, pengumpulan tugas siswa terintegrasi buku nilai, dan informasi resmi sekolah
                         </p>
                     </div>
@@ -358,14 +358,14 @@ const deleteAnnouncement = (ann) => {
                     <button
                         type="button"
                         @click="openCreateMaterialModal('material')"
-                        class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow transition"
+                        class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition"
                     >
                         + Materi / Tugas
                     </button>
                     <button
                         type="button"
                         @click="openCreateAnnouncementModal"
-                        class="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow transition"
+                        class="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-sm transition"
                     >
                         + Pengumuman
                     </button>
@@ -374,49 +374,49 @@ const deleteAnnouncement = (ann) => {
 
             <main class="p-6 space-y-6 flex-1 max-w-6xl mx-auto w-full">
                 <!-- Flash Banner -->
-                <div v-if="$page.props.flash?.status" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex items-center gap-2 text-sm">
+                <div v-if="$page.props.flash?.status" class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-2 text-sm shadow-sm">
                     <span>✅</span>
                     <span>{{ $page.props.flash.status }}</span>
                 </div>
-                <div v-if="$page.props.errors?.error" class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-center gap-2 text-sm">
+                <div v-if="$page.props.errors?.error" class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center gap-2 text-sm shadow-sm">
                     <span>⚠️</span>
                     <span>{{ $page.props.errors.error }}</span>
                 </div>
 
                 <!-- KPI Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5">
-                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Modul & Materi Ajar</span>
-                        <div class="text-2xl font-black text-white mt-2">{{ stats.total_materials }}</div>
+                    <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Modul & Materi Ajar</span>
+                        <div class="text-2xl font-black text-slate-900 mt-2">{{ stats.total_materials }}</div>
                         <div class="text-xs text-slate-400 mt-0.5">Bahan bacaan & referensi</div>
                     </div>
-                    <div class="bg-slate-900/60 border border-indigo-500/20 rounded-2xl p-5">
-                        <span class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Tugas Harian Kelas</span>
-                        <div class="text-2xl font-black text-indigo-400 mt-2">{{ stats.total_assignments }}</div>
+                    <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+                        <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Tugas Harian Kelas</span>
+                        <div class="text-2xl font-black text-indigo-600 mt-2">{{ stats.total_assignments }}</div>
                         <div class="text-xs text-slate-400 mt-0.5">Penugasan terstruktur</div>
                     </div>
-                    <div class="bg-slate-900/60 border border-emerald-500/20 rounded-2xl p-5">
-                        <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Jawaban Tugas Masuk</span>
-                        <div class="text-2xl font-black text-emerald-400 mt-2">{{ stats.total_submissions }}</div>
+                    <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+                        <span class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Jawaban Tugas Masuk</span>
+                        <div class="text-2xl font-black text-emerald-600 mt-2">{{ stats.total_submissions }}</div>
                         <div class="text-xs text-slate-400 mt-0.5">Siap dinilai & sinkron rapor</div>
                     </div>
-                    <div class="bg-slate-900/60 border border-amber-500/20 rounded-2xl p-5">
-                        <span class="text-xs font-semibold text-amber-400 uppercase tracking-wider">Pengumuman Resmi</span>
-                        <div class="text-2xl font-black text-amber-400 mt-2">{{ stats.total_announcements }}</div>
+                    <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+                        <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Pengumuman Resmi</span>
+                        <div class="text-2xl font-black text-amber-600 mt-2">{{ stats.total_announcements }}</div>
                         <div class="text-xs text-slate-400 mt-0.5">Informasi warga sekolah</div>
                     </div>
                 </div>
 
                 <!-- Tab Switcher -->
-                <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2 border-b border-slate-200 pb-3">
                     <button
                         type="button"
                         @click="activeTab = 'materials'"
                         :class="[
-                            'px-4 py-2 rounded-xl text-xs font-bold transition',
+                            'px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm',
                             activeTab === 'materials'
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25'
-                                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
                         ]"
                     >
                         📚 Materi & Tugas Harian ({{ materials.length }})
@@ -425,10 +425,10 @@ const deleteAnnouncement = (ann) => {
                         type="button"
                         @click="activeTab = 'announcements'"
                         :class="[
-                            'px-4 py-2 rounded-xl text-xs font-bold transition',
+                            'px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm',
                             activeTab === 'announcements'
-                                ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/25'
-                                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                                ? 'bg-amber-600 text-white'
+                                : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
                         ]"
                     >
                         📢 Papan Pengumuman Sekolah ({{ announcements.length }})
@@ -438,15 +438,15 @@ const deleteAnnouncement = (ann) => {
                 <!-- ==================== TAB 1: MATERI & TUGAS HARIAN ==================== -->
                 <div v-if="activeTab === 'materials'" class="space-y-5">
                     <!-- Filter Bar -->
-                    <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex flex-wrap items-center gap-3">
+                    <div class="bg-white border border-slate-200/80 rounded-2xl p-4 flex flex-wrap items-center gap-3 shadow-sm">
                         <div class="relative flex-1 min-w-[200px]">
                             <input
                                 v-model="search"
                                 type="text"
                                 placeholder="Cari judul materi atau instruksi tugas..."
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 pl-9"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white pl-9"
                             />
-                            <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
@@ -454,7 +454,7 @@ const deleteAnnouncement = (ann) => {
                         <select
                             v-if="canManage"
                             v-model="classroomId"
-                            class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-300"
+                            class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-indigo-500 focus:bg-white"
                         >
                             <option value="">Semua Kelas</option>
                             <option v-for="c in classrooms" :key="c.id" :value="c.id">{{ c.name }}</option>
@@ -462,7 +462,7 @@ const deleteAnnouncement = (ann) => {
 
                         <select
                             v-model="subjectId"
-                            class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-300"
+                            class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-indigo-500 focus:bg-white"
                         >
                             <option value="">Semua Mata Pelajaran</option>
                             <option v-for="s in subjects" :key="s.id" :value="s.id">{{ s.name }}</option>
@@ -470,7 +470,7 @@ const deleteAnnouncement = (ann) => {
 
                         <select
                             v-model="typeFilter"
-                            class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-300"
+                            class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-indigo-500 focus:bg-white"
                         >
                             <option value="">Semua Tipe</option>
                             <option value="material">📘 Materi Bacaan</option>
@@ -479,7 +479,7 @@ const deleteAnnouncement = (ann) => {
                     </div>
 
                     <!-- Daftar Kartu Materi & Tugas -->
-                    <div v-if="materials.length === 0" class="bg-slate-900/60 border border-slate-800 rounded-2xl p-12 text-center text-slate-500">
+                    <div v-if="materials.length === 0" class="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 shadow-sm">
                         Belum ada materi pembelajaran atau tugas harian yang diterbitkan.
                     </div>
 
@@ -487,7 +487,7 @@ const deleteAnnouncement = (ann) => {
                         <div
                             v-for="item in materials"
                             :key="item.id"
-                            class="bg-slate-900/70 border border-slate-800 hover:border-indigo-500/40 rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-lg transition"
+                            class="bg-white border border-slate-200/80 hover:border-indigo-200 hover:shadow-md rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-sm transition"
                         >
                             <div class="space-y-2.5">
                                 <div class="flex items-center justify-between gap-2">
@@ -496,25 +496,25 @@ const deleteAnnouncement = (ann) => {
                                             :class="[
                                                 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider',
                                                 item.type === 'assignment'
-                                                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                                                    : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                                                    ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                                    : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
                                             ]"
                                         >
                                             {{ item.type === 'assignment' ? '📝 Tugas Harian' : '📘 Materi Modul' }}
                                         </span>
-                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                                             {{ item.classroom_name }}
                                         </span>
                                     </div>
-                                    <span class="text-[11px] text-slate-500">{{ item.created_at_formatted }}</span>
+                                    <span class="text-[11px] text-slate-400">{{ item.created_at_formatted }}</span>
                                 </div>
 
                                 <div>
-                                    <div class="text-xs font-semibold text-indigo-400">{{ item.subject_name }} • Oleh: {{ item.teacher_name }}</div>
-                                    <h3 class="text-base font-bold text-white mt-0.5">{{ item.title }}</h3>
+                                    <div class="text-xs font-semibold text-indigo-600">{{ item.subject_name }} • Oleh: {{ item.teacher_name }}</div>
+                                    <h3 class="text-base font-bold text-slate-900 mt-0.5">{{ item.title }}</h3>
                                 </div>
 
-                                <p class="text-xs text-slate-300 leading-relaxed whitespace-pre-line">
+                                <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line">
                                     {{ item.description || 'Silakan pelajari modul dan kerjakan sesuai instruksi guru pengampu.' }}
                                 </p>
 
@@ -523,62 +523,62 @@ const deleteAnnouncement = (ann) => {
                                         :href="item.reference_url"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-400 hover:text-sky-300 underline"
+                                        class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 underline"
                                     >
                                         🔗 Buka Lampiran / Tautan Modul Pembelajaran
                                     </a>
                                 </div>
 
-                                <div v-if="item.type === 'assignment'" class="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between text-xs">
+                                <div v-if="item.type === 'assignment'" class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
                                     <div>
-                                        <span class="text-slate-400">Batas Pengumpulan: </span>
-                                        <span :class="item.is_overdue ? 'text-rose-400 font-bold' : 'text-amber-300 font-semibold'">
+                                        <span class="text-slate-500">Batas Pengumpulan: </span>
+                                        <span :class="item.is_overdue ? 'text-rose-600 font-bold' : 'text-amber-700 font-semibold'">
                                             {{ item.due_date_formatted || 'Fleksibel' }}
                                         </span>
                                     </div>
-                                    <span class="font-mono text-slate-400">Skor Maks: {{ item.max_score }}</span>
+                                    <span class="font-mono text-slate-500">Skor Maks: {{ item.max_score }}</span>
                                 </div>
 
                                 <!-- Status Pengumpulan Siswa (Jika Login Sebagai Siswa) -->
-                                <div v-if="studentProfile && item.type === 'assignment' && item.my_submission" class="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-xs space-y-1">
+                                <div v-if="studentProfile && item.type === 'assignment' && item.my_submission" class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs space-y-1">
                                     <div class="flex items-center justify-between">
-                                        <span class="font-bold text-emerald-300">✓ Sudah Dikumpulkan ({{ item.my_submission.submitted_at_formatted }})</span>
-                                        <span v-if="item.my_submission.score !== null" class="px-2 py-0.5 rounded bg-emerald-500 text-slate-950 font-black font-mono">
+                                        <span class="font-bold text-emerald-800">✓ Sudah Dikumpulkan ({{ item.my_submission.submitted_at_formatted }})</span>
+                                        <span v-if="item.my_submission.score !== null" class="px-2 py-0.5 rounded bg-emerald-600 text-white font-black font-mono">
                                             Nilai: {{ item.my_submission.score }}
                                         </span>
-                                        <span v-else class="text-amber-300 text-[11px]">Menunggu Penilaian Guru</span>
+                                        <span v-else class="text-amber-700 font-semibold text-[11px]">Menunggu Penilaian Guru</span>
                                     </div>
-                                    <p v-if="item.my_submission.teacher_feedback" class="text-slate-300 italic">
+                                    <p v-if="item.my_submission.teacher_feedback" class="text-slate-600 italic">
                                         Catatan Guru: "{{ item.my_submission.teacher_feedback }}"
                                     </p>
                                 </div>
                             </div>
 
                             <!-- Card Footer Actions -->
-                            <div class="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+                            <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                                 <template v-if="canManage">
                                     <button
                                         v-if="item.type === 'assignment'"
                                         type="button"
                                         @click="openSubmissionsListModal(item)"
-                                        class="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-bold transition"
+                                        class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold transition"
                                     >
                                         📥 Jawaban Siswa ({{ item.submissions_count }})
                                     </button>
-                                    <span v-else class="text-xs text-slate-500">Materi Terpublikasi</span>
+                                    <span v-else class="text-xs text-slate-400 font-medium">Materi Terpublikasi</span>
 
                                     <div class="flex items-center gap-1.5">
                                         <button
                                             type="button"
                                             @click="openEditMaterialModal(item)"
-                                            class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+                                            class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition"
                                         >
                                             Edit
                                         </button>
                                         <button
                                             type="button"
                                             @click="deleteMaterial(item)"
-                                            class="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-semibold"
+                                            class="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-semibold transition"
                                         >
                                             Hapus
                                         </button>
@@ -589,7 +589,7 @@ const deleteAnnouncement = (ann) => {
                                     <button
                                         type="button"
                                         @click="openSubmitModal(item)"
-                                        class="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow transition"
+                                        class="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition"
                                     >
                                         {{ item.my_submission ? '✏️ Perbarui Jawaban Tugas' : '📤 Kumpulkan Jawaban Tugas' }}
                                     </button>
@@ -601,7 +601,7 @@ const deleteAnnouncement = (ann) => {
 
                 <!-- ==================== TAB 2: PAPAN PENGUMUMAN SEKOLAH ==================== -->
                 <div v-if="activeTab === 'announcements'" class="space-y-4">
-                    <div v-if="announcements.length === 0" class="bg-slate-900/60 border border-slate-800 rounded-2xl p-12 text-center text-slate-500">
+                    <div v-if="announcements.length === 0" class="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 shadow-sm">
                         Belum ada pengumuman resmi sekolah yang dipublikasikan.
                     </div>
 
@@ -609,39 +609,39 @@ const deleteAnnouncement = (ann) => {
                         v-for="ann in announcements"
                         :key="ann.id"
                         :class="[
-                            'rounded-2xl p-5 border shadow-lg space-y-3 transition',
+                            'rounded-2xl p-5 border shadow-sm space-y-3 transition',
                             ann.is_pinned
-                                ? 'bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900 border-amber-500/40'
-                                : 'bg-slate-900/70 border-slate-800'
+                                ? 'bg-amber-50/50 border-amber-200'
+                                : 'bg-white border-slate-200/80'
                         ]"
                     >
                         <div class="flex flex-wrap items-center justify-between gap-2">
                             <div class="flex items-center gap-2">
-                                <span v-if="ann.is_pinned" class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500 text-slate-950">
+                                <span v-if="ann.is_pinned" class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500 text-white">
                                     📌 Disematkan
                                 </span>
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-indigo-50 text-indigo-700 border border-indigo-200">
                                     {{ ann.category }}
                                 </span>
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase bg-slate-800 text-slate-300 border border-slate-700">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase bg-slate-100 text-slate-700 border border-slate-200">
                                     Target: {{ ann.target_audience.replace('_', ' ') }}
                                 </span>
                             </div>
 
-                            <div class="flex items-center gap-2 text-xs text-slate-400">
-                                <span>Oleh: <strong class="text-slate-200">{{ ann.author_name }}</strong> • {{ ann.created_at_formatted }}</span>
+                            <div class="flex items-center gap-2 text-xs text-slate-500">
+                                <span>Oleh: <strong class="text-slate-800 font-semibold">{{ ann.author_name }}</strong> • {{ ann.created_at_formatted }}</span>
                                 <template v-if="canManage">
                                     <button
                                         type="button"
                                         @click="openEditAnnouncementModal(ann)"
-                                        class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold"
+                                        class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition"
                                     >
                                         Edit
                                     </button>
                                     <button
                                         type="button"
                                         @click="deleteAnnouncement(ann)"
-                                        class="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 font-semibold"
+                                        class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-semibold transition"
                                     >
                                         Hapus
                                     </button>
@@ -649,21 +649,21 @@ const deleteAnnouncement = (ann) => {
                             </div>
                         </div>
 
-                        <h3 class="text-base font-bold text-white">{{ ann.title }}</h3>
-                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line">{{ ann.content }}</p>
+                        <h3 class="text-base font-bold text-slate-900">{{ ann.title }}</h3>
+                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line">{{ ann.content }}</p>
                     </div>
                 </div>
             </main>
         </div>
 
         <!-- ==================== MODAL FORM MATERI / TUGAS ==================== -->
-        <div v-if="isMaterialModalOpen" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <h3 class="text-sm font-bold text-white">
+        <div v-if="isMaterialModalOpen" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-xl text-slate-800">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-bold text-slate-900">
                         {{ editingMaterial ? 'Edit Materi / Tugas Kelas' : 'Terbitkan Materi / Tugas Kelas Baru' }}
                     </h3>
-                    <button type="button" @click="isMaterialModalOpen = false" class="text-slate-400 hover:text-white">✕</button>
+                    <button type="button" @click="isMaterialModalOpen = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
                 </div>
 
                 <form @submit.prevent="submitMaterial" class="space-y-4">
@@ -671,14 +671,14 @@ const deleteAnnouncement = (ann) => {
                         <button
                             type="button"
                             @click="materialForm.type = 'material'"
-                            :class="['py-2 rounded-xl text-xs font-bold border transition', materialForm.type === 'material' ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400']"
+                            :class="['py-2 rounded-xl text-xs font-bold border transition', materialForm.type === 'material' ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100']"
                         >
                             📘 Materi Pembelajaran
                         </button>
                         <button
                             type="button"
                             @click="materialForm.type = 'assignment'"
-                            :class="['py-2 rounded-xl text-xs font-bold border transition', materialForm.type === 'assignment' ? 'bg-amber-600 border-amber-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400']"
+                            :class="['py-2 rounded-xl text-xs font-bold border transition', materialForm.type === 'assignment' ? 'bg-amber-600 border-amber-600 text-white shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100']"
                         >
                             📝 Tugas Harian Kelas
                         </button>
@@ -686,15 +686,15 @@ const deleteAnnouncement = (ann) => {
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1">Rombel Kelas *</label>
-                            <select v-model="materialForm.classroom_id" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Rombel Kelas *</label>
+                            <select v-model="materialForm.classroom_id" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white">
                                 <option v-if="classrooms.length === 0" value="" disabled>-- Tidak ada rombel kelas yang diajar --</option>
                                 <option v-for="c in classrooms" :key="c.id" :value="c.id">{{ c.name }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1">Mata Pelajaran *</label>
-                            <select v-model="materialForm.subject_id" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Mata Pelajaran *</label>
+                            <select v-model="materialForm.subject_id" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white">
                                 <option v-if="availableSubjectsForModal.length === 0" value="" disabled>-- Tidak ada mata pelajaran yang diajar di kelas ini --</option>
                                 <option v-for="s in availableSubjectsForModal" :key="s.id" :value="s.id">{{ s.name }}</option>
                             </select>
@@ -702,60 +702,60 @@ const deleteAnnouncement = (ann) => {
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Judul Materi / Tugas *</label>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Materi / Tugas *</label>
                         <input
                             v-model="materialForm.title"
                             type="text"
                             placeholder="Contoh: Modul Bab 3 - Arsitektur REST API & Latihan Praktikum"
                             required
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
                         />
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Uraian Materi / Instruksi Pengerjaan</label>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Uraian Materi / Instruksi Pengerjaan</label>
                         <textarea
                             v-model="materialForm.description"
                             rows="3"
                             placeholder="Tuliskan ringkasan materi atau langkah-langkah pengerjaan tugas..."
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
                         ></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Tautan Modul / Video / Google Drive (Opsional)</label>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tautan Modul / Video / Google Drive (Opsional)</label>
                         <input
                             v-model="materialForm.reference_url"
                             type="text"
                             placeholder="https://drive.google.com/..."
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
                         />
                     </div>
 
                     <div v-if="materialForm.type === 'assignment'" class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1">Batas Waktu Pengumpulan</label>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Batas Waktu Pengumpulan</label>
                             <input
                                 v-model="materialForm.due_date"
                                 type="datetime-local"
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white"
                             />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1">Skor Maksimal</label>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Skor Maksimal</label>
                             <input
                                 v-model.number="materialForm.max_score"
                                 type="number"
                                 min="10"
                                 max="100"
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white"
                             />
                         </div>
                     </div>
 
-                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-                        <button type="button" @click="isMaterialModalOpen = false" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400">Batal</button>
-                        <button type="submit" :disabled="materialForm.processing" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold">
+                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                        <button type="button" @click="isMaterialModalOpen = false" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 transition">Batal</button>
+                        <button type="submit" :disabled="materialForm.processing" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition">
                             {{ materialForm.processing ? 'Menyimpan...' : 'Simpan & Publikasikan' }}
                         </button>
                     </div>
@@ -764,38 +764,38 @@ const deleteAnnouncement = (ann) => {
         </div>
 
         <!-- ==================== MODAL KUMPULKAN TUGAS (SISWA) ==================== -->
-        <div v-if="isSubmitModalOpen && activeAssignment" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <h3 class="text-sm font-bold text-white">Kumpulkan Tugas: {{ activeAssignment.title }}</h3>
-                    <button type="button" @click="isSubmitModalOpen = false" class="text-slate-400 hover:text-white">✕</button>
+        <div v-if="isSubmitModalOpen && activeAssignment" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-xl text-slate-800">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-bold text-slate-900">Kumpulkan Tugas: {{ activeAssignment.title }}</h3>
+                    <button type="button" @click="isSubmitModalOpen = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
                 </div>
 
                 <form @submit.prevent="submitStudentAssignment" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Jawaban Tertulis / Ringkasan Pengerjaan *</label>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Jawaban Tertulis / Ringkasan Pengerjaan *</label>
                         <textarea
                             v-model="submissionForm.answer_text"
                             rows="4"
                             required
                             placeholder="Tuliskan jawaban Anda di sini..."
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
                         ></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Tautan Berkas Tugas / Repository / Google Drive (Opsional)</label>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tautan Berkas Tugas / Repository / Google Drive (Opsional)</label>
                         <input
                             v-model="submissionForm.attachment_url"
                             type="text"
                             placeholder="https://..."
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
                         />
                     </div>
 
-                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-                        <button type="button" @click="isSubmitModalOpen = false" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400">Batal</button>
-                        <button type="submit" :disabled="submissionForm.processing" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold">
+                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                        <button type="button" @click="isSubmitModalOpen = false" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 transition">Batal</button>
+                        <button type="submit" :disabled="submissionForm.processing" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition">
                             {{ submissionForm.processing ? 'Mengirim...' : 'Kirim Jawaban Tugas' }}
                         </button>
                     </div>
@@ -804,17 +804,17 @@ const deleteAnnouncement = (ann) => {
         </div>
 
         <!-- ==================== MODAL DAFTAR & PENILAIAN JAWABAN SISWA (GURU) ==================== -->
-        <div v-if="isGradingModalOpen && selectedMaterialForGrading" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div v-if="isGradingModalOpen && selectedMaterialForGrading" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-xl max-h-[85vh] overflow-y-auto text-slate-800">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div>
-                        <h3 class="text-sm font-bold text-white">Jawaban Siswa: {{ selectedMaterialForGrading.title }}</h3>
-                        <p class="text-xs text-slate-400">{{ selectedMaterialForGrading.classroom_name }} • {{ selectedMaterialForGrading.subject_name }}</p>
+                        <h3 class="text-sm font-bold text-slate-900">Jawaban Siswa: {{ selectedMaterialForGrading.title }}</h3>
+                        <p class="text-xs text-slate-500">{{ selectedMaterialForGrading.classroom_name }} • {{ selectedMaterialForGrading.subject_name }}</p>
                     </div>
-                    <button type="button" @click="isGradingModalOpen = false" class="text-slate-400 hover:text-white">✕</button>
+                    <button type="button" @click="isGradingModalOpen = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
                 </div>
 
-                <div v-if="!selectedMaterialForGrading.submissions || selectedMaterialForGrading.submissions.length === 0" class="py-10 text-center text-xs text-slate-500">
+                <div v-if="!selectedMaterialForGrading.submissions || selectedMaterialForGrading.submissions.length === 0" class="py-10 text-center text-xs text-slate-400">
                     Belum ada siswa yang mengumpulkan jawaban untuk tugas ini.
                 </div>
 
@@ -822,67 +822,67 @@ const deleteAnnouncement = (ann) => {
                     <div
                         v-for="sub in selectedMaterialForGrading.submissions"
                         :key="sub.id"
-                        class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2 text-xs"
+                        class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs"
                     >
                         <div class="flex items-center justify-between">
                             <div>
-                                <span class="font-bold text-white">{{ sub.student_name }}</span>
-                                <span class="text-slate-400 ml-2">(NISN: {{ sub.student_nisn }})</span>
+                                <span class="font-bold text-slate-900">{{ sub.student_name }}</span>
+                                <span class="text-slate-500 ml-2">(NISN: {{ sub.student_nisn }})</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="text-[11px] text-slate-500">{{ sub.submitted_at_formatted }}</span>
-                                <span v-if="sub.score !== null" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold font-mono">
+                                <span class="text-[11px] text-slate-400">{{ sub.submitted_at_formatted }}</span>
+                                <span v-if="sub.score !== null" class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold font-mono">
                                     Nilai: {{ sub.score }}
                                 </span>
                                 <button
                                     type="button"
                                     @click="selectSubmissionForGrading(sub)"
-                                    class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold"
+                                    class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition shadow-sm"
                                 >
                                     {{ sub.score !== null ? 'Ubah Nilai' : 'Beri Nilai' }}
                                 </button>
                             </div>
                         </div>
 
-                        <p class="text-slate-300 bg-slate-900 p-3 rounded-lg border border-slate-800/80 whitespace-pre-line">{{ sub.answer_text }}</p>
+                        <p class="text-slate-700 bg-white p-3 rounded-lg border border-slate-200 whitespace-pre-line">{{ sub.answer_text }}</p>
 
                         <div v-if="sub.attachment_url">
-                            <a :href="sub.attachment_url" target="_blank" class="text-sky-400 hover:underline font-semibold">
+                            <a :href="sub.attachment_url" target="_blank" class="text-blue-600 hover:underline font-semibold">
                                 📎 Buka Lampiran Tugas Siswa
                             </a>
                         </div>
 
                         <!-- Form Input Nilai Inline -->
-                        <form v-if="activeSubmissionToGrade && activeSubmissionToGrade.id === sub.id" @submit.prevent="submitGrade" class="pt-3 mt-2 border-t border-slate-800 space-y-3">
+                        <form v-if="activeSubmissionToGrade && activeSubmissionToGrade.id === sub.id" @submit.prevent="submitGrade" class="pt-3 mt-2 border-t border-slate-200 space-y-3">
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div>
-                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Nilai (0 - 100) *</label>
+                                    <label class="block text-[11px] font-semibold text-slate-700 mb-1">Nilai (0 - 100) *</label>
                                     <input
                                         v-model.number="gradeForm.score"
                                         type="number"
                                         min="0"
                                         max="100"
                                         required
-                                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono"
+                                        class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono focus:outline-none focus:border-indigo-500"
                                     />
                                 </div>
                                 <div class="sm:col-span-2">
-                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Umpan Balik / Komentar Guru</label>
+                                    <label class="block text-[11px] font-semibold text-slate-700 mb-1">Umpan Balik / Komentar Guru</label>
                                     <input
                                         v-model="gradeForm.teacher_feedback"
                                         type="text"
-                                        placeholder=" Kerja bagus, pertahankan..."
-                                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                                        placeholder="Kerja bagus, pertahankan..."
+                                        class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-indigo-500"
                                     />
                                 </div>
                             </div>
 
                             <div class="flex items-center justify-between">
-                                <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-                                    <input type="checkbox" v-model="gradeForm.sync_to_gradebook" class="rounded bg-slate-900 border-slate-700 text-emerald-600" />
+                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" v-model="gradeForm.sync_to_gradebook" class="rounded bg-white border-slate-300 text-emerald-600 focus:ring-emerald-500" />
                                     <span>Sinkronkan otomatis ke Nilai Harian di Buku Nilai (Gradebook)</span>
                                 </label>
-                                <button type="submit" :disabled="gradeForm.processing" class="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold">
+                                <button type="submit" :disabled="gradeForm.processing" class="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-sm transition">
                                     Simpan Nilai
                                 </button>
                             </div>
@@ -893,31 +893,31 @@ const deleteAnnouncement = (ann) => {
         </div>
 
         <!-- ==================== MODAL PENGUMUMAN SEKOLAH ==================== -->
-        <div v-if="isAnnouncementModalOpen" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <h3 class="text-sm font-bold text-white">
+        <div v-if="isAnnouncementModalOpen" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-xl text-slate-800">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-bold text-slate-900">
                         {{ editingAnnouncement ? 'Edit Pengumuman Sekolah' : 'Publikasikan Pengumuman Sekolah Baru' }}
                     </h3>
-                    <button type="button" @click="isAnnouncementModalOpen = false" class="text-slate-400 hover:text-white">✕</button>
+                    <button type="button" @click="isAnnouncementModalOpen = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
                 </div>
 
                 <form @submit.prevent="submitAnnouncement" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Judul Pengumuman *</label>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Pengumuman *</label>
                         <input
                             v-model="announcementForm.title"
                             type="text"
                             required
                             placeholder="Contoh: Jadwal Pelaksanaan Ujian Tengah Semester Ganjil"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
                         />
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1">Kategori *</label>
-                            <select v-model="announcementForm.category" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Kategori *</label>
+                            <select v-model="announcementForm.category" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white">
                                 <option value="akademik">Akademik</option>
                                 <option value="keuangan">Keuangan & SPP</option>
                                 <option value="kegiatan">Kegiatan & Ekskul</option>
@@ -925,8 +925,8 @@ const deleteAnnouncement = (ann) => {
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1">Target Pembaca *</label>
-                            <select v-model="announcementForm.target_audience" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Target Pembaca *</label>
+                            <select v-model="announcementForm.target_audience" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white">
                                 <option value="semua">Seluruh Warga Sekolah</option>
                                 <option value="siswa">Khusus Siswa</option>
                                 <option value="guru">Khusus Dewan Guru</option>
@@ -936,24 +936,24 @@ const deleteAnnouncement = (ann) => {
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Isi Pengumuman *</label>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Isi Pengumuman *</label>
                         <textarea
                             v-model="announcementForm.content"
                             rows="4"
                             required
                             placeholder="Tuliskan isi pengumuman lengkap..."
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
                         ></textarea>
                     </div>
 
-                    <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-                        <input type="checkbox" v-model="announcementForm.is_pinned" class="rounded bg-slate-950 border-slate-700 text-amber-500" />
+                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input type="checkbox" v-model="announcementForm.is_pinned" class="rounded bg-white border-slate-300 text-amber-500 focus:ring-amber-500" />
                         <span>📌 Sematkan di bagian paling atas papan pengumuman</span>
                     </label>
 
-                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-                        <button type="button" @click="isAnnouncementModalOpen = false" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400">Batal</button>
-                        <button type="submit" :disabled="announcementForm.processing" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold">
+                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                        <button type="button" @click="isAnnouncementModalOpen = false" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 transition">Batal</button>
+                        <button type="submit" :disabled="announcementForm.processing" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-sm transition">
                             {{ announcementForm.processing ? 'Mempublikasikan...' : 'Publikasikan Pengumuman' }}
                         </button>
                     </div>

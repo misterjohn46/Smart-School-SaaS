@@ -78,7 +78,7 @@ const resolvedSectionTitle = computed(() => {
 </script>
 
 <template>
-    <div class="flex min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div class="flex min-h-screen bg-slate-50 text-slate-800">
         <!-- SIDEBAR -->
         <Sidebar :menus="resolvedMenus" :section-title="resolvedSectionTitle" />
 
@@ -87,7 +87,7 @@ const resolvedSectionTitle = computed(() => {
             <!-- Page Heading (desktop) -->
             <header
                 v-if="$slots.header"
-                class="hidden border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 lg:block"
+                class="hidden border-b border-slate-200 bg-white shadow-sm lg:block"
             >
                 <div class="px-4 py-6 sm:px-6 lg:px-8">
                     <slot name="header" />
@@ -95,7 +95,7 @@ const resolvedSectionTitle = computed(() => {
             </header>
 
             <!-- Page Content -->
-            <main class="flex-1 pt-16 lg:pt-0">
+            <main class="flex-1 pt-14 lg:pt-0">
                 <slot />
             </main>
         </div>
