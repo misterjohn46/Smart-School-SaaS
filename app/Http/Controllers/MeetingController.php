@@ -16,7 +16,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -356,7 +355,7 @@ class MeetingController extends Controller
         ]);
 
         $file = $request->file('photo');
-        $path = $file->store('meetings/photos/' . $meeting->id, 'public');
+        $path = $file->store('meetings/photos/'.$meeting->id, 'public');
 
         $photos = $meeting->photos ?? [];
         $photos[] = $path;
@@ -379,14 +378,14 @@ class MeetingController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->store('meetings/attachments/' . $meeting->id, 'public');
+        $path = $file->store('meetings/attachments/'.$meeting->id, 'public');
 
         $attachments = $meeting->attachments ?? [];
         $attachments[] = [
             'title' => $request->input('title'),
             'path' => $path,
             'name' => $file->getClientOriginalName(),
-            'size' => round($file->getSize() / 1024, 1) . ' KB',
+            'size' => round($file->getSize() / 1024, 1).' KB',
             'uploaded_at' => Carbon::now()->format('d M Y, H:i'),
         ];
 
@@ -428,7 +427,7 @@ class MeetingController extends Controller
 
         $pdf->setPaper('A4', 'portrait');
 
-        $fileName = 'BAP-Rapat-' . Str::slug($meeting->title) . '-' . date('Ymd') . '.pdf';
+        $fileName = 'BAP-Rapat-'.Str::slug($meeting->title).'-'.date('Ymd').'.pdf';
 
         return $pdf->stream($fileName);
     }
@@ -446,23 +445,23 @@ class MeetingController extends Controller
         $schoolName = $tenant?->school_name ?? 'Sekolah';
 
         $text = "*UNDANGAN RESMI RAPAT {$schoolName}*\n\n"
-            . "Kepada Yth. Bapak/Ibu Dewan Guru & Staf,\n"
-            . "Dengan hormat, mengundang kehadiran Bapak/Ibu dalam agenda rapat kedinasan:\n\n"
-            . "📌 *Agenda:* {$meeting->title}\n"
-            . "🏷️ *Jenis:* {$meeting->type_label}\n"
-            . "📅 *Hari/Tanggal:* " . $meeting->meeting_date->translatedFormat('l, d F Y') . "\n"
-            . "⏰ *Waktu:* {$meeting->start_time} WIB " . ($meeting->end_time ? "s/d {$meeting->end_time} WIB" : "s/d Selesai") . "\n"
-            . "📍 *Tempat:* {$meeting->location}\n"
-            . ($meeting->meeting_link ? "🔗 *Tautan Online:* {$meeting->meeting_link}\n" : '')
-            . "👤 *Pimpinan Rapat:* " . ($meeting->leader_name ?: 'Kepala Sekolah') . "\n\n"
-            . ($meeting->agenda ? "📝 *Pokok Pembahasan:*\n{$meeting->agenda}\n\n" : '')
-            . "Bapak/Ibu diharapkan hadir tepat waktu dan mengisi presensi serta tanda tangan digital melalui tautan sistem:\n"
-            . route('academic.meetings.show', $meeting->id) . "\n\n"
-            . "Demikian undangan ini kami sampaikan, atas perhatian dan kerja samanya diucapkan terima kasih.";
+            ."Kepada Yth. Bapak/Ibu Dewan Guru & Staf,\n"
+            ."Dengan hormat, mengundang kehadiran Bapak/Ibu dalam agenda rapat kedinasan:\n\n"
+            ."📌 *Agenda:* {$meeting->title}\n"
+            ."🏷️ *Jenis:* {$meeting->type_label}\n"
+            .'📅 *Hari/Tanggal:* '.$meeting->meeting_date->translatedFormat('l, d F Y')."\n"
+            ."⏰ *Waktu:* {$meeting->start_time} WIB ".($meeting->end_time ? "s/d {$meeting->end_time} WIB" : 's/d Selesai')."\n"
+            ."📍 *Tempat:* {$meeting->location}\n"
+            .($meeting->meeting_link ? "🔗 *Tautan Online:* {$meeting->meeting_link}\n" : '')
+            .'👤 *Pimpinan Rapat:* '.($meeting->leader_name ?: 'Kepala Sekolah')."\n\n"
+            .($meeting->agenda ? "📝 *Pokok Pembahasan:*\n{$meeting->agenda}\n\n" : '')
+            ."Bapak/Ibu diharapkan hadir tepat waktu dan mengisi presensi serta tanda tangan digital melalui tautan sistem:\n"
+            .route('academic.meetings.show', $meeting->id)."\n\n"
+            .'Demikian undangan ini kami sampaikan, atas perhatian dan kerja samanya diucapkan terima kasih.';
 
         return response()->json([
             'text' => $text,
-            'wa_url' => 'https://api.whatsapp.com/send?text=' . urlencode($text),
+            'wa_url' => 'https://api.whatsapp.com/send?text='.urlencode($text),
         ]);
     }
 

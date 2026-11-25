@@ -18,7 +18,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -41,6 +40,7 @@ class PpdbController extends Controller
             ->get()
             ->map(function ($b) {
                 $count = PpdbRegistration::where('ppdb_batch_id', $b->id)->count();
+
                 return [
                     'id' => $b->id,
                     'name' => $b->name,
@@ -159,7 +159,7 @@ class PpdbController extends Controller
         foreach ($uploadPaths as $inputKey => $docKey) {
             if ($request->hasFile($inputKey)) {
                 $file = $request->file($inputKey);
-                $path = $file->store('ppdb/documents/' . $registrationNumber, 'public');
+                $path = $file->store('ppdb/documents/'.$registrationNumber, 'public');
                 $documents[$docKey] = $path;
             }
         }
@@ -232,7 +232,7 @@ class PpdbController extends Controller
                 'gender' => $registration->gender === 'L' ? 'Laki-laki' : 'Perempuan',
                 'nisn' => $registration->nisn ?: '-',
                 'nik' => $registration->nik ?: '-',
-                'ttl' => ($registration->birth_place ?: '-') . ', ' . ($registration->birth_date ? $registration->birth_date->translatedFormat('d F Y') : '-'),
+                'ttl' => ($registration->birth_place ?: '-').', '.($registration->birth_date ? $registration->birth_date->translatedFormat('d F Y') : '-'),
                 'religion' => $registration->religion ?: '-',
                 'previous_school' => $registration->previous_school ?: '-',
                 'phone_number' => $registration->phone_number ?: '-',
@@ -534,7 +534,7 @@ class PpdbController extends Controller
             $finalEmail = $baseEmail;
             $counter = 1;
             while (User::where('email', $finalEmail)->exists()) {
-                $finalEmail = Str::before($baseEmail, '@') . "{$counter}@" . Str::after($baseEmail, '@');
+                $finalEmail = Str::before($baseEmail, '@')."{$counter}@".Str::after($baseEmail, '@');
                 $counter++;
             }
 
@@ -578,7 +578,7 @@ class PpdbController extends Controller
                 ['student_profile_id' => $profile->id],
                 [
                     'tenant_id' => $reg->tenant_id,
-                    'account_number' => 'WAL-' . $profile->nisn,
+                    'account_number' => 'WAL-'.$profile->nisn,
                     'balance' => 0,
                     'daily_limit' => 50000,
                     'spent_today' => 0,
@@ -634,7 +634,7 @@ class PpdbController extends Controller
                 $finalEmail = $baseEmail;
                 $counter = 1;
                 while (User::where('email', $finalEmail)->exists()) {
-                    $finalEmail = Str::before($baseEmail, '@') . "{$counter}@" . Str::after($baseEmail, '@');
+                    $finalEmail = Str::before($baseEmail, '@')."{$counter}@".Str::after($baseEmail, '@');
                     $counter++;
                 }
 
@@ -674,7 +674,7 @@ class PpdbController extends Controller
                     ['student_profile_id' => $profile->id],
                     [
                         'tenant_id' => $reg->tenant_id,
-                        'account_number' => 'WAL-' . $profile->nisn,
+                        'account_number' => 'WAL-'.$profile->nisn,
                         'balance' => 0,
                         'daily_limit' => 50000,
                         'spent_today' => 0,
@@ -702,7 +702,7 @@ class PpdbController extends Controller
     {
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="data_pendaftar_ppdb_' . date('Ymd_His') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="data_pendaftar_ppdb_'.date('Ymd_His').'.csv"',
         ];
 
         return response()->stream(function () {

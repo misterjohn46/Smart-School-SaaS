@@ -17,7 +17,9 @@ class SchoolMeetingTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $teacher;
+
     protected SchoolMeeting $meeting;
 
     protected function setUp(): void

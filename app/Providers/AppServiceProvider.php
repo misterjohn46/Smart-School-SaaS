@@ -3,10 +3,12 @@
 namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Stancl\Tenancy\Commands\Seed;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,8 +18,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Netralkan override db:seed dari Stancl Tenancy agar perintah db:seed standar Laravel berjalan normal
-        $this->app->bind(\Stancl\Tenancy\Commands\Seed::class, function ($app) {
-            return new \Illuminate\Database\Console\Seeds\SeedCommand($app['db']);
+        $this->app->bind(Seed::class, function ($app) {
+            return new SeedCommand($app['db']);
         });
     }
 
@@ -53,7 +55,7 @@ class AppServiceProvider extends ServiceProvider
         // Pulihkan perintah db:seed asli Laravel dari override Stancl Tenancy
         if ($this->app->runningInConsole()) {
             $this->commands([
-                \Illuminate\Database\Console\Seeds\SeedCommand::class,
+                SeedCommand::class,
             ]);
         }
     }

@@ -16,6 +16,7 @@ class CentralTenantManagementTest extends TestCase
     use RefreshDatabase;
 
     protected User $superAdmin;
+
     protected User $schoolAdmin;
 
     protected function setUp(): void

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\RoleName;
 use App\Models\Concerns\BelongsToSchool;
 use App\Traits\HasObfuscatedId;
 use Database\Factories\UserFactory;
@@ -109,7 +108,7 @@ class User extends Authenticatable implements MustVerifyEmail
     // ─── Keamanan Akun & Proteksi Brute-force ──────────────────────
     public function isLockedOut(): bool
     {
-        $lockoutUntil = $this->lockout_until ? \Illuminate\Support\Carbon::parse($this->lockout_until) : null;
+        $lockoutUntil = $this->lockout_until ? Carbon::parse($this->lockout_until) : null;
 
         if ($this->is_locked && $lockoutUntil && $lockoutUntil->isFuture()) {
             return true;

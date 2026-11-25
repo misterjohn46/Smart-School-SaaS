@@ -110,7 +110,7 @@ class CbtDocxImportFeatureTest extends TestCase
 
     public function test_teacher_can_import_docx_file_into_bank(): void
     {
-        $service = new CbtDocxImporterService();
+        $service = new CbtDocxImporterService;
         $tempDocx = $service->generateTemplateDocx();
 
         $uploadedFile = new UploadedFile(

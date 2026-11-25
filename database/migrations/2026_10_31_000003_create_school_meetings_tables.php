@@ -25,7 +25,7 @@ return new class extends Migration
                 'komite',
                 'koordinasi_jurusan',
                 'kedisiplinan',
-                'lainnya'
+                'lainnya',
             ])->default('dewan_guru');
             $table->string('meeting_number', 60)->nullable(); // Nomor BAP: BAP-RAPAT/2026/X/001
             $table->date('meeting_date');

@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Stancl\Tenancy\Database\Concerns\CentralConnection;
 
 class Subscription extends Model
@@ -41,12 +42,13 @@ class Subscription extends Model
 
     public function isValid(): bool
     {
-        $trialEnds = $this->trial_ends_at ? \Illuminate\Support\Carbon::parse($this->trial_ends_at) : null;
+        $trialEnds = $this->trial_ends_at ? Carbon::parse($this->trial_ends_at) : null;
         if ($this->status === 'trial' && $trialEnds && $trialEnds->isFuture()) {
             return true;
         }
 
-        $endsAt = $this->ends_at ? \Illuminate\Support\Carbon::parse($this->ends_at) : null;
+        $endsAt = $this->ends_at ? Carbon::parse($this->ends_at) : null;
+
         return $this->status === 'active' && ($endsAt === null || $endsAt->isFuture());
     }
 }

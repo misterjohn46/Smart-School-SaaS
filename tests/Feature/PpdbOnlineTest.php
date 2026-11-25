@@ -10,7 +10,6 @@ use App\Models\Department;
 use App\Models\PpdbBatch;
 use App\Models\PpdbRegistration;
 use App\Models\StudentProfile;
-use App\Models\StudentWallet;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -23,10 +22,15 @@ class PpdbOnlineTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $teacher;
+
     protected AcademicYear $academicYear;
+
     protected Department $department;
+
     protected Classroom $classroom;
+
     protected PpdbBatch $batch;
 
     protected function setUp(): void

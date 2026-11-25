@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\CbtBank;
-use App\Models\CbtQuestion;
 use DOMDocument;
 use DOMElement;
-use DOMNode;
 use DOMXPath;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -26,7 +24,7 @@ class CbtDocxImporterService
     {
         $filePath = is_string($file) ? $file : $file->getRealPath();
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($filePath) !== true) {
             throw new \RuntimeException('Berkas Word tidak dapat dibuka atau korup.');
         }
@@ -99,7 +97,7 @@ class CbtDocxImporterService
             return $rels;
         }
 
-        $dom = new DOMDocument();
+        $dom = new DOMDocument;
         @$dom->loadXML($relsXml);
         $relationships = $dom->getElementsByTagName('Relationship');
 
@@ -125,7 +123,7 @@ class CbtDocxImporterService
      */
     protected function parseDocumentXml(string $docXml, ZipArchive $zip, array $rels): array
     {
-        $dom = new DOMDocument();
+        $dom = new DOMDocument;
         @$dom->loadXML($docXml);
 
         $xpath = new DOMXPath($dom);
@@ -211,7 +209,7 @@ class CbtDocxImporterService
                 $pHtml .= htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
             } elseif ($el->nodeName === 'w:br') {
                 $pPlainText .= "\n";
-                $pHtml .= "<br/>";
+                $pHtml .= '<br/>';
             } elseif ($el->nodeName === 'a:blip' || $el->nodeName === 'v:imagedata') {
                 /** @var DOMElement $el */
                 $rId = $el->getAttribute('r:embed') ?: $el->getAttribute('r:id');
@@ -277,7 +275,7 @@ class CbtDocxImporterService
                 continue;
             }
 
-            $tableHtml .= '<tr class="border-b border-slate-200 dark:border-slate-700/60 ' . ($isFirstRow ? 'bg-slate-100 dark:bg-slate-800/80 font-bold' : 'hover:bg-slate-50 dark:hover:bg-slate-800/30') . '">';
+            $tableHtml .= '<tr class="border-b border-slate-200 dark:border-slate-700/60 '.($isFirstRow ? 'bg-slate-100 dark:bg-slate-800/80 font-bold' : 'hover:bg-slate-50 dark:hover:bg-slate-800/30').'">';
             $rowPlainCells = [];
 
             foreach ($tcNodes as $tc) {
@@ -287,7 +285,7 @@ class CbtDocxImporterService
 
                 $gridSpanNode = $xpath->query('./w:tcPr/w:gridSpan', $tc)->item(0);
                 $colspan = $gridSpanNode instanceof DOMElement ? (int) $gridSpanNode->getAttribute('w:val') : 1;
-                $colspanAttr = $colspan > 1 ? ' colspan="' . $colspan . '"' : '';
+                $colspanAttr = $colspan > 1 ? ' colspan="'.$colspan.'"' : '';
 
                 $pInsideCell = $xpath->query('./w:p', $tc);
                 $cellHtmlParts = [];
@@ -321,7 +319,7 @@ class CbtDocxImporterService
                     ? 'px-3 py-2 border border-slate-200 dark:border-slate-700 font-semibold text-slate-800 dark:text-slate-200'
                     : 'px-3 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300';
 
-                $tableHtml .= '<' . $tag . $colspanAttr . ' class="' . $extraClass . '">' . ($cellContent !== '' ? $cellContent : '&nbsp;') . '</' . $tag . '>';
+                $tableHtml .= '<'.$tag.$colspanAttr.' class="'.$extraClass.'">'.($cellContent !== '' ? $cellContent : '&nbsp;').'</'.$tag.'>';
             }
 
             $tableHtml .= '</tr>';
@@ -364,6 +362,7 @@ class CbtDocxImporterService
                         $currentQ['question_html_parts'][] = $html;
                     }
                 }
+
                 continue;
             }
 
@@ -389,6 +388,7 @@ class CbtDocxImporterService
                     'question_type' => 'multiple_choice',
                 ];
                 $currentOptionKey = null;
+
                 continue;
             }
 
@@ -401,6 +401,7 @@ class CbtDocxImporterService
             if (preg_match('/^(?:kunci(?:\s*jawaban)?|jawaban(?:\s*benar)?|ans(?:wer)?)\s*[:\-=]\s*(.+)$/iu', $plain, $matches)) {
                 $currentQ['correct_answer'] = trim($matches[1]);
                 $currentOptionKey = null;
+
                 continue;
             }
 
@@ -408,6 +409,7 @@ class CbtDocxImporterService
             if (preg_match('/^bobot\s*[:\-=]\s*(\d+)/iu', $plain, $matches)) {
                 $currentQ['score_weight'] = (int) $matches[1];
                 $currentOptionKey = null;
+
                 continue;
             }
 
@@ -415,6 +417,7 @@ class CbtDocxImporterService
             if (preg_match('/^(?:pembahasan|penjelasan|keterangan)\s*[:\-=]\s*(.*)$/iu', $plain, $matches)) {
                 $currentQ['explanation'] = trim($matches[1]);
                 $currentOptionKey = null;
+
                 continue;
             }
 
@@ -428,6 +431,7 @@ class CbtDocxImporterService
                     'key' => $optKey,
                     'text_parts' => [$cleanOptHtml],
                 ];
+
                 continue;
             }
 
@@ -454,13 +458,13 @@ class CbtDocxImporterService
      */
     protected function finalizeQuestion(array $q): array
     {
-        $questionText = trim(implode("<br/>", $q['question_html_parts']));
+        $questionText = trim(implode('<br/>', $q['question_html_parts']));
 
         $formattedOptions = [];
         foreach ($q['options'] as $key => $optData) {
             $formattedOptions[] = [
                 'key' => $key,
-                'text' => trim(implode("<br/>", $optData['text_parts'])),
+                'text' => trim(implode('<br/>', $optData['text_parts'])),
             ];
         }
 
@@ -539,9 +543,9 @@ class CbtDocxImporterService
      */
     public function generateTemplateDocx(): string
     {
-        $tempFile = tempnam(sys_get_temp_dir(), 'cbt_tpl_') . '.docx';
+        $tempFile = tempnam(sys_get_temp_dir(), 'cbt_tpl_').'.docx';
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($tempFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             throw new \RuntimeException('Gagal membuat berkas template Word sementara.');
         }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\RoleName;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
@@ -32,15 +33,15 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $isSchoolAdmin = $user ? $user->hasAnyRole([
-            \App\Enums\RoleName::Admin->value,
-            \App\Enums\RoleName::Headmaster->value,
-            \App\Enums\RoleName::Operator->value,
-            \App\Enums\RoleName::SuperAdmin->value,
-            \App\Enums\RoleName::Treasurer->value,
-            \App\Enums\RoleName::Staff->value,
+            RoleName::Admin->value,
+            RoleName::Headmaster->value,
+            RoleName::Operator->value,
+            RoleName::SuperAdmin->value,
+            RoleName::Treasurer->value,
+            RoleName::Staff->value,
         ]) : false;
 
-        $isTeacher = $user ? (! $isSchoolAdmin && $user->hasRole(\App\Enums\RoleName::Teacher->value)) : false;
+        $isTeacher = $user ? (! $isSchoolAdmin && $user->hasRole(RoleName::Teacher->value)) : false;
 
         return [
             ...parent::share($request),
@@ -49,7 +50,7 @@ class HandleInertiaRequests extends Middleware
                     'roles' => $user->getRoleNames()->toArray(),
                     'isTeacher' => $isTeacher,
                     'isAdmin' => $isSchoolAdmin,
-                    'isStudent' => $user->hasRole(\App\Enums\RoleName::Student->value),
+                    'isStudent' => $user->hasRole(RoleName::Student->value),
                 ]) : null,
             ],
             'ziggy' => fn () => [

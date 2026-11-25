@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use App\Models\AcademicYear;
 use App\Models\CbtBank;
 use App\Models\Subject;
 use App\Models\User;
 use App\Services\CbtDocxImporterService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class CbtDocxImporterServiceTest extends TestCase
@@ -37,7 +35,7 @@ class CbtDocxImporterServiceTest extends TestCase
             'is_active' => true,
         ]);
 
-        $service = new CbtDocxImporterService();
+        $service = new CbtDocxImporterService;
         $templatePath = $service->generateTemplateDocx();
 
         $this->assertFileExists($templatePath);
@@ -51,7 +49,7 @@ class CbtDocxImporterServiceTest extends TestCase
         // Periksa soal no 1 (Pilihan Ganda Tunggal)
         $q1 = $bank->questions()->where('score_weight', 10)->first();
         $this->assertNotNull($q1);
-        $this->assertStringContainsString('Central Processing Unit', $q1->question_text . json_encode($q1->options));
+        $this->assertStringContainsString('Central Processing Unit', $q1->question_text.json_encode($q1->options));
         $this->assertSame('C', $q1->correct_answer);
 
         // Periksa soal no 2 (Pilihan Ganda Kompleks: Kunci A, C)
@@ -112,9 +110,9 @@ class CbtDocxImporterServiceTest extends TestCase
 
         // Buat file docx dengan berkas gambar tiruan (1x1 pixel PNG)
         $pngBinary = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
-        $docxPath = tempnam(sys_get_temp_dir(), 'test_img_') . '.docx';
+        $docxPath = tempnam(sys_get_temp_dir(), 'test_img_').'.docx';
 
-        $zip = new \ZipArchive();
+        $zip = new \ZipArchive;
         $zip->open($docxPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         $zip->addFromString('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
         $zip->addFromString('_rels/.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
@@ -146,7 +144,7 @@ class CbtDocxImporterServiceTest extends TestCase
         $zip->addFromString('word/document.xml', $documentXml);
         $zip->close();
 
-        $service = new CbtDocxImporterService();
+        $service = new CbtDocxImporterService;
         $res = $service->import($docxPath, $bank);
 
         $this->assertSame(1, $res['total_imported']);

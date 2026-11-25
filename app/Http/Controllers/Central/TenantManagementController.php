@@ -80,7 +80,7 @@ class TenantManagementController extends Controller
         ]);
 
         $centralDomain = config('tenancy.central_domains.0', 'localhost');
-        $tenant->requestedDomain = strtolower($validated['subdomain']) . '.' . $centralDomain;
+        $tenant->requestedDomain = strtolower($validated['subdomain']).'.'.$centralDomain;
         $tenant->save();
 
         $generatedPassword = $tenant->generatedAdminPassword ?? 'password';
@@ -141,7 +141,7 @@ class TenantManagementController extends Controller
 
         if (! $user) {
             $user = new User([
-                'name' => $tenant->admin_name ?: 'Admin ' . $tenant->school_name,
+                'name' => $tenant->admin_name ?: 'Admin '.$tenant->school_name,
                 'email' => $tenant->admin_email,
                 'phone_number' => $tenant->admin_phone,
                 'password' => Hash::make($newPassword),
@@ -149,7 +149,7 @@ class TenantManagementController extends Controller
             ]);
         } else {
             $user->fill([
-                'name' => $tenant->admin_name ?: 'Admin ' . $tenant->school_name,
+                'name' => $tenant->admin_name ?: 'Admin '.$tenant->school_name,
                 'phone_number' => $tenant->admin_phone,
                 'password' => Hash::make($newPassword),
                 'is_active' => true,

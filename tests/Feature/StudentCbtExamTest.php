@@ -15,6 +15,7 @@ use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Tests\TestCase;
 
 class StudentCbtExamTest extends TestCase
@@ -22,14 +23,23 @@ class StudentCbtExamTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $teacher;
+
     protected User $studentUser;
+
     protected StudentProfile $studentProfile;
+
     protected Classroom $classroom;
+
     protected Subject $subject;
+
     protected CbtBank $bank;
+
     protected CbtExam $exam;
+
     protected CbtQuestion $mcQuestion;
+
     protected CbtQuestion $essayQuestion;
 
     protected function setUp(): void
@@ -314,12 +324,12 @@ class StudentCbtExamTest extends TestCase
             ->get("/academic/cbt/banks/{$this->bank->id}/export-template");
 
         $exportResponse->assertOk();
-        $this->assertInstanceOf(\Symfony\Component\HttpFoundation\StreamedResponse::class, $exportResponse->baseResponse);
+        $this->assertInstanceOf(StreamedResponse::class, $exportResponse->baseResponse);
 
         // 2. Impor berkas CSV ke bank soal
         $csvContent = "question_text,question_type,option_a,option_b,option_c,option_d,correct_answer,explanation,score_weight\n"
-            . "\"Apa warna langit siang hari?\",multiple_choice,Biru,Merah,Kuning,Hijau,A,\"Warna biru karena hamburan rayleigh\",10\n"
-            . "\"Sebutkan 3 komponen utama CPU!\",essay,,,,,,Jawaban essay CPU,20\n";
+            ."\"Apa warna langit siang hari?\",multiple_choice,Biru,Merah,Kuning,Hijau,A,\"Warna biru karena hamburan rayleigh\",10\n"
+            ."\"Sebutkan 3 komponen utama CPU!\",essay,,,,,,Jawaban essay CPU,20\n";
 
         $file = UploadedFile::fake()->createWithContent('soal_baru.csv', $csvContent);
 

@@ -732,6 +732,7 @@ class CbtController extends Controller
         foreach ($questions as $q) {
             if ($q->question_type === 'essay') {
                 $hasEssay = true;
+
                 continue;
             }
 
@@ -766,6 +767,7 @@ class CbtController extends Controller
         if ($q->question_type === 'true_false') {
             $userNorm = in_array(strtoupper(trim((string) $userAns)), ['TRUE', 'BENAR', 'B'], true) ? 'TRUE' : 'FALSE';
             $corrNorm = in_array(strtoupper(trim((string) $q->correct_answer)), ['TRUE', 'BENAR', 'B'], true) ? 'TRUE' : 'FALSE';
+
             return ($userNorm === $corrNorm) ? (float) $q->score_weight : 0.0;
         }
 
@@ -994,12 +996,12 @@ class CbtController extends Controller
 
                 $msg = "Berhasil mengimpor {$result['total_imported']} butir soal beserta gambarnya dari berkas Word ke Bank Soal '{$bank->title}'!";
                 if (! empty($result['errors'])) {
-                    $msg .= ' Beberapa butir dilewati: ' . implode('; ', array_slice($result['errors'], 0, 3));
+                    $msg .= ' Beberapa butir dilewati: '.implode('; ', array_slice($result['errors'], 0, 3));
                 }
 
                 return back()->with('success', $msg);
             } catch (\Throwable $e) {
-                return back()->withErrors(['file' => 'Gagal membaca berkas Word: ' . $e->getMessage()]);
+                return back()->withErrors(['file' => 'Gagal membaca berkas Word: '.$e->getMessage()]);
             }
         }
 

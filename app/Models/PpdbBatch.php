@@ -56,6 +56,7 @@ class PpdbBatch extends Model
         }
 
         $now = Carbon::today();
+
         return $now->gte($this->start_date) && $now->lte($this->end_date);
     }
 }
