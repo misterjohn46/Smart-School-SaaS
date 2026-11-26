@@ -33,5 +33,5 @@ jobs:
 
       # memory_limit bawaan PHP (128M) membuat proses PHPStan crash di proyek ini.
       - run: vendor/bin/phpstan analyse --no-progress --memory-limit=2G
-      - run: php artisan test --compact
       - run: npm run build
+      - run: php artisan test --compact
