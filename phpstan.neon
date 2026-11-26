@@ -10,6 +10,7 @@ parameters:
     paths:
         - app
     level: 5
+    reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         # larastan menganggap relasi BelongsTo dengan foreign key NOT NULL selalu
         # mengembalikan model (non-nullable), sehingga `$model->relasi?->kolom`

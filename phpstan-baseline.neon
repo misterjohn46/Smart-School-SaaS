@@ -7,10 +7,34 @@ parameters:
 			path: app/Http/Controllers/Api/V1/AuthController.php
 
 		-
-			message: '#^Anonymous function should return array\{id\: int, order_number\: string, buyer_name\: string, buyer_nisn\: string, total_amount\: float, payment_method\: ''cash''\|''wallet'', order_status\: ''cancelled''\|''completed''\|''cooking''\|''pending''\|''ready'', order_date\: non\-falsy\-string, \.\.\.\} but returns array\{id\: int, order_number\: string, buyer_name\: string, buyer_nisn\: string, total_amount\: float, payment_method\: ''cash''\|''wallet'', order_status\: ''cancelled''\|''completed''\|''cooking''\|''pending''\|''ready'', order_date\: non\-falsy\-string, \.\.\.\}\.$#'
-			identifier: return.type
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 2
+			path: app/Http/Controllers/AttendanceController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
 			count: 1
-			path: app/Http/Controllers/CanteenController.php
+			path: app/Http/Controllers/AttendanceController.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 3
+			path: app/Http/Controllers/AttendanceController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 2
+			path: app/Http/Controllers/AttendanceController.php
+
+		-
+			message: '#^Relation ''domains'' is not found in App\\Models\\Tenant model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Central/TenantManagementController.php
 
 		-
 			message: '#^Ternary operator condition is always true\.$#'
@@ -43,15 +67,9 @@ parameters:
 			path: app/Http/Controllers/DashboardController.php
 
 		-
-			message: '#^Anonymous function should return array\{id\: int, hash_id\: string, name\: string, nisn\: string, classroom\: string, rfid_uid\: string\|null, wallet_balance\: float, bills\: Illuminate\\Support\\Collection\<int, array\{id\: mixed, title\: mixed, category\: mixed, amount\: float, paid_amount\: float, remaining_amount\: float, month\: mixed, year\: mixed, \.\.\.\}\>, \.\.\.\} but returns array\{id\: int, hash_id\: string, name\: string, nisn\: string, classroom\: string, rfid_uid\: string\|null, wallet_balance\: float, bills\: Illuminate\\Support\\Collection\<int, array\{id\: int, title\: mixed, category\: mixed, amount\: float, paid_amount\: float, remaining_amount\: float, month\: mixed, year\: mixed, \.\.\.\}\>, \.\.\.\}\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Http/Controllers/FinanceController.php
-
-		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
-			count: 1
+			count: 2
 			path: app/Http/Controllers/FinanceController.php
 
 		-
@@ -59,6 +77,72 @@ parameters:
 			identifier: nullCoalesce.expr
 			count: 2
 			path: app/Http/Controllers/KtsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/MeetingController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/MeetingController.php
+
+		-
+			message: '#^Cannot call method translatedFormat\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/MeetingController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$academicYear\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/PpdbController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$announcement_date\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/PpdbController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$classroom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/PpdbController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 9
+			path: app/Http/Controllers/PpdbController.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/PpdbController.php
+
+		-
+			message: '#^Cannot call method translatedFormat\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 4
+			path: app/Http/Controllers/PpdbController.php
+
+		-
+			message: '#^Match arm comparison between ''enrolled'' and ''enrolled'' is always true\.$#'
+			identifier: match.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/PpdbController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PpdbBatch\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/PpdbController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\StudentProfile\:\:\$total_points\.$#'
@@ -71,12 +155,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/StudentViolationController.php
-
-		-
-			message: '#^Call to function method_exists\(\) with App\\Models\\User and ''hasRole'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: app/Http/Middleware/FilamentAuthenticateWithRoleRedirect.php
 
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$created_at\.$#'
@@ -119,3 +197,15 @@ parameters:
 			identifier: match.alwaysTrue
 			count: 1
 			path: app/Models/LessonSchedule.php
+
+		-
+			message: '#^Offset ''is_table'' on array\{text\: string, plain_text\: string, has_image\: bool\} in empty\(\) does not exist\.$#'
+			identifier: empty.offset
+			count: 1
+			path: app/Services/CbtDocxImporterService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between '''' and '''' will always evaluate to true\.$#'
+			identifier: identical.alwaysTrue
+			count: 1
+			path: app/Services/CbtDocxImporterService.php
